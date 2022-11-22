@@ -1,6 +1,5 @@
 ############## 5) SEIR MODEL  Lumpy skin disease ######
 
-#abcd
 model5 =
   function (pars, init, end.time)  {
     init2 <- init

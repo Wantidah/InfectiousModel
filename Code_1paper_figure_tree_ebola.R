@@ -12,9 +12,6 @@
 # install.packages("remotes")
 # remotes::install_github("sckott/rphylopic")
 
-# Code 
-print('start code')
-
 library("ape")
 # library("Biostrings")
 library("ggplot2")
