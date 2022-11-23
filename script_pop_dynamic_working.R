@@ -64,9 +64,9 @@ model1 =
     time <- seq(0, end.time, by = pars["tau"])
     for (t in time) {
       tmp <- Equations(pars, init, end.time)
-       c <- c(c, init["c"])
-       sa <- c(sa, init["sa"])
-       a <- c(a, init["a"])
+      c <- c(c, init["c"])
+      sa <- c(sa, init["sa"])
+      a <- c(a, init["a"])
       init <- tmp
     }
     return(list(pars = pars, init = init2, time = time, results = data.frame(time, 
@@ -88,6 +88,7 @@ sa = round((N/rat)*1.3,0)
 a = round((N/rat)*1.5,0) 
 
 initials <- c(c = c, sa = sa, a = a )
+
 end.time <- 100*365 #predict for ... years
 
 parameters <- c(mu_b = 0.34/365, 
@@ -101,7 +102,7 @@ parameters <- c(mu_b = 0.34/365,
 
 
 res_g <- model1(pars = parameters, init = initials,
-                 end.time = end.time)
+                end.time = end.time)
 
 PlotMods(res_g)
 
@@ -113,6 +114,7 @@ plot(rowSums(res_g$results[,2:4]),
 
 res_gaur_df<-data.frame(res_g$total)
 str(res_gaur_df)
+
 
 # banteng population
 N = 290
@@ -137,7 +139,7 @@ parameters <- c(mu_b = 0.4/365,
 
 
 res_bt <- model1(pars = parameters, init = initials,
-                end.time = end.time)
+                 end.time = end.time)
 PlotMods(res_bt)
 
 #sum of populations
@@ -153,7 +155,6 @@ c = (N/rat)*1
 sa = (N/rat)*6
 a = (N/rat)*5
 
-N==a+sa+c
 
 initials <- c(c = c, sa = sa, a = a )
 end.time <- 100*365 #predict for ... years
@@ -168,7 +169,7 @@ parameters <- c(mu_b = 0.37/365,
                 tau = 1)
 
 res_buf<- model1(pars = parameters, init = initials,
-               end.time = end.time)
+                 end.time = end.time)
 PlotMods(res_buf)
 
 #sum of populations
@@ -201,7 +202,7 @@ parameters <- c(mu_b = 0.7/365,
                 tau = 1)
 
 res_se<- model1(pars = parameters, init = initials,
-                 end.time = end.time)
+                end.time = end.time)
 PlotMods(res_se)
 
 #sum of populations
@@ -231,7 +232,7 @@ parameters <- c(mu_b = 0.5/365,
 
 
 res_gor<- model1(pars = parameters, init = initials,
-                end.time = end.time)
+                 end.time = end.time)
 PlotMods(res_gor)
 
 #sum of populations

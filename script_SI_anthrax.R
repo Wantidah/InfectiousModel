@@ -85,11 +85,7 @@ c = round((N/rat)*1.3, 0)
 sa = round((N/rat)*1.3,0) 
 a = round((N/rat)*1.5,0) 
 
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-
-end.time <- 100*365 #predict for ... years
-
-#SI parameter
+#SI parameters
 #same transmission rate (beta), case fatality rate (rho)
 #gaur
 parameters <- c(
@@ -112,12 +108,29 @@ parameters <- c(
   mu_a = 0.165/365,
   delta_c = 1/365,
   delta_sa = 1/(3*365)
-  )
+)
+
+#single run
+initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
+end.time <- 100*365 #predict for ... years
+
+
+## MULTIPLE RUNS ################################
+
+#### set initial values - change for meta populaions
+initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
+end.time <- 20*365 #predict for ... years
+n_rep <- 10
+############## MODEL 2) SI Anthrax MULTIPLE RUNS  #####
+
+
+sim_run_anthrax_rep<-replicate(n_rep,(model2(pars = parameters, init = initials,
+                                             end.time = end.time)))
 
 
 ####### plot SI ######
 res_si_gaur <- model2(pars = parameters, init = initials,
-                 end.time = end.time)
+                      end.time = end.time)
 PlotMods(res_si_gaur)
 
 
@@ -159,13 +172,13 @@ parameters <- c(
   tau=1,
   
   mu_b = 0.37/365, 
-                mu_c = 0.27/365, 
-                mu_sa = 0.15/365,
-                mu_a = 0.15/365,
-                delta_c = 1/365,
-                delta_sa = 1/(3*365),
-                N = sum(initials), 
-                tau = 1)
+  mu_c = 0.27/365, 
+  mu_sa = 0.15/365,
+  mu_a = 0.15/365,
+  delta_c = 1/365,
+  delta_sa = 1/(3*365),
+  N = sum(initials), 
+  tau = 1)
 
 #plot
 res_si <- model2(pars = parameters, init = initials,
@@ -200,11 +213,11 @@ ggplot() +
   scale_color_manual(name = "N",
                      labels = c('non-infection','anthrax'),
                      values = c('#009988','#cc6677'))+ #0c7bdc #0077bb
-theme( plot.title = element_text(size = 18),
+  theme( plot.title = element_text(size = 18),
          axis.title.x = element_text(size = 15),
          axis.title.y = element_text(size = 15),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
          axis.text=element_text(size=13))
-  
+
 ?scale_colour_manual

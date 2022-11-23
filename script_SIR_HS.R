@@ -146,15 +146,14 @@ parameters <- c(
   omega_sa = 1/180/365, 
   omega_a = 1/180/365,
   epsilon = 2e-5,
-  N = sum(initials),
-  tau=1,
-  
   mu_b = 0.34/365, 
   mu_c = 0.27/365, 
   mu_sa = 0.15/365,
   mu_a = 0.165/365,
   delta_c = 1/365,
-  delta_sa = 1/(3*365)
+  delta_sa = 1/(3*365),
+  N = sum(initials),
+  tau=1
 )
 
 
