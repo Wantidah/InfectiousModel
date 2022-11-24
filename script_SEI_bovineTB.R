@@ -147,7 +147,7 @@ parameters <- c(
   tau=1,
   
   mu_b = 0.34/365, 
-  mu_bI = mu_b*(1-0.27), #Ia birth rate reduce by = 27%   
+  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
   mu_c = 0.27/365, 
   mu_sa = 0.15/365,
   mu_a = 0.165/365,

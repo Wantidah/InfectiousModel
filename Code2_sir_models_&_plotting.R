@@ -84,12 +84,13 @@ model1 =
 
 ############## --> TEST MODEL 1 WITH BASIC PLOT ######
 
-parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), tau = 1, rho = 0)
+parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, 
+                N = sum(initials), tau = 1, rho = 0)
 
 res2 <- model1(pars = parameters, init = initials,
                end.time = end.time)
 PlotMods(res2)
-min(subset(res$results,I==0)$time)
+min(subset(res2$results,I==0)$time)
 
 ############## MODEL 2 SIR WITH MORTALITY IN I & IMPORTATION #########
 #unit == day (per day)
@@ -144,7 +145,8 @@ model2=
 
 ############## --> TEST MODEL 2 WITH BASIC PLOT #######
 
-parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), tau = 1, rho = 0.5,
+parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), 
+                tau = 1, rho = 0.5,
                 epsilon = 2e-5, delta = 0.01)
 res <- model2(pars = parameters, init = initials,
               end.time = end.time)
@@ -201,7 +203,8 @@ model3 =
 
 ############## --> TEST MODEL 3 WITH BASIC PLOT #####
 
-parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), tau = 1, rho = 0.5)
+parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), 
+                tau = 1, rho = 0.5)
 res <- model3(pars = parameters, init = initials,
               end.time = end.time)
 PlotMods(res)
@@ -322,7 +325,8 @@ model5 =
 
 ############## --> TEST MODEL 5 WITH BASIC PLOT ######
 
-parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), tau = 1, rho = 0.5,
+parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = sum(initials), 
+                tau = 1, rho = 0.5,
                 epsilon = 2e-5, delta = 0.01)
 res <- model5(pars = parameters, init = initials,
               end.time = end.time)
@@ -423,7 +427,7 @@ model6=
         rate[27] <- (1-rho) * gamma * I
         change[27, ] <- c(0, -1, 1, 0, 0, 0)
         
-        rate[28] <- (1-rho) * gamma * I
+        rate[28] <- (1-rho) * gamma * Ia
         change[28, ] <- c(0, 0, 0, 0, -1, 1)
         
         
@@ -631,6 +635,8 @@ initials <- c(S = 10000, I = 1, R = 0)
 end.time <- 100 * 365
 n_rep <- 100
 
+end.time <- 20 * 365
+n_rep <- 100
 ############## MX RUNS MODEL 1 - NO MORTALITY #####
 
 parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = 10000, tau = 1, rho = 0)
@@ -1181,7 +1187,7 @@ plot_res_time<-list(Res_time_1,
                     Res_time_6)
 
 for (i in 1:length(plot_res_min)){
-  assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta_a,par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
+  assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta_a, par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
 }
 
 for (i in 1:length(plot_res_num)){

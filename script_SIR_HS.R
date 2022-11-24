@@ -129,9 +129,8 @@ initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = a, Ia = 
 
 end.time <- 100*365 #predict for ... years
 
-#SEI parameter
-#same transmission rate (beta), case fatality rate (rho)
-#gaur
+#SIRS parameter
+
 parameters <- c( 
   beta_c = 0.33/365,
   beta_sa = 0.33/365,

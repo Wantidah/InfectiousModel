@@ -3,6 +3,7 @@
 # # Reference R Code:  https://doi.org/10.1098/rsif.2021.0638  (Transmission models indicate Ebola virus persistence in non-human primate populations is unlikely)
 # https://github.com/dtsh2/ebola_model
 
+rm(list=ls())
 ############## LOAD PACKAGES ##########
 
 library(reshape)

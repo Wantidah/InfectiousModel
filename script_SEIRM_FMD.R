@@ -177,9 +177,8 @@ initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, 
 
 end.time <- 100*365 #predict for ... years
 
-#SEI parameter
-#same transmission rate (beta), case fatality rate (rho)
-#gaur
+#SEIRM FMD parameter
+
 parameters <- c( 
   beta_c = 0.52/365,
   beta_sa = 0.52/365,
@@ -199,7 +198,6 @@ parameters <- c(
   omega_a = (1/565)/365,
   omega_m = (1/144)/365,
   epsilon = 2e-5,
-  
   mu_b = 0.34/365, 
   mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
   mu_c = 0.27/365, 
@@ -207,7 +205,6 @@ parameters <- c(
   mu_a = 0.165/365,
   delta_c = 1/365,
   delta_sa = 1/(3*365),
-  
   N = sum(initials),
   tau=1
 )

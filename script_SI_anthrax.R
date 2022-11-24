@@ -101,7 +101,6 @@ parameters <- c(
   epsilon = 2e-5,
   N = sum(initials),
   tau=1,
-  
   mu_b = 0.34/365, 
   mu_c = 0.27/365, 
   mu_sa = 0.15/365,
