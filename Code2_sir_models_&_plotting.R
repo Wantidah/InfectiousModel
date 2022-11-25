@@ -553,6 +553,7 @@ parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = 10000, tau = 1, rh
 initials <- c(S = 10000, I = 1, R = 0)
 res <- model1(pars = parameters, init = initials,
               end.time = end.time)
+
 min(subset(res$results,I==0)$time)
 df_model1_res1=res$results
 
@@ -632,9 +633,6 @@ df_model7_res2=res$results
 
 #### set initial values - change for meta populaions
 initials <- c(S = 10000, I = 1, R = 0)
-end.time <- 100 * 365
-n_rep <- 100
-
 end.time <- 20 * 365
 n_rep <- 100
 ############## MX RUNS MODEL 1 - NO MORTALITY #####

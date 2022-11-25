@@ -12,6 +12,7 @@ rm(list = ls())
 
 library(reshape)
 library(EpiDynamics)
+library(tidyverse)
 library(plyr)     
 library(reshape2) 
 library(stringr)

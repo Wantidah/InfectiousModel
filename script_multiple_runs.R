@@ -12,7 +12,7 @@ a = round((N/rat)*1.5,0)
 end.time <- 20 * 365
 n_rep <- 10
 
-############## MODEL 1 - POPULATION DEMO NO INFECTION #####
+############## MODEL 1 - POPULATION DEMO - NO INFECTION #####
 parameters <- c(mu_b = 0.34/365, 
                 mu_c = 0.27/365, 
                 mu_sa = 0.15/365,

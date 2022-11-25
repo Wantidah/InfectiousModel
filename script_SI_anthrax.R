@@ -111,21 +111,21 @@ parameters <- c(
 
 #single run
 initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-end.time <- 100*365 #predict for ... years
+end.time <- 20*365 #predict for ... years
 
 
 ## MULTIPLE RUNS ################################
 
 #### set initial values - change for meta populaions
 initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-end.time <- 20*365 #predict for ... years
-n_rep <- 10
+end.time <- 100*365 #predict for ... years
+n_rep <- 100
 ############## MODEL 2) SI Anthrax MULTIPLE RUNS  #####
 
 
 sim_run_anthrax_rep<-replicate(n_rep,(model2(pars = parameters, init = initials,
                                              end.time = end.time)))
-
+class(sim_run_anthrax_rep)
 
 ####### plot SI ######
 res_si_gaur <- model2(pars = parameters, init = initials,
@@ -134,8 +134,8 @@ PlotMods(res_si_gaur)
 
 
 #sum of populations
-res_si_gaur$total<-rowSums(res_si_gaur$results[,2:6])
-
+res_si_gaur$results$N<-rowSums(res_si_gaur$results[,2:6])
+class(res_si_gaur)
 plot(rowSums(res_si_gaur$results[,2:6]), main = "Anthrax: gaur total population", 
      xlab="time",ylab="animal")
 

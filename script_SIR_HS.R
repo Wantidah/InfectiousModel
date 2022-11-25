@@ -127,7 +127,7 @@ a = round((N/rat)*1.5,0)
 
 initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = a, Ia = 1, Ra = 0)
 
-end.time <- 100*365 #predict for ... years
+end.time <- 20*365 #predict for ... years
 
 #SIRS parameter
 
@@ -159,17 +159,44 @@ parameters <- c(
 ####### plot SIR ######
 res_sir_gaur <- model4(pars = parameters, init = initials,
                        end.time = end.time)
-
+PlotMods(res_sir_gaur)
 min(subset(res_sir_gaur$results,N==0)$time)
 
-PlotMods(res_sir_gaur)
-str(res_sir_gaur)
+df_res_sir<-res_sir_gaur$results
 
+#sum S,I,R columns based on column name
+df_res_sir<-df_res_sir%>% 
+  mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
+df_res_sir<-df_res_sir%>% 
+  mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+  mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+  mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+str(df_res_sir)
+mm <- reshape2::melt(df_res_sir,id.var="x")
 #sum of populations
-res_sir_gaur$total<-rowSums(res_sir_gaur$results[,2:9])
 
-plot(rowSums(res_sir_gaur$results[,2:9]), main = "HS: gaur total population", 
+plot(df_res_sir$N, main = "HS: gaur total population", 
      xlab="time",ylab="animal")
+# plot sing single run
+p<-
+ ggplot() + 
+  geom_line(data = df_res_sir,aes(x = time ,y = S, color = 'S'),size = 1) + 
+  geom_line(data = df_res_sir,aes(x = time, y = I, color = 'I' ),size = 1)+
+  geom_line(data = df_res_sir,aes(x = time, y = R, color = 'R' ),size = 1)+
+  geom_line(data = df_res_sir,aes(x = time, y = N, color = 'total' ),size = 1)+
+  labs(x="days", y="total population (N)",
+       title='Gaur total population in 20 years') +
+  #scale_linetype_manual()
+  scale_color_manual(name = "population",
+                     labels = c('S','I',"R","total"),
+                     values = c('S'='black','I'='red',"R"='royalblue',"total"='springgreen4'))+ #0c7bdc #0077bb
+  theme( plot.title = element_text(size = 18),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))
+print(p)
 
 res_sir_gaur_df<-data.frame(res_sir_gaur$total)
 
