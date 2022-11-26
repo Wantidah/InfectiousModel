@@ -178,7 +178,6 @@ initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, 
 end.time <- 100*365 #predict for ... years
 
 #SEIRM FMD parameter
-
 parameters <- c( 
   beta_c = 0.52/365,
   beta_sa = 0.52/365,

@@ -166,13 +166,14 @@ df_res_sir<-res_sir_gaur$results
 
 #sum S,I,R columns based on column name
 df_res_sir<-df_res_sir%>% 
-  mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
+  dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
+
 df_res_sir<-df_res_sir%>% 
-  mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
-  mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-  mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+  dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+  dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+  dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
 str(df_res_sir)
-mm <- reshape2::melt(df_res_sir,id.var="x")
+
 #sum of populations
 
 plot(df_res_sir$N, main = "HS: gaur total population", 

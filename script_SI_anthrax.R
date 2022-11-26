@@ -127,6 +127,10 @@ sim_run_anthrax_rep<-replicate(n_rep,(model2(pars = parameters, init = initials,
                                              end.time = end.time)))
 class(sim_run_anthrax_rep)
 
+write.matrix(format(sim_run_anthrax_rep, scientific=FALSE), 
+             file = "ant.csv", sep=",")
+
+write.table(sim_run_anthrax_rep, file="sim_run_anthrax_rep.txt", row.names=FALSE, col.names=FALSE)
 ####### plot SI ######
 res_si_gaur <- model2(pars = parameters, init = initials,
                       end.time = end.time)

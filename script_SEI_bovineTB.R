@@ -33,7 +33,7 @@ model3=
         change[10, ] <- c(0, 0, -1, 0, 0, 0, 0, 0, 0)
         rate[11] <- epsilon * Sc
         change[11, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
-      
+        
         # saubadult
         rate[12] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[12, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
