@@ -72,8 +72,14 @@ model2=
       
       init <- tmp
     }
-    return(list(pars = pars, init = init2, time = time, results = data.frame(time, 
-                                                                             Sc, Ic, Ssa, Isa, Sa,Ia)))
+    #sum population based on column name
+    results<-data.frame(time, 
+                        Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
+    
+    return(list(pars = pars, init = init2, time = time, results = results))
   }
 
 #estimate the age structure proportion

@@ -1,3 +1,18 @@
+
+#population parameter
+#estimate the age structure proportion
+N=300
+#calf:subadult:adult ratio
+rat = 1.3+1.3+1.5
+N/rat
+c = round((N/rat)*1.3, 0)
+sa = round((N/rat)*1.3,0) 
+a = round((N/rat)*1.5,0) 
+
+initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
+
+end.time <- 100*365 #predict for ... years
+
 ############## 3) SEI model (Bovine tuberculosis) ##### 
 model3=
   function (pars, init, end.time)  {
@@ -104,29 +119,23 @@ model3=
       
       init <- tmp
     }
-    return(list(pars = pars, 
+     
+     #sum population based on column name
+     results = data.frame(time, 
+                         Sc, Ec, Ic, Ssa, Esa, Isa, Sa, Ea, Ia)%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+      dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
+    
+     return(list(pars = pars, 
                 init = init2, 
                 time = time, 
-                results = data.frame(time, 
-                                     Sc, Ec, Ic, Ssa, Esa, Isa, Sa, Ea, Ia)))
+                results = results))
   }
 
 
-#estimate the age structure proportion
-N=300
-#calf:subadult:adult ratio
-rat = 1.3+1.3+1.5
-N/rat
-c = round((N/rat)*1.3, 0)
-sa = round((N/rat)*1.3,0) 
-a = round((N/rat)*1.5,0) 
-
-initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
-
-end.time <- 100*365 #predict for ... years
-
 #SEI parameter
-#same transmission rate (beta), case fatality rate (rho)
 #gaur
 parameters <- c( 
   beta_c = 0.043/30,
@@ -160,7 +169,7 @@ parameters <- c(
 res_sei_gaur <- model3(pars = parameters, init = initials,
                       end.time = end.time)
 
-min(subset(res_sei_gaur$results,Sa==0)$time)
+min(subset(res_sei_gaur$results,N==0)$time)
 
 PlotMods(res_sei_gaur)
 str(res_sei_gaur)

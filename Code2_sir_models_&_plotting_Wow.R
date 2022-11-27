@@ -15,7 +15,7 @@
 
 library(reshape)
 library(EpiDynamics)
-library(plyr)     
+library(dplyr)     
 library(reshape2) 
 library(stringr)
 library(emdbook)  
@@ -884,42 +884,78 @@ my_meta_ext_na<-function(x=time,y=I,y1=Ia...){
 }
 
 ## SET UP FUNCTIONS FOR MODEL RUNS LOOP THROUGH PARS ################################
-############## FUNCTION  6 MODEL1 PAR LOOPS & MIN TIME TO EXTINCTION #######
 
+############## FUNCTION  6 MODEL2 PAR LOOPS & MIN TIME TO EXTINCTION #######
 my_fun_model1<-function() {
   for (k in 1:length(beta_a)){
     for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i])
-      initials <- c(S = 9999, I = 1, R = 0)
+      parameters <- c(beta_a = beta[k] / 10, 
+                      beta_sa = beta[k] / 10, 
+                      beta_c = beta[k] / 10,
+                      gamma_c = (1/(1/24))/365,
+                      gamma_sa = (1/(1/24))/365,
+                      gamma_a = (1/(1/24))/365,
+                      rho_c = 1,
+                      rho_sa = 1,
+                      rho_a = 1,
+                      epsilon = 2e-5,
+                      N = sum(initials),
+                      tau=1,
+                      mu_b = 0.34/365, 
+                      mu_c = 0.27/365, 
+                      mu_sa = 0.15/365,
+                      mu_a = 0.165/365,
+                      delta_c = 1/365,
+                      delta_sa = 1/(3*365))
+      
+      initials <- c(S = 299, I = 1, R = 0)
       get_time <- model1(pars = parameters, init = initials,
                          end.time = end.time)
       # res_min[k,i]<- min(subset(get_time$results,I==0)$time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
+      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$N)
+      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$N)
+      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$N)
     }}
   d <- list(res_min,res_num_ext,res_time_inf)
   d
 }
 
-############## FUNCTION  7 MODEL2 PAR LOOPS & COUNT EXTINCTIONS (FOR IMPORT MODEL) #######
-
+############## FUNCTION  7 MODEL2 (anthrax)  PAR LOOPS & COUNT EXTINCTIONS #######
 my_fun_model2<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i], epsilon = 2e-5, delta = 0.01)
-      initials <- c(S = 9999, I = 1, R = 0)
+  for (k in 1:length(beta)){
+    #for (i in 1:length(rho_a)) 
+    {
+      parameters <- c(beta_a = beta[k] / 10, 
+                      beta_sa = beta[k] / 10, 
+                      beta_c = beta[k] / 10,
+                      gamma_c = (1/(1/24))/365,
+                      gamma_sa = (1/(1/24))/365,
+                      gamma_a = (1/(1/24))/365,
+                      rho_c = 1,
+                      rho_sa = 1,
+                      rho_a = 1,
+                      epsilon = 2e-5,
+                      N = sum(initials),
+                      tau=1,
+                      mu_b = 0.34/365, 
+                      mu_c = 0.27/365, 
+                      mu_sa = 0.15/365,
+                      mu_a = 0.165/365,
+                      delta_c = 1/365,
+                      delta_sa = 1/(3*365)
+      )
+      initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
       get_time <- model2(pars = parameters, init = initials,
                          end.time = end.time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
+      # res_min[k,i]<- min(subset(get_time$results,I==0)$time)
+      res_min[k]<- my_min_ext(x=get_time$results,y=get_time$results$I)
+      res_num_ext[k]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
+      res_time_inf[k]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
     }}
   d <- list(res_min,res_num_ext,res_time_inf)
   d
 }
+
 
 ############## FUNCTION  8 MODEL3 PAR LOOPS & TIME TO EXTINCTIONS #######
 

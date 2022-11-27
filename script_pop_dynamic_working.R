@@ -26,6 +26,7 @@ library(ggplot2); theme_set(theme_bw())
 
 ############## MODEL 1 population dynamic model, no infection, 3 age-classes ######
 # unit == day (per day)
+
 model1 =
   function (pars, init, end.time)  {
     init2 <- init
@@ -70,8 +71,14 @@ model1 =
       a <- c(a, init["a"])
       init <- tmp
     }
-    return(list(pars = pars, init = init2, time = time, results = data.frame(time, 
-                                                                             c, sa, a)))
+    
+    #sum population based on column name
+    results<-data.frame(time, 
+                        c,  sa,  a)%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
+    
+    return(list(pars = pars, init = init2, time = time, results = results))
+    
   }
 
 
@@ -107,16 +114,8 @@ res_g <- model1(pars = parameters, init = initials,
 
 PlotMods(res_g)
 
-res_g$total<-rowSums(res_g$results[,2:4])
-
-plot(rowSums(res_g$results[,2:4]), 
-     main = "gaur total population",
-     xlab="time",ylab="animal")
-
-res_gaur_df<-data.frame(res_g$total)
-str(res_gaur_df)
-
-
+str(res_g)
+##########################
 # banteng population
 N = 290
 #calf:subadult:adult ratio

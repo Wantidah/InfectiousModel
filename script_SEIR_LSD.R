@@ -1,11 +1,16 @@
-library(reshape)
-library(EpiDynamics)
-library(plyr)     
-library(reshape2) 
-library(stringr)
-library(emdbook)  
-library(ggplot2); theme_set(theme_bw())
-library(SciViews)
+#estimate the age structure proportion
+N=300
+#calf:subadult:adult ratio
+rat = 1.3+1.3+1.5
+N/rat
+c = round((N/rat)*1.3, 0)
+sa = round((N/rat)*1.3,0) 
+a = round((N/rat)*1.5,0) 
+
+initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
+
+end.time <- 20*365 #predict for ... years
+
 ############## 5) SEIR MODEL  Lumpy skin disease ######
 
 #THESE ARE TRIAL VERSION CODE #the code works fine !!! :)
@@ -141,26 +146,20 @@ model5=
       
       init <- tmp
     }
-    return(list(pars = pars, 
-                init = init2, 
-                time = time, 
-                results = data.frame(time, 
-                Sc, Ec, Ic, Rc ,Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra )))
+    
+    #sum population based on column name
+    results<-data.frame(time, 
+                        Sc, Ec, Ic, Rc ,Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra )%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+      dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+    
+    return (list(pars = pars, init = init2, time = time, results = results))
+   
   }
 
-
-#estimate the age structure proportion
-N=300
-#calf:subadult:adult ratio
-rat = 1.3+1.3+1.5
-N/rat
-c = round((N/rat)*1.3, 0)
-sa = round((N/rat)*1.3,0) 
-a = round((N/rat)*1.5,0) 
-
-initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
-
-end.time <- 20*365 #predict for ... years
 
 #SEIR parameter
 parameters <- c( 
@@ -201,15 +200,10 @@ min(subset(res_seir_gaur$results,Sa==0)$time)
 PlotMods(res_seir_gaur)
 str(res_seir_gaur)
 
-#sum of populations
-res_seir_gaur$total<-rowSums(res_seir_gaur$results[,2:12])
 
-plot(rowSums(res_seir_gaur$results[,2:12]), main = "LSD gaur total population", 
+plot(res_seir_gaur$results$N, main = "LSD gaur total population", 
      xlab="time",ylab="animal")
 
-res_seir_gaur_df<-data.frame(res_seir_gaur$total)
-
-View(res_seir_gaur_df)
 
 ###### combine plot #####
 #get the total population compared between non-infectious and infectious

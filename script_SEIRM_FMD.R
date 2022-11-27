@@ -156,13 +156,19 @@ model6=
       Sm <- c(Sm, init["Sm"])
       init <- tmp
     }
-    return(list(pars = pars, 
-                init = init2, 
-                time = time, 
-                results = data.frame(time, 
-                                     Sc, Ec, Ic, Rc, M, Sm, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra)))
-  }
-
+    
+    #sum population based on column name
+    results<-data.frame(time, 
+                        Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra, M, Sm)%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
+      dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+    
+    return (list(pars = pars, init = init2, time = time, results = results))
+ 
+    }
 
 #estimate the age structure proportion
 N=300
@@ -213,20 +219,15 @@ parameters <- c(
 res_seirm_fmd_gaur <- model6(pars = parameters, init = initials,
                              end.time = end.time)
 
-min(subset(res_seirm_fmd_gaur$results,Sa==0)$time)
+min(subset(res_seirm_fmd_gaur$results,I==0)$time)
 
 PlotMods(res_seirm_fmd_gaur)
 str(res_seirm_fmd_gaur)
 
-#sum of populations
-res_seirm_fmd_gaur$total<-rowSums(res_seirm_fmd_gaur$results[,2:14])
-
-plot(rowSums(res_seir_gaur$results[,2:14]), main = "FMD gaur total population", 
+#sum of N
+plot(res_seir_gaur$results$N, main = "FMD gaur total population", 
      xlab="time",ylab="animal")
 
-res_seirm_fmd_gaur_df<-data.frame(res_seirm_fmd_gaur$total)
-
-View(res_seirm_fmd_gaur_df$results)
 
 #combine plot
 #get the total population compared between non-infectious and infectious
@@ -274,7 +275,7 @@ if (end.time < 36500) {
            axis.text=element_text(size=13))
 }
 
-############## 7) SEIR MODEL Bovine brucellosis ######
+############## 7) SEIR MODEL Bovine Brucellosis ######
 
 model7=
   function (pars, init, end.time)  {
@@ -423,11 +424,18 @@ model7=
       Sm <- c(Sm, init["Sm"])
       init <- tmp
     }
-    return(list(pars = pars, 
-                init = init2, 
-                time = time, 
-                results = data.frame(time, 
-                                     Sc, Ec, Ic, Rc, M, Sm, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra)))
+    
+    #sum population based on column name
+    results<-data.frame(time, 
+                        Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
+      dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+    
+    return (list(pars = pars, init = init2, time = time, results = results))
+    
   }
 
 
@@ -483,21 +491,15 @@ parameters <- c(
 ####### plot SEIRM Burcellosis ######
 res_seirm_bru_gaur <- model7(pars = parameters, init = initials,
                              end.time = end.time)
-
-min(subset(res_seirm_bru_gaur$results,Ia==0)$time)
-
 PlotMods(res_seirm_bru_gaur)
+min(subset(res_seirm_bru_gaur$results,I==0)$time)
+
 str(res_seirm_bru_gaur)
 
-#sum of populations
-res_seirm_bru_gaur$total<-rowSums(res_seirm_bru_gaur$results[,2:14])
-
-plot(rowSums(res_seirm_bru_gaur$results[,2:14]), main = "Brucellosis gaur total population", 
+#plot N
+plot(res_seirm_bru_gaur$results$N, main = "Brucellosis gaur total population", 
      xlab="time",ylab="animal")
 
-res_seirm_bru_gaur_df<-data.frame(res_seirm_bru_gaur$total)
-
-View(res_seirm_bru_gaur_df)
 
 #combine plot
 #get the total population compared between non-infectious and infectious
