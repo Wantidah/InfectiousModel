@@ -1,6 +1,17 @@
+# R code for running the infectious disease modelling of wild bovids
+#reference:  https://github.com/dtsh2/ebola_model.
+############## LOAD PACKAGES ##########
+library(reshape)
+library(EpiDynamics)
+library(plyr)     
+library(reshape2) 
+library(stringr)
+library(emdbook)  
+library(ggplot2); theme_set(theme_bw())
 ###### Multiple runs ###########
 
 #### set initial values - change for populations
+#gaur poplation
 N = 300 
 
 rat = 1.3+1.3+1.5
@@ -10,11 +21,11 @@ sa = round((N/rat)*1.3,0)
 a = round((N/rat)*1.5,0) 
 
 end.time <- 10 * 365
-n_rep <- 
+n_rep <- 10
 
 ############## MODEL 1 - POPULATION DEMO - NO INFECTION #####
 # unit == day (per day)
-initials <- c(c = c, sa = sa, a = a )
+initials <- c(c = c, sa = sa, a = (a-1) )
 
 model1 =
   function (pars, init, end.time)  {
@@ -84,8 +95,89 @@ sim_rep_m1<-replicate(n_rep,(model1(pars = parameters, init = initials,
 str(sim_rep_m1[,1]$results)
 
 ############## MODEL 2 Anthrax MULTIPLE RUNS  #####
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
 
+initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+
+#without epsilon
+model2_no_ep=
+  function (pars, init, end.time)  {
+    init2 <- init
+    Equations <- function(pars, init, end.time) {
+      with(as.list(c(pars, init)), {
+        rate <- rep(0, 12)
+        change <- matrix(0, nrow = 12, ncol = 6)
+        
+        N <- Sc+Ic +Ssa+Isa +Sa+Ia 
+        tau <- 1
+        
+        rate[1] <- mu_b * Sa
+        change[1, ] <- c(1, 0, 0, 0, 0, 0)
+        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)/N
+        change[2, ] <- c(-1, 1, 0, 0, 0, 0)
+        rate[3] <- gamma_c * Ic * rho_c
+        change[3, ] <- c(0, -1, 0, 0, 0, 0)
+        rate[4] <- mu_c * Sc
+        change[4, ] <- c(-1, 0, 0, 0, 0, 0)
+        rate[5] <- delta_c * Sc
+        change[5, ] <- c(-1, 0, 1, 0, 0, 0)  
+
+        #saubadult
+        rate[6] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
+        change[6, ] <- c(0, 0, -1, 1, 0, 0)    
+        rate[7] <-  gamma_sa * Isa * rho_sa
+        change[7, ] <- c(0, 0, 0, -1, 0, 0)    
+        rate[8] <- mu_sa * Ssa
+        change[8, ] <- c(0, 0, -1, 0, 0, 0)
+        rate[9] <- delta_sa * Ssa
+        change[9, ] <- c(0, 0, -1, 0, 1, 0)  
+        
+        #adult
+        rate[10] <- beta_a * Sa * (Ic+Isa+Ia)/N
+        change[10, ] <- c(0, 0, 0, 0, -1, 1)    
+        rate[11] <-  gamma_a * Ia *rho_a
+        change[11, ] <- c(0, 0, 0, 0, 0, -1)    
+        rate[12] <- mu_a * Sa
+        change[12, ] <- c(0, 0, 0, 0, -1, 0)
+  
+        init <- c(Sc = Sc, Ic = Ic, Ssa = Ssa, Isa = Isa, Sa = Sa, Ia = Ia)
+        for (i in 1:12) {
+          num <- rpois(1, rate[i] * tau)
+          num.min <- min(num, init[which(change[i, ] < 
+                                           0)])
+          init <- init + change[i, ] * num.min
+        }
+        return(init)
+      })
+    }
+    Sa <- Ia <- Ssa <- Isa <- Sc <- Ic <- double()
+    t <- 0
+    time <- seq(0, end.time, by = pars["tau"])
+    for (t in time) {
+      tmp <- Equations(pars, init, end.time)
+      Sa <- c(Sa, init["Sa"])
+      Ia <- c(Ia, init["Ia"])
+      
+      Ssa <- c(Ssa, init["Ssa"])
+      Isa <- c(Isa, init["Isa"])
+      
+      Sc <- c(Sc, init["Sc"])
+      Ic <- c(Ic, init["Ic"])
+      
+      init <- tmp
+    }
+    
+    #sum population based on column name
+    results<-data.frame(time, 
+                        Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
+      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
+    
+    return(list(pars = pars, init = init2, time = time, results = results))
+    
+  }
+
+#with epsilon
 model2=
   function (pars, init, end.time)  {
     init2 <- init
@@ -136,8 +228,7 @@ model2=
         init <- c(Sc = Sc, Ic = Ic, Ssa = Ssa, Isa = Isa, Sa = Sa, Ia = Ia)
         for (i in 1:15) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] <0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -175,16 +266,19 @@ parameters <- c(
   beta_c = 5e-5, beta_sa = 5e-5, beta_a = 5e-5,
   gamma_c = (1/(1/24))/365, gamma_sa = (1/(1/24))/365, gamma_a = (1/(1/24))/365,
   rho_c = 1, rho_sa = 1,  rho_a = 1,
-  epsilon = 2e-5,
+  #epsilon = 2e-5,
   mu_b = 0.34/365, 
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials),
   tau=1)
 
-sim_rep_m2<-replicate(n_rep,(model2(pars = parameters, init = initials,
+sim_rep_m2<-replicate(n_rep,(model2_no_ep(pars = parameters, init = initials,
+                                          end.time = end.time)))
+
+sim_rep_m2_ep<-replicate(n_rep,(model2_ep(pars = parameters, init = initials,
                                              end.time = end.time)))
-str(sim_rep_m2[,1]$results)
+str(sim_rep_m2_ep[,1]$results)
 ############## MODEL 3 Bovine tuberculosis  MULTIPLE RUNS  #####
 initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
 
@@ -986,95 +1080,104 @@ parameters <- c(
 sim_rep_m7<-replicate(n_rep,(model7(pars = parameters, init = initials,
                                     end.time = end.time)))
 str(sim_rep_m7[,1]$results)
-############# 
+## SET UP FUNCTIONS FOR MX METRICS ################################
 
-###### FUNCTION single_pop_sim_prep ##############
-#change from results$I to results$Ia
-#However, this Ia need to be changed to total I and N (total population) later
-single_pop_sim_prep <- function(x, n_rep, end.time){ 
-  # x = simulation of model, e.g. sim_run_m1
-  mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
-  for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$I #***need to add I, N before running***#
+############## FUNCTION  1 COUNT EXTINCTIONS ########
+
+# minimum time that I == 0 
+my_min_ext<-function(x=get_time$results, y=get_time$results$I,...){
+  res_no<-vector()
+  if(!is.na(min(subset(x,y==0)$time))){ #if there is no missing value
+    res_no = min(subset(x,y==0)$time)   # res_no will collect the minimum time (e.g. unit = day) that I go to 0
+  } else{
+    res_no = end.time                   # else, res_no = the end.time
   }
-  colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
-  rownames(mat) = paste("run", seq(n_rep), sep="")
-  dat = as.data.frame(mat)
-  dat$run = rownames(dat)
-  mdat = melt(dat, id.vars="run")
-  mdat$time = as.numeric(gsub("time", "", mdat$variable))
-  mdat
+  res_no
 }
 
-## SINGLE POPULATION PRINT PREPS #######
-########### list simulations multiple runs
-
-res_mx<-list(sim_rep_m1,
-             sim_rep_m2,
-             sim_rep_m3,
-             sim_rep_m4,
-             sim_rep_m5,
-             sim_rep_m6)
-
-for (i in 1:length(res_mx)){
-  assign(paste0("df_mx", i), single_pop_sim_prep(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
+#N
+my_min_ext_N<-function(x=get_time$results, y=get_time$results$N,...){
+  res_no<-vector()
+  if(!is.na(min(subset(x,y==0)))){
+    res_no = min(subset(x,y==0)$time)
+  } else{
+    res_no = end.time
+  }
+  res_no
 }
 
-res_mx_p<-rbind(df_mx1,
-                df_mx2,
-                df_mx3,
-                df_mx4,
-                df_mx5,
-                df_mx6)
+############## FUNCTION  2 COUNT EXTINCTIONS - NO INF #########
+#at time [i], count I == 0 as 1, count I >=1 as 0
 
-res_mx_p$model<-c(rep('1',dim(df_mx1)[1]),
-                  rep('2',dim(df_mx2)[1]),
-                  rep('3',dim(df_mx3)[1]),
-                  rep('4',dim(df_mx4)[1]),
-                  rep('5',dim(df_mx5)[1]),
-                  rep('6',dim(df_mx6)[1]))
+#1 = no infectious animal in the herd (count the event of disease extinction in the herd)
+#0 = more than one infectious animal in the herd
 
-## SINGLE POPULATION PLOTS #######
-for (i in unique(res_mx_p$model)){
-  subdata <- subset(res_mx_p, model == i)
-  pdf(paste("plot_ts_mx", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(subdata, aes(x=time, y=value, group=run)) +
-          theme_bw() +
-          theme(panel.grid=element_blank()) +
-          geom_line(size=0.2, alpha=0.15)+
-          ylab('Numbers') + xlab('time')+
-          stat_summary(aes(group = 1), fun.y=mean, geom="line", colour="black",size = 1.1))
-  dev.off()
+my_imp_ext_I<-function(x=time,y=I,...){
+  res_no<-vector()
+  
+  for (i in 2:length(x)){
+    if(is.na(y[i]))
+    {res_no[i-1] = NA} #if there is missing value == NA
+    
+    else
+      #else follow this line
+      
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){ 
+        res_no[i-1] = 1
+      } else{
+        res_no[i-1] = 0
+      }
+  }
+  sum(res_no, na.rm = T)
 }
 
-## plot extinction times
+my_imp_ext_N<-function(x=time,y=N,...){
+  res_no<-vector()
+  for (i in 2:length(x)){
+    if(is.na(y[i]))
+    {res_no[i-1] = NA}
+    else
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+        res_no[i-1] = 1
+      } else{
+        res_no[i-1] = 0
+      }
+  }
+  sum(res_no, na.rm = T)
+}
 
-df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
-df.ag<-(df.agg[df.agg$value==0,c('model','time')])
+############## FUNCTION  3 COUNT PERSISTENCE TIMES ########
 
-neworder <- c("1","2","3","4","5","6")
-library(plyr)  ## or dplyr (transform -> mutate)
-df.ag <- arrange(transform(df.ag,
-                           model=factor(model,levels=neworder)),model)
-labs <- c('1' = "SI",
-          '2' = "SEI",
-          '3' = "SIRS",
-          '4' = "SEIR",
-          '5' = "SEIRM[FMD]",
-          '6' = "SEIRM[Bru]")
-p<-ggplot(df.ag, aes(x=time))+
-  geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 6,labeller = labeller(model = labs))+
-  scale_x_continuous(breaks = c(0, 800, 1600), labels = c("0", "800", "1600"))
-pdf("extinctions.pdf", width = 8, height = 3)
-p
-dev.off()
+my_imp_ext_na_I<-function(x=time,y=I,...){
+  
+  res_no<-vector()
+  
+  for (i in 2:length(x)) {
+    if(is.na(y[i]))
+    {res_no[i-1] = NA}
+    else
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+        res_no[i-1] = 1
+      } else{
+        res_no[i-1] = 0
+      }
+  }
+  length(res_no[!is.na(res_no)])
+}
 
-p_yr<-ggplot(df.ag, aes(x=time))+
-  geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 6,labeller = labeller(model = labs))+
-  scale_x_continuous(limits = c(0,1000),breaks = c(0, 400, 800), labels = c("0", "400", "800")) +
-  ylim(0,60)
-pdf("extinctions_1yr.pdf", width = 6, height = 3)
-p_yr
-dev.off()
+my_imp_ext_na_N<-function(x=time,y=N,...){
+  res_no<-vector()
+  for (i in 2:length(x)){
+    if(is.na(y[i]))
+    {res_no[i-1] = NA}
+    else
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+        res_no[i-1] = 1
+      } else{
+        res_no[i-1] = 0
+      }
+  }
+  length(res_no[!is.na(res_no)])
+}
+
+

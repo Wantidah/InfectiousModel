@@ -722,14 +722,16 @@ sim_run_m7_2<-replicate(n_rep,(model7(pars = parameters, init = initials,
                                       end.time = end.time)))
 
 ## SET UP FUNCTIONS FOR MX METRICS ################################
+
 ############## FUNCTION  1 COUNT EXTINCTIONS ########
 
-my_min_ext_I<-function(x=get_time$results, y=get_time$results$I,...){
+# minimum time that I == 0 
+my_min_ext<-function(x=get_time$results, y=get_time$results$I,...){
   res_no<-vector()
-  if(!is.na(min(subset(x,y==0)$time))){
-    res_no = min(subset(x,y==0)$time)
+  if(!is.na(min(subset(x,y==0)$time))){ #if there is no missing value
+    res_no = min(subset(x,y==0)$time)   # res_no will collect the minimum time (e.g. unit = day) that I go to 0
   } else{
-    res_no = end.time
+    res_no = end.time                   # else, res_no = the end.time
   }
   res_no
 }
@@ -737,7 +739,7 @@ my_min_ext_I<-function(x=get_time$results, y=get_time$results$I,...){
 #N
 my_min_ext_N<-function(x=get_time$results, y=get_time$results$N,...){
   res_no<-vector()
-  if(!is.na(min(subset(x,y==0)$time))){
+  if(!is.na(min(subset(x,y==0)))){
     res_no = min(subset(x,y==0)$time)
   } else{
     res_no = end.time
@@ -745,42 +747,24 @@ my_min_ext_N<-function(x=get_time$results, y=get_time$results$N,...){
   res_no
 }
 
-#########################
-
-my_imp_ext_I<-function(x=time,y=I,...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(y[i-1]>0 & y[i]==0){
-      res_no[i-1] = 1
-    } else{
-      res_no[i-1] = 0
-    }
-  }
-  sum(res_no)
-}
-
-
-my_imp_ext_N<-function(x=time,y=N,...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(y[i-1]>0 & y[i]==0){
-      res_no[i-1] = 1
-    } else{
-      res_no[i-1] = 0
-    }
-  }
-  sum(res_no)
-}
-
 ############## FUNCTION  2 COUNT EXTINCTIONS - NO INF #########
 
-my_imp_ext_I<-function(x=time,y=I,...){
+#at time [i], count I == 0 as 1, count I >=1 as 0
+
+#1 = no infectious animal in the herd (count the event of disease extinction in the herd)
+#0 = more than one infectious animal in the herd
+
+my_imp_ext<-function(x=time,y=I,...){
   res_no<-vector()
+  
   for (i in 2:length(x)){
     if(is.na(y[i]))
-    {res_no[i-1] = NA}
+    {res_no[i-1] = NA} #if there is missing value == NA
+    
     else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+      #else follow this line
+      
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){ 
         res_no[i-1] = 1
       } else{
         res_no[i-1] = 0
@@ -806,9 +790,11 @@ my_imp_ext_N<-function(x=time,y=N,...){
 
 ############## FUNCTION  3 COUNT PERSISTENCE TIMES ########
 
-my_imp_ext_na_I<-function(x=time,y=I,...){
+my_imp_ext_na<-function(x=time,y=I,...){
+  
   res_no<-vector()
-  for (i in 2:length(x)){
+  
+  for (i in 2:length(x)) {
     if(is.na(y[i]))
     {res_no[i-1] = NA}
     else
@@ -849,56 +835,35 @@ my_min_meta_ext<-function(x=get_time$results, y=get_time$results$I, y1=get_time$
   res_no
 }
 
-############## FUNCTION  4 COUNTS EXTINCTIONS METAPOP MODEL ##############
-
-my_meta_ext<-function(x=time,y=I,y1=Ia,...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(is.na(y[i]) & is.na(y1[i]))
-    {res_no[i-1] = NA}
-    else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i]) & y1[i]==0 & !is.na(y1[i])){
-        res_no[i-1] = 1
-      } else{
-        res_no[i-1] = 0
-      }
-  }
-  sum(res_no, na.rm = T)
-}
-
-############## FUNCTION  5 PARAMETER LOOPS & COUNTS EXTINCTIONS METAPOP MODEL #####
-
-my_meta_ext_na<-function(x=time,y=I,y1=Ia...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(is.na(y[i]) & is.na(y1[i]))
-    {res_no[i-1] = NA}
-    else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i]) & y1[i]==0 & !is.na(y1[i])){
-        res_no[i-1] = 1
-      } else{
-        res_no[i-1] = 0
-      }
-  }
-  length(res_no[!is.na(res_no)])
-}
 
 ## SET UP FUNCTIONS FOR MODEL RUNS LOOP THROUGH PARS ################################
+#### set initial values - change for populations
 
-############## FUNCTION  6 MODEL2 PAR LOOPS & MIN TIME TO EXTINCTION #######
-my_fun_model1<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta_a = beta[k] / 10, 
-                      beta_sa = beta[k] / 10, 
-                      beta_c = beta[k] / 10,
+#gaur poplation
+N = 300 
+#ratio c:sa:a
+rat = 1.3+1.3+1.5
+N/rat
+c = round((N/rat)*1.3, 0)
+sa = round((N/rat)*1.3,0) 
+a = round((N/rat)*1.5,0) 
+
+end.time <- 10 * 365
+n_rep <- 10
+
+############## FUNCTION  6 MODEL PAR LOOPS & MIN TIME TO EXTINCTION (no epsilon) #######
+
+### model 2 Anthrax SI ####
+my_fun_model2_ant<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+      parameters <- c(beta_a = beta[k], beta_sa = beta[k] , beta_c = beta[k],
                       gamma_c = (1/(1/24))/365,
                       gamma_sa = (1/(1/24))/365,
                       gamma_a = (1/(1/24))/365,
-                      rho_c = 1,
-                      rho_sa = 1,
-                      rho_a = 1,
-                      epsilon = 2e-5,
+                      rho_c= rho[i],
+                      rho_sa= rho[i],
+                      rho_a=rho[i],
                       N = sum(initials),
                       tau=1,
                       mu_b = 0.34/365, 
@@ -908,145 +873,50 @@ my_fun_model1<-function() {
                       delta_c = 1/365,
                       delta_sa = 1/(3*365))
       
-      initials <- c(S = 299, I = 1, R = 0)
-      get_time <- model1(pars = parameters, init = initials,
-                         end.time = end.time)
-      # res_min[k,i]<- min(subset(get_time$results,I==0)$time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$N)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$N)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$N)
-    }}
-  d <- list(res_min,res_num_ext,res_time_inf)
-  d
-}
-
-############## FUNCTION  7 MODEL2 (anthrax)  PAR LOOPS & COUNT EXTINCTIONS #######
-my_fun_model2<-function() {
-  for (k in 1:length(beta)){
-    #for (i in 1:length(rho_a)) 
-    {
-      parameters <- c(beta_a = beta[k] / 10, 
-                      beta_sa = beta[k] / 10, 
-                      beta_c = beta[k] / 10,
-                      gamma_c = (1/(1/24))/365,
-                      gamma_sa = (1/(1/24))/365,
-                      gamma_a = (1/(1/24))/365,
-                      rho_c = 1,
-                      rho_sa = 1,
-                      rho_a = 1,
-                      epsilon = 2e-5,
-                      N = sum(initials),
-                      tau=1,
-                      mu_b = 0.34/365, 
-                      mu_c = 0.27/365, 
-                      mu_sa = 0.15/365,
-                      mu_a = 0.165/365,
-                      delta_c = 1/365,
-                      delta_sa = 1/(3*365)
-      )
-      initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
+      initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+      
       get_time <- model2(pars = parameters, init = initials,
                          end.time = end.time)
-      # res_min[k,i]<- min(subset(get_time$results,I==0)$time)
-      res_min[k]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
+      res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
     }}
   d <- list(res_min,res_num_ext,res_time_inf)
   d
-}
+  }
+  
+############## FUNCTION  7 MODEL PAR LOOPS & COUNT EXTINCTIONS (with epsilon) #######
 
-
-############## FUNCTION  8 MODEL3 PAR LOOPS & TIME TO EXTINCTIONS #######
-
-my_fun_model3<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i])
-      initials <- c(S = 9999, I = 1, R = 0)
-      get_time <- model3(pars = parameters, init = initials,
-                         end.time = end.time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min,res_num_ext,res_time_inf)
-  d
-}
-
-############## FUNCTION  9 MODEL4 PAR LOOPS & COUNTS EXTINCTIONS AND POPULATION PERSISTENCE #######
-
-my_fun_model4<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i], epsilon = 2e-5,
-                      delta = 0.01)
-      initials <- c(S = 9999, I = 1, R = 0)
-      get_time <- model4(pars = parameters, init = initials,
-                         end.time = end.time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min,res_num_ext,res_time_inf)
-  d
-}
-
-############## FUNCTION 10 MODEL5 PAR LOOPS & COUNTS EXTINCTIONS AND POPULATION PERSISTENCE ##############
-
-my_fun_model5<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i], epsilon = 2e-5,
-                      delta = 0.01)
-      initials <- c(S = 9999, I = 1, R = 0)
-      get_time <- model5(pars = parameters, init = initials,
-                         end.time = end.time)
-      res_min[k,i]<- my_min_ext(x=get_time$results,y=get_time$results$I)
-      res_num_ext[k,i]<- my_imp_ext(x=get_time$time,y=get_time$results$I)
-      res_time_inf[k,i]<- my_imp_ext_na(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min,res_num_ext,res_time_inf)
-  d
-}
-
-############## FUNCTION 11 MODEL6 PAR LOOPS TRANS & MORT & COUNTS EXTINCTIONS AND POPULATION PERSISTENCE ##############
-
-my_fun_model6<-function() {
-  for (k in 1:length(beta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = beta_a[k] / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i], epsilon = 2e-5,
-                      delta = 0.01)
-      initials <- c(S = 9999, I = 1, R = 0,Sa = 10000, Ia = 0, Ra = 0)
-      get_time <- model6(pars = parameters, init = initials,
-                         end.time = end.time)
-      res_min[k,i]<- my_min_meta_ext(x=get_time$results,y=get_time$results$I,y1=get_time$results$Ia)
-      res_num_ext[k,i]<- my_meta_ext(x=get_time$time,y=get_time$results$I,y1=get_time$results$Ia)
-      res_time_inf[k,i]<- my_meta_ext_na(x=get_time$time,y=get_time$results$I,y1=get_time$results$Ia)
-    }}
-  d <- list(res_min,res_num_ext,res_time_inf)
-  d
-}
-
-############## FUNCTION 12 MODEL6 PAR LOOPS MIGRATION & MORT & COUNTS EXTINCTIONS AND POPULATION PERSISTENCE ################
-
-my_fun_model6_mig<-function() {
-  for (k in 1:length(delta_a)){
-    for (i in 1:length(rho_a)) {
-      parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = 10000,
-                      tau = 1, rho = rho_a[i], epsilon = 0,
-                      delta = delta_a[k])
-      initials <- c(S = 9999, I = 1, R = 0,Sa = 10000, Ia = 0, Ra = 0)
-      get_time <- model6(pars = parameters, init = initials,
-                         end.time = end.time)
-      res_min[k,i]<- my_min_meta_ext(x=get_time$results,y=get_time$results$I,y1=get_time$results$Ia)
-      res_num_ext[k,i]<- my_meta_ext(x=get_time$time,y=get_time$results$I,y1=get_time$results$Ia)
-      res_time_inf[k,i]<- my_meta_ext_na(x=get_time$time,y=get_time$results$I,y1=get_time$results$Ia)
-    }}
+##### model 2 Anthrax SI #####
+my_fun_model2_ant_ep<-function() {
+  for (k in 1:length(beta)){
+  for (i in 1:length(rho)) {
+    parameters <- c(beta_a = beta[k], 
+                    beta_sa = beta[k], 
+                    beta_c = beta[k],
+                    gamma_c = (1/(1/24))/365,
+                    gamma_sa = (1/(1/24))/365,
+                    gamma_a = (1/(1/24))/365,
+                    rho_c= rho[i],
+                    rho_sa= rho[i],
+                    rho_a= rho[i],
+                    epsilon = 2e-5,
+                    N = sum(initials),
+                    tau=1,
+                    mu_b = 0.34/365, 
+                    mu_c = 0.27/365, 
+                    mu_sa = 0.15/365,
+                    mu_a = 0.165/365,
+                    delta_c = 1/365,
+                    delta_sa = 1/(3*365))
+    
+    initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+    get_time <- model2(pars = parameters, init = initials,
+                       end.time = end.time)
+    res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+    res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+    res_time_inf[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+  }}
   d <- list(res_min,res_num_ext,res_time_inf)
   d
 }
@@ -1073,7 +943,8 @@ out_put_fun_time<-function(x, par1, par2, ...){ # x = out, par1, par2 = beta_a, 
 
 ############## FUNCTION 15 PREP OUTPUT FOR PLOTTING TIME TO EXTINCTION or NUMBER OF EXTINCTIONS #############
 
-my_plot_min<-function(x, par1, par2, par1_n, par2_n){ # x = data run, e.g. big_run, par1, par2 are parameters varied, e.g. beta_a, rho_a, par1_n, par2_n are names, e.g. 'beta', 'rho', op is output, either time or extinctions
+my_plot_min<-function(x, par1, par2, par1_n, par2_n){ 
+  # x = data run, e.g. big_run, par1, par2 are parameters varied, e.g. beta_a, rho_a, par1_n, par2_n are names, e.g. 'beta', 'rho', op is output, either time or extinctions
   plot_res<-apply(x, c(1,2), mean, na.rm = T)
   row.names(plot_res)<-par1; colnames(plot_res)<-par2
   df <- melt(plot_res)
@@ -1103,46 +974,12 @@ my_plot_time<-function(x, par1, par2, par1_n, par2_n){ # x = data run, e.g. big_
   df
 }
 
-############## METAPOPULATION PREP ##############
-
-my_meta_ext<-function(x=time,y=I,y1=Ia,...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(is.na(y[i]) & is.na(y1[i]))
-    {res_no[i-1] = NA}
-    else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i]) & y1[i]==0 & !is.na(y1[i])){
-        res_no[i-1] = 1
-      } else{
-        res_no[i-1] = 0
-      }
-  }
-  sum(res_no, na.rm = T)
-}
-
-############## METAPOPULATION PREP ##############
-
-my_meta_ext_na<-function(x=time,y=I,y1=Ia...){
-  res_no<-vector()
-  for (i in 2:length(x)){
-    if(is.na(y[i]) & is.na(y1[i]))
-    {res_no[i-1] = NA}
-    else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i]) & y1[i]==0 & !is.na(y1[i])){
-        res_no[i-1] = 1
-      } else{
-        res_no[i-1] = 0
-      }
-  }
-  length(res_no[!is.na(res_no)])
-}
-
 ############## FUNCTION 18 PREP OUTPUT FOR PLOTTING MX SIMULATIONS - SINGLE POP ####
 
 single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
   mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
   for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$I
+    mat[i,]<-x[,i]$results$N
   }
   colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
   rownames(mat) = paste("run", seq(n_rep), sep="")
@@ -1153,51 +990,25 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
   mdat
 }
 
-############## FUNCTION 19 PREP OUTPUT FOR PLOTTING MX SIMULATIONS - META POP ####
-
-meta_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
-  mat1 = matrix(NA, nrow=n_rep, ncol = (end.time+1))
-  for (i in 1:n_rep){
-    mat1[i,]<-x[,i]$results$I
-  }
-  colnames(mat1) = paste("time", seq(from=1,to=(end.time+1),by=1), sep="")
-  rownames(mat1) = paste("run", seq(n_rep), sep="")
-  dat1 = as.data.frame(mat1)
-  ##
-  mat2 = matrix(NA, nrow=n_rep, ncol = (end.time+1))
-  for (i in 1:n_rep){
-    mat2[i,]<-x[,i]$results$Ia
-  }
-  colnames(mat2) = paste("time", seq(from=1,to=(end.time+1),by=1), sep="")
-  rownames(mat2) = paste("run", seq(n_rep), sep="")
-  dat2 = as.data.frame(mat2)
-  ##
-  dat<-rbind(dat1,dat2)
-  dat$run = rownames(dat)
-  mdat = melt(dat, id.vars=c("run"))
-  mdat$Population<-as.factor(c(rep(1:2,end.time+1)))
-  mdat$time = as.numeric(gsub("time", "", mdat$variable))
-  mdat
-}
-
-## PARAMETERS ############################################
 ############## PARAMETER RANGE #######################
 
-beta_a <- seq(from = 1,to = 20, by = 2)
-rho_a <- seq(from = 0, to = 0.9, by = 0.1)
-delta_a <- seq(from = 0.001,to = 0.01, by = 0.001)
+beta <- seq(from = 5e-5,to = 0.01, length.out=10)
+rho <- seq(from = 1, to = 1, length.out=10)
+#delta <- seq(from = 0.001,to = 0.01, by = 0.001)
 
-d <- as.data.frame(matrix(NA, length(beta_a),length(rho_a)))
-res_min<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
-res_num_ext<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
-res_time_inf<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
+d <- as.data.frame(matrix(NA, length(beta),length(rho)))
+res_min<-array(unlist(d), dim=c(length(beta), length(rho)))
+res_num_ext<-array(unlist(d), dim=c(length(beta), length(rho)))
+res_time_inf<-array(unlist(d), dim=c(length(beta), length(rho)))
 
-n_rep = 100
-end.time = 20 * 365
+n_rep = 10
+end.time = 5 * 365
 
-############## RUN MODEL 1 #####
-
-big_run_model1<-replicate(n_rep,my_fun_model1())
+############## RUN MODEL Anthrax #####
+#no epsilon
+big_model2_ant<-replicate(n_rep,my_fun_model2_ant())
+#with epsilon
+big_model2_ant_ep<-replicate(n_rep,my_fun_model2_ant_ep())
 
 ############## RUN MODEL 2 #####
 
@@ -1242,38 +1053,27 @@ mod_res<-list(big_run_model1,
               big_run_meta)
 
 for (i in 1:length(mod_res)){
-  assign(paste0("Res_min_", i), out_put_fun_min(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
+  assign(paste0("Res_min_", i), out_put_fun_min(x=mod_res[[i]], par1 = beta, par2 = rho))
 }
 
 for (i in 1:length(mod_res)){
-  assign(paste0("Res_num_", i), out_put_fun_num(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
+  assign(paste0("Res_num_", i), out_put_fun_num(x=mod_res[[i]],par1 = beta ,par2 = rho))
 }
 
 for (i in 1:length(mod_res)){
-  assign(paste0("Res_time_", i), out_put_fun_time(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
+  assign(paste0("Res_time_", i), out_put_fun_time(x=mod_res[[i]],par1 = beta,par2 = rho))
 }
 
 plot_res_min<-list(Res_min_1,
-                   Res_min_2,
-                   Res_min_3,
-                   Res_min_4,
-                   Res_min_5,
-                   Res_min_6)
+                   Res_min_2)
+
 plot_res_min <- lapply(plot_res_min,function(x) replace(x,is.infinite(x),end.time))
 
 plot_res_num<-list(Res_num_1,
-                   Res_num_2,
-                   Res_num_3,
-                   Res_num_4,
-                   Res_num_5,
-                   Res_num_6)
+                   Res_num_2)
 
 plot_res_time<-list(Res_time_1,
-                    Res_time_2,
-                    Res_time_3,
-                    Res_time_4,
-                    Res_time_5,
-                    Res_time_6)
+                    Res_time_2)
 
 for (i in 1:length(plot_res_min)){
   assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta_a, par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
@@ -1356,58 +1156,6 @@ for (k in unique(res_all$variable)){
     ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
 }
 
-############### METAPOPULATION WITH DELTA PREP #############
-
-mod_resd<-list(big_run_model6_mig)
-
-for (i in 1:length(mod_resd)){
-  assign(paste0("Res_min_d", i), out_put_fun_min(x=mod_resd[[i]],par1 = delta_a,par2 = rho_a))
-}
-
-for (i in 1:length(mod_resd)){
-  assign(paste0("Res_num_d", i), out_put_fun_num(x=mod_resd[[i]],par1 = delta_a,par2 = rho_a))
-}
-
-for (i in 1:length(mod_resd)){
-  assign(paste0("Res_time_d", i), out_put_fun_time(x=mod_resd[[i]],par1 = delta_a,par2 = rho_a))
-}
-
-plot_res_mind<-list(Res_min_d1)
-plot_res_mind <- lapply(plot_res_mind,function(x) replace(x,is.infinite(x),end.time))
-
-plot_res_numd<-list(Res_num_d1)
-
-plot_res_timed<-list(Res_time_d1)
-
-for (i in 1:length(plot_res_mind)){
-  assign(paste0("df_min_d", i), my_plot_min(x=plot_res_mind[[i]],par1 = delta_a,par2 = rho_a, par1_n = 'delta', par2_n = 'rho'))
-}
-
-for (i in 1:length(plot_res_numd)){
-  assign(paste0("df_num_d", i), my_plot_num(x=plot_res_numd[[i]],par1 = delta_a,par2 = rho_a, par1_n = 'delta', par2_n = 'rho'))
-}
-
-for (i in 1:length(plot_res_timed)){
-  assign(paste0("df_time_d", i), my_plot_time(x=plot_res_timed[[i]],par1 = delta_a,par2 = rho_a, par1_n = 'delta', par2_n = 'rho'))
-}
-
-n = length(plot_res_timed)
-for(i in 1:n){
-  t1d <- do.call(cbind, mget(paste0("df_min_d", 1:n) ) )
-}
-for(i in 1:n){
-  t2d <- do.call(cbind, mget(paste0("df_num_d", 1:n) ) )
-}
-for(i in 1:n){
-  t3d <- do.call(cbind, mget(paste0("df_time_d", 1:n) ) )
-}
-
-resd<-cbind(t1d,t2d,t3d)
-
-colnames(resd) <- colnames(resd) %>% str_replace(".*.delta", "delta")
-colnames(resd) <- colnames(resd) %>% str_replace(".*.rho", "rho")
-
-res_alld = melt(resd, id.vars=c("delta",'rho'))
 
 ## PLOT MODEL OUTPUTS TIME SERIES #############################
 
@@ -1513,48 +1261,6 @@ for (i in unique(res_mx_p$model)){
   dev.off()
 }
 
-############### METAPOPULATION PLOT PREP ######
-
-res_meta<-list(sim_run_m6,
-               sim_run_m6v)
-
-for (i in 1:length(res_meta)){
-  assign(paste0("df_meta_", i), meta_pop_sim_prep(x=res_meta[[i]],n_rep = n_rep, end.time = end.time))
-}
-
-res_meta_p<-rbind(df_meta_1,df_meta_2)
-
-res_meta_p$model<-c(rep('1',dim(df_meta_1)[1]),
-                    rep('2',dim(df_meta_2)[1]))
-
-############### METAPOPULATION PLOT TIME SERIES ######
-
-for (i in unique(res_meta_p$model)){
-  subdata <- subset(res_meta_p, model == i)
-  pname <- paste0("metap_ts_",i)
-  p<-(ggplot(subdata, aes(x=time, y=value, group=run)) +
-        theme_bw() +
-        theme(panel.grid=element_blank()) +
-        geom_line(size=0.2, alpha=0.15) +
-        facet_wrap(~Population)+ 
-        ylab('Numbers') + xlab('time')+
-        stat_summary(aes(group=Population), fun.y=mean, geom="line", colour="grey10")#+
-      #  stat_summary(aes(group=Population), fun.y=median, geom="line", colour="red",size = 1.1, linetype = 'twodash')
-  )
-  ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-  pname <- paste0("metap_ts_",i)
-  p<-(ggplot(subdata, aes(x=time, y=value, col = Population, group=run)) +
-        theme_bw() +
-        theme(panel.grid=element_blank()) +
-        geom_line(size=0.2, alpha=0.2)+ 
-        scale_color_manual(values=c("#D55E00", "#999999"))+
-        theme(legend.position = "none")+ 
-        ylab('Numbers') + xlab('time')+
-        stat_summary(aes(group=Population), fun.y=mean, geom="line", colour="grey10")#+
-      #     stat_summary(aes(group=Population), fun.y=median, geom="line", colour="black", linetype = 'dotted',size = 1.1)
-  )  
-  ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-}
 
 ############### PLOT ALL TS SINGLE RUNS ##############
 
