@@ -749,14 +749,14 @@ my_imp_ext<-function(x=time,y=I,...){
 }
 
 ############## FUNCTION  2 COUNT EXTINCTIONS - NO INF #########
-
+#count I == 0
 my_imp_ext<-function(x=time,y=I,...){
   res_no<-vector()
   for (i in 2:length(x)){
     if(is.na(y[i]))
-    {res_no[i-1] = NA}
+    {res_no[i-1] = NA} 
     else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){ 
         res_no[i-1] = 1
       } else{
         res_no[i-1] = 0
@@ -1101,7 +1101,7 @@ res_min<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
 res_num_ext<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
 res_time_inf<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
 
-n_rep = 100
+n_rep = 10
 end.time = 20 * 365
 
 ############## RUN MODEL 1 #####
@@ -1142,7 +1142,7 @@ big_run_model6_mig<-replicate(n_rep,my_fun_model6_mig())
 ## MODEL OUTPUTS PREPARATION #######################
 
 ############## MODELS 1-6 OUTPUT PREPARATION #############################
-
+mod_res<-list(big_run_model1)
 mod_res<-list(big_run_model1,
               big_run_model2,
               big_run_model3,
@@ -1161,7 +1161,7 @@ for (i in 1:length(mod_res)){
 for (i in 1:length(mod_res)){
   assign(paste0("Res_time_", i), out_put_fun_time(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
 }
-
+plot_res_min<-list(Res_min_1)
 plot_res_min<-list(Res_min_1,
                    Res_min_2,
                    Res_min_3,

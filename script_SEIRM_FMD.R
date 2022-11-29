@@ -441,6 +441,7 @@ model7=
 
 #estimate the age structure proportion
 N=300
+
 #calf:subadult:adult ratio
 rat = 1.3+1.3+1.5
 N/rat

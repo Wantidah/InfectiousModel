@@ -25,10 +25,10 @@ library(ggplot2); theme_set(theme_bw())
 
 ############################## set up base values/ranges and empty arrays ###
 # based on the pathogens:
-beta_a <- seq(from = 1,to = 20, by = 2)
-rho_a <- seq(from = 0, to = 0.9, by = 0.1)
-d <- as.data.frame(matrix(NA, length(beta_a),length(rho_a)))
-res<-array(unlist(d), dim=c(length(beta_a), length(rho_a)))
+beta <- seq(from = 1,to = 20, by = 2)
+rho <- seq(from = 0, to = 0.9, by = 0.1)
+d <- as.data.frame(matrix(NA, length(beta),length(rho)))
+res<-array(unlist(d), dim=c(length(beta), length(rho)))
 
 ## set initial values ## note these need to change for meta-population analyses below #####
 
@@ -822,20 +822,6 @@ my_imp_ext_na_N<-function(x=time,y=N,...){
   length(res_no[!is.na(res_no)])
 }
 
-
-############## FUNCTION  4 COUNTS EXTINCTIONS METAPOP MODEL ##############
-
-my_min_meta_ext<-function(x=get_time$results, y=get_time$results$I, y1=get_time$results$Ia,...){
-  res_no<-vector()
-  if(!is.na(min(subset(x,y==0 & y1==0)$time))){
-    res_no = min(subset(x,y==0 & y1==0)$time)
-  } else{
-    res_no = end.time
-  }
-  res_no
-}
-
-
 ## SET UP FUNCTIONS FOR MODEL RUNS LOOP THROUGH PARS ################################
 #### set initial values - change for populations
 
@@ -849,12 +835,12 @@ sa = round((N/rat)*1.3,0)
 a = round((N/rat)*1.5,0) 
 
 end.time <- 10 * 365
-n_rep <- 10
+n_rep <- 5
 
 ############## FUNCTION  6 MODEL PAR LOOPS & MIN TIME TO EXTINCTION (no epsilon) #######
 
 ### model 2 Anthrax SI ####
-my_fun_model2_ant<-function() {
+model2_no_ep_ant_N<-function() {
   for (k in 1:length(beta)){
     for (i in 1:length(rho)) {
       parameters <- c(beta_a = beta[k], beta_sa = beta[k] , beta_c = beta[k],
@@ -875,7 +861,7 @@ my_fun_model2_ant<-function() {
       
       initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
       
-      get_time <- model2(pars = parameters, init = initials,
+      get_time <- model2_no_ep(pars = parameters, init = initials,
                          end.time = end.time)
       res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
       res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
@@ -884,11 +870,11 @@ my_fun_model2_ant<-function() {
   d <- list(res_min,res_num_ext,res_time_inf)
   d
   }
-  
+model_3_tb  
 ############## FUNCTION  7 MODEL PAR LOOPS & COUNT EXTINCTIONS (with epsilon) #######
 
 ##### model 2 Anthrax SI #####
-my_fun_model2_ant_ep<-function() {
+model2_anth<-function() {
   for (k in 1:length(beta)){
   for (i in 1:length(rho)) {
     parameters <- c(beta_a = beta[k], 
@@ -911,7 +897,7 @@ my_fun_model2_ant_ep<-function() {
                     delta_sa = 1/(3*365))
     
     initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
-    get_time <- model2(pars = parameters, init = initials,
+    get_time <- model2_ep(pars = parameters, init = initials,
                        end.time = end.time)
     res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
     res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
@@ -921,6 +907,39 @@ my_fun_model2_ant_ep<-function() {
   d
 }
 
+model3_tb<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+     
+       parameters <- c(beta_a = beta[k], 
+                      beta_sa = beta[k], 
+                      beta_c = beta[k],
+                      gamma_c = (1/(1/24))/365,
+                      gamma_sa = (1/(1/24))/365,
+                      gamma_a = (1/(1/24))/365,
+                      rho_c= rho[i],
+                      rho_sa= rho[i],
+                      rho_a= rho[i],
+                      epsilon = 2e-5,
+                      N = sum(initials),
+                      tau=1,
+                      mu_b = 0.34/365, 
+                      mu_c = 0.27/365, 
+                      mu_sa = 0.15/365,
+                      mu_a = 0.165/365,
+                      delta_c = 1/365,
+                      delta_sa = 1/(3*365))
+      
+      initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+      get_time <- model2_ep(pars = parameters, init = initials,
+                            end.time = end.time)
+      res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+    }}
+  d <- list(res_min,res_num_ext,res_time_inf)
+  d
+}
 ## PLOT DATA PREPARATION #################################
 
 out_put_fun_min<-function(x, par1, par2, ...){ # x = out, par1, par2 = beta_a, rho_a, ...
@@ -975,8 +994,21 @@ my_plot_time<-function(x, par1, par2, par1_n, par2_n){ # x = data run, e.g. big_
 }
 
 ############## FUNCTION 18 PREP OUTPUT FOR PLOTTING MX SIMULATIONS - SINGLE POP ####
+single_pop_sim_prep_I <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
+  mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
+  for (i in 1:n_rep){
+    mat[i,]<-x[,i]$results$I
+  }
+  colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
+  rownames(mat) = paste("run", seq(n_rep), sep="")
+  dat = as.data.frame(mat)
+  dat$run = rownames(dat)
+  mdat = melt(dat, id.vars="run")
+  mdat$time = as.numeric(gsub("time", "", mdat$variable))
+  mdat
+}
 
-single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
+single_pop_sim_prep_N <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
   mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
   for (i in 1:n_rep){
     mat[i,]<-x[,i]$results$N
@@ -993,7 +1025,7 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
 ############## PARAMETER RANGE #######################
 
 beta <- seq(from = 5e-5,to = 0.01, length.out=10)
-rho <- seq(from = 1, to = 1, length.out=10)
+rho <- seq(from = 0.1, to = 1, length.out=10)
 #delta <- seq(from = 0.001,to = 0.01, by = 0.001)
 
 d <- as.data.frame(matrix(NA, length(beta),length(rho)))
@@ -1001,12 +1033,13 @@ res_min<-array(unlist(d), dim=c(length(beta), length(rho)))
 res_num_ext<-array(unlist(d), dim=c(length(beta), length(rho)))
 res_time_inf<-array(unlist(d), dim=c(length(beta), length(rho)))
 
-n_rep = 10
-end.time = 5 * 365
+n_rep = 5
+end.time = 10 * 365
 
-############## RUN MODEL Anthrax #####
+############## RUN MODEL 2 Anthrax #####
 #no epsilon
-big_model2_ant<-replicate(n_rep,my_fun_model2_ant())
+big_model2_ant_no_ep_N<-replicate(n_rep,model2_no_ep_ant_N())
+
 #with epsilon
 big_model2_ant_ep<-replicate(n_rep,my_fun_model2_ant_ep())
 
@@ -1026,24 +1059,13 @@ big_run_model4<-replicate(n_rep,my_fun_model4())
 
 big_run_model5<-replicate(n_rep,my_fun_model5())
 
-########## for METAPOPULATION RUN ONLY IF LENGTH DELTA ! == BETA ######
-
-d <- as.data.frame(matrix(NA, length(delta_a),length(rho_a)))
-res_min<-array(unlist(d), dim=c(length(delta_a), length(rho_a)))
-res_num_ext<-array(unlist(d), dim=c(length(delta_a), length(rho_a)))
-res_time_inf<-array(unlist(d), dim=c(length(delta_a), length(rho_a)))
-
-############## RUN MODEL 6 ###########
-
-big_run_meta<-replicate(n_rep,my_fun_model6())
-
-############## RUN MODEL 6 MIG ###########
-
-big_run_model6_mig<-replicate(n_rep,my_fun_model6_mig())
 
 ## MODEL OUTPUTS PREPARATION #######################
 
 ############## MODELS 1-6 OUTPUT PREPARATION #############################
+mod_res<-list(big_model2_ant_no_ep_N,
+              big_model2_ant_ep)
+              
 
 mod_res<-list(big_run_model1,
               big_run_model2,
@@ -1066,25 +1088,28 @@ for (i in 1:length(mod_res)){
 
 plot_res_min<-list(Res_min_1,
                    Res_min_2)
+                   
 
 plot_res_min <- lapply(plot_res_min,function(x) replace(x,is.infinite(x),end.time))
 
 plot_res_num<-list(Res_num_1,
                    Res_num_2)
+                   
 
 plot_res_time<-list(Res_time_1,
                     Res_time_2)
+                    
 
 for (i in 1:length(plot_res_min)){
-  assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta_a, par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
+  assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta, par2 = rho, par1_n = 'beta', par2_n = 'rho'))
 }
 
 for (i in 1:length(plot_res_num)){
-  assign(paste0("df_num_", i), my_plot_num(x=plot_res_num[[i]],par1 = beta_a,par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
+  assign(paste0("df_num_", i), my_plot_num(x=plot_res_num[[i]],par1 = beta,par2 = rho, par1_n = 'beta', par2_n = 'rho'))
 }
 
 for (i in 1:length(plot_res_time)){
-  assign(paste0("df_time_", i), my_plot_time(x=plot_res_time[[i]],par1 = beta_a,par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))
+  assign(paste0("df_time_", i), my_plot_time(x=plot_res_time[[i]],par1 = beta,par2 = rho, par1_n = 'beta', par2_n = 'rho'))
 }
 
 n = length(plot_res_time)
@@ -1125,7 +1150,8 @@ for (k in unique(res_all$variable)){
                                name="Average\noutbreak\nduration", na.value = "grey") +
           labs(x = expression(beta),y=expression(rho)) +
           theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
+    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
+    }
   else if
   (str_detect(subdata$variable, "outbreaks")==T){
     pname <- paste0("extinctions100-",k)
@@ -1143,7 +1169,8 @@ for (k in unique(res_all$variable)){
                                name="Average\nnumber\nextinctions") +
           labs(x = expression(beta),y=expression(rho)) +
           theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
+    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
+    }
   else
   {
     pname <- paste0("time-",k)
@@ -1153,135 +1180,92 @@ for (k in unique(res_all$variable)){
                                name="Average\ntime", limits = c(0,1)) +
           labs(x = expression(beta),y=expression(rho)) +
           theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
-}
-
-
-## PLOT MODEL OUTPUTS TIME SERIES #############################
-
-for (k in unique(res_alld$variable)){
-  subdata <- subset(res_alld, variable == k)
-  if (str_detect(subdata$variable, "duration")==T){
-    pname <- paste0("metap_duration365_",k)
-    p<-(ggplot(subdata, aes(x = delta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("whitesmoke","royalblue","seagreen","orange","red","brown"))(500),
-                               name="Average\noutbreak\nduration", na.value = "grey", limits = c(0,365)) +
-          labs(x = expression(delta),y=expression(rho)) +
-          theme_bw())
     ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    pname <- paste0("metap_duration_",k)
-    p<-(ggplot(subdata, aes(x = delta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("whitesmoke","royalblue","seagreen","orange","red","brown"))(500),
-                               name="Average\noutbreak\nduration", na.value = "grey") +
-          labs(x = expression(delta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
-  else if
-  (str_detect(subdata$variable, "outbreaks")==T){
-    pname <- paste0("metap_extinction100_",k)
-    p<-(ggplot(subdata, aes(x = delta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\nnumber\nextinctions", limits = c(0,100)) +
-          labs(x = expression(delta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    pname <- paste0("metap_extinction_",k)
-    p<-(ggplot(subdata, aes(x = delta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\nnumber\nextinctions") +
-          labs(x = expression(delta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
-  else
-  {
-    pname <- paste0("metap_time_",k)
-    p<-(ggplot(subdata, aes(x = delta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\ntime", limits = c(0,1)) +
-          labs(x = expression(delta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)}
+    }
 }
 
 ## SINGLE POPULATION PRINT PREPS #######
 
-res_mx<-list(sim_run_m1_1,
-             sim_run_m1_2,
-             sim_run_m1_3,
-             sim_run_m2_1,
-             sim_run_m2_2,
-             sim_run_m3,
-             sim_run_m4,
-             sim_run_m5,
-             sim_run_m7_1,
-             sim_run_m7_2)
+res_mx<-list(sim_rep_m2,
+              sim_rep_m3,
+              sim_rep_m4,
+              sim_rep_m5,
+              sim_rep_m6,
+              sim_rep_m7)
 
+#change single_pop_sim_prep from I to N
 for (i in 1:length(res_mx)){
-  assign(paste0("df_mx", i), single_pop_sim_prep(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
+  assign(paste0("df_mx_I", i), single_pop_sim_prep_I(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
 }
+for (i in 1:length(res_mx)){
+  assign(paste0("df_mx_I", i), single_pop_sim_prep_I(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
+}
+df_mx_I_m3<-single_pop_sim_prep_I(x=sim_rep_m3,n_rep = n_rep, end.time = end.time)
+df_mx_N_m3<-single_pop_sim_prep_N(x=sim_rep_m3,n_rep = n_rep, end.time = end.time)
 
-res_mx_p<-rbind(df_mx1,
+res_mx_p<-rbind( df_mx1,
                 df_mx2,
                 df_mx3,
                 df_mx4,
                 df_mx5,
-                df_mx6,
-                df_mx7,
-                df_mx8,
-                df_mx9,
-                df_mx10)
+                df_mx6)
+res_mx_p<-rbind(df_mx_I_m3,df_mx_N_m3)
 
 res_mx_p$model<-c(rep('1',dim(df_mx1)[1]),
                   rep('2',dim(df_mx2)[1]),
                   rep('3',dim(df_mx3)[1]),
                   rep('4',dim(df_mx4)[1]),
                   rep('5',dim(df_mx5)[1]),
-                  rep('6',dim(df_mx6)[1]),
-                  rep('7',dim(df_mx7)[1]),
-                  rep('8',dim(df_mx8)[1]),
-                  rep('9',dim(df_mx9)[1]),
-                  rep('10',dim(df_mx10)[1]))
+                  rep('6',dim(df_mx6)[1]))
 
 ## SINGLE POPULATION PLOTS #######
 
 for (i in unique(res_mx_p$model)){
-  subdata <- subset(res_mx_p, model == i)
-  pdf(paste("plot_ts_mx", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(subdata, aes(x=time, y=value, group=run)) +
+  subdata <- subset(res_mx_p, model == 1)
+  pdf(paste("plot_ts_tb_I.pdf", sep = ""), width = 4, height = 3)
+  print(ggplot(df_mx_I_m3, aes(x=time, y=value, group=run)) +
           theme_bw() +
           theme(panel.grid=element_blank()) +
           geom_line(size=0.2, alpha=0.15)+
-          ylab('Numbers') + xlab('time')+
-          stat_summary(aes(group = 1), fun.y=mean, geom="line", colour="black",size = 1.1))
+          ylab('I (Numbers)') + xlab('time')+
+          ggtitle("bTB infectious of gaur population, 100 runs")+
+          theme(plot.title = element_text(size=8))+
+          
+          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
   dev.off()
 }
+#for (i in unique(res_mx_p$model)){
+#  subdata <- subset(res_mx_p, model == 2)
+  pdf(paste("plot_ts_btb_N.pdf", sep = ""), width = 4, height = 3)
+  print(ggplot(df_mx_N_m3, aes(x=time, y=value, group=run)) +
+          theme_bw() +
+          theme(panel.grid=element_blank()) +
+          geom_line(size=0.2, alpha=0.15)+
+          ylab('N (Numbers)') + xlab('time')+
+          ggtitle("gaur total population with bTB infections, 100 runs")+
+          theme(plot.title = element_text(size=8))+
+          
+          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
+  dev.off()
+#}
 
 
 ############### PLOT ALL TS SINGLE RUNS ##############
 
-res_p_ts<-list(sim_run_m1_1,
-               sim_run_m1_2,
-               sim_run_m1_3,
-               sim_run_m2_1,
-               sim_run_m2_2,
-               sim_run_m3,
-               sim_run_m4,
-               sim_run_m5,
-               sim_run_m6,
-               sim_run_m6v,
-               sim_run_m7_1,
-               sim_run_m7_2)
+res_p_ts<-list(sim_rep_m2,
+               sim_rep_m3,
+               sim_rep_m4,
+               sim_rep_m5,
+               sim_rep_m6,
+               sim_rep_m7)
 
 # Make plots. Single runs
 for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts", i, ".pdf", sep = ""), width = 4, height = 3)
+  pdf(paste("plotts_I", i, ".pdf", sep = ""), width = 4, height = 3)
   print(ggplot() + 
+          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$N), color = "blue", size =1.2) +
           geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$S), color = "black", size =1.2) +
+          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$E), color = "yellow", size =1.2) +
           geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
           geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$R), color = "seagreen", size =1.2, linetype = "dotted") +
           xlab('Time') +
@@ -1289,11 +1273,22 @@ for (i in 1:length(res_p_ts)) {
   dev.off()
 }
 
+pdf(paste("plotts_I", "1", ".pdf", sep = ""), width = 4, height = 3)
+print(ggplot() + 
+        geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[1]][[4]]$time, y = res_p_ts[[1]][[4]]$N), color = "blue", size =1.2) +
+        geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[1]][[4]]$time, y = res_p_ts[[1]][[4]]$S), color = "black", size =1.2) +
+        #geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[1]][[4]]$time, y = res_p_ts[[1]][[4]]$E), color = "yellow", size =1.2) +
+        geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[1]][[4]]$time, y = res_p_ts[[1]][[4]]$I), color = "red", size =1.2) +
+        #geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$R), color = "seagreen", size =1.2, linetype = "dotted") +
+        xlab('Time') +
+        ylab('Infection State Numbers'))
+dev.off()
+
 ############### PLOT ALL TS SINGLE RUNS I ONLY ##############
 
 # Make plots. Single runs
 for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts_i", i, ".pdf", sep = ""), width = 4, height = 3)
+  pdf(paste("plotts_i_I", i, ".pdf", sep = ""), width = 4, height = 3)
   print(ggplot() + 
           geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
           xlab('Time') +
@@ -1303,7 +1298,7 @@ for (i in 1:length(res_p_ts)) {
 
 # Make plots. Single runs - SCALED
 for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts_i_scale", i, ".pdf", sep = ""), width = 4, height = 3)
+  pdf(paste("plotts_i_scale_I", i, ".pdf", sep = ""), width = 4, height = 3)
   print(ggplot() + 
           geom_line(data = res_p_ts[[i]][[4]], 
                     aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
@@ -1316,33 +1311,31 @@ for (i in 1:length(res_p_ts)) {
 ## plot extinction times
 
 df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
+
 df.ag<-(df.agg[df.agg$value==0,c('model','time')])
 
-neworder <- c("1","2","3","4","5","9","10","6","7","8")
+neworder <- c("1","2","3","4","5","6")
 library(plyr)  ## or dplyr (transform -> mutate)
 df.ag <- arrange(transform(df.ag,
                            model=factor(model,levels=neworder)),model)
-labs <- c('1' = "SIR",
-          '2' = "SI*R",
-          '3' = "SI*R+",
-          '4' = "S[I]R",
-          '5' = "S[I]*R",
-          '6' = "SIR*",
-          '7' = 'S[I]*R',
-          '8' = 'S[I]R*',
-          '9' = 'SEIR',
-          '10' = 'SEI*R')
+labs <- c('1' = "SI",
+          '2' = "SEI",
+          '3' = "SIRS+",
+          '4' = "SEIRS",
+          '5' = "SEIRM-FMD",
+          '6' = "SEIRM-Bru")
+
 p<-ggplot(df.ag, aes(x=time))+
   geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 5,labeller = labeller(model = labs))+
+  facet_wrap(model~., ncol = 6, labeller = labeller(model = labs))+
   scale_x_continuous(breaks = c(0, 800, 1600), labels = c("0", "800", "1600"))
-pdf("extinctions.pdf", width = 5, height = 3)
+pdf("extinctions.pdf", width = 8, height = 3)
 p
 dev.off()
 
 p_yr<-ggplot(df.ag, aes(x=time))+
   geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 5,labeller = labeller(model = labs))+
+  facet_wrap(model~., ncol = 6,labeller = labeller(model = labs))+
   scale_x_continuous(limits = c(0,1000),breaks = c(0, 400, 800), labels = c("0", "400", "800")) +
   ylim(0,60)
 pdf("extinctions_1yr.pdf", width = 5, height = 3)
