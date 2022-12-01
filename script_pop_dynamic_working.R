@@ -14,19 +14,14 @@ library(stringr)
 library(emdbook)  
 library(ggplot2); theme_set(theme_bw())
 
-## MODELS ################################
-
 # Population dynamic model, no infection, 3 age classes
 # c = calf
 # sa = Subadult
 # a = adult
-
-## set initial values ## 
-#initials <- c(a = 1000, sa = 100, c = 100)
-
-############## MODEL 1 population dynamic model, no infection, 3 age-classes ######
 # unit == day (per day)
 
+############## Run the model function ############### 
+############## MODEL 1 population dynamic model, no infection, 3 age-classes ######
 model1 =
   function (pars, init, end.time)  {
     init2 <- init
@@ -84,7 +79,7 @@ model1 =
 
 ############## --> TEST MODEL 1 Population dynamic, no infection ######
 
-#gaur population (Khao Phaeng Ma Non-Hunting Area, Thailand)
+#gaur population 
 N = 300 
 
 #estimate the age structure proportion

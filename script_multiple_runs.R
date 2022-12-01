@@ -8,20 +8,20 @@ library(reshape2)
 library(stringr)
 library(emdbook)  
 library(ggplot2); theme_set(theme_bw())
-###### Multiple runs ###########
+library(dplyr)
 
-#### set initial values - change for populations
+#### set initial values for populations
 #gaur poplation
 N = 300 
-
+#population ratios:
 rat = 1.3+1.3+1.5
 N/rat
 c = round((N/rat)*1.3, 0)
 sa = round((N/rat)*1.3,0) 
 a = round((N/rat)*1.5,0) 
 
-end.time <- 10 * 365
-n_rep <- 10
+end.time <- 100 * 365
+n_rep <- 100
 
 ############## MODEL 1 - POPULATION DEMO - NO INFECTION #####
 # unit == day (per day)
@@ -89,95 +89,12 @@ parameters <- c(mu_b = 0.34/365,
                 N = sum(initials), 
                 tau = 1)
 
-
 sim_rep_m1<-replicate(n_rep,(model1(pars = parameters, init = initials,
                                              end.time = end.time)))
-str(sim_rep_m1[,1]$results)
 
-############## MODEL 2 Anthrax MULTIPLE RUNS  #####
-
+############## MODEL 2 SI: Anthrax #####
 initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 
-#without epsilon
-model2_no_ep=
-  function (pars, init, end.time)  {
-    init2 <- init
-    Equations <- function(pars, init, end.time) {
-      with(as.list(c(pars, init)), {
-        rate <- rep(0, 12)
-        change <- matrix(0, nrow = 12, ncol = 6)
-        
-        N <- Sc+Ic +Ssa+Isa +Sa+Ia 
-        tau <- 1
-        
-        rate[1] <- mu_b * Sa
-        change[1, ] <- c(1, 0, 0, 0, 0, 0)
-        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)/N
-        change[2, ] <- c(-1, 1, 0, 0, 0, 0)
-        rate[3] <- gamma_c * Ic * rho_c
-        change[3, ] <- c(0, -1, 0, 0, 0, 0)
-        rate[4] <- mu_c * Sc
-        change[4, ] <- c(-1, 0, 0, 0, 0, 0)
-        rate[5] <- delta_c * Sc
-        change[5, ] <- c(-1, 0, 1, 0, 0, 0)  
-
-        #saubadult
-        rate[6] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
-        change[6, ] <- c(0, 0, -1, 1, 0, 0)    
-        rate[7] <-  gamma_sa * Isa * rho_sa
-        change[7, ] <- c(0, 0, 0, -1, 0, 0)    
-        rate[8] <- mu_sa * Ssa
-        change[8, ] <- c(0, 0, -1, 0, 0, 0)
-        rate[9] <- delta_sa * Ssa
-        change[9, ] <- c(0, 0, -1, 0, 1, 0)  
-        
-        #adult
-        rate[10] <- beta_a * Sa * (Ic+Isa+Ia)/N
-        change[10, ] <- c(0, 0, 0, 0, -1, 1)    
-        rate[11] <-  gamma_a * Ia *rho_a
-        change[11, ] <- c(0, 0, 0, 0, 0, -1)    
-        rate[12] <- mu_a * Sa
-        change[12, ] <- c(0, 0, 0, 0, -1, 0)
-  
-        init <- c(Sc = Sc, Ic = Ic, Ssa = Ssa, Isa = Isa, Sa = Sa, Ia = Ia)
-        for (i in 1:12) {
-          num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
-          init <- init + change[i, ] * num.min
-        }
-        return(init)
-      })
-    }
-    Sa <- Ia <- Ssa <- Isa <- Sc <- Ic <- double()
-    t <- 0
-    time <- seq(0, end.time, by = pars["tau"])
-    for (t in time) {
-      tmp <- Equations(pars, init, end.time)
-      Sa <- c(Sa, init["Sa"])
-      Ia <- c(Ia, init["Ia"])
-      
-      Ssa <- c(Ssa, init["Ssa"])
-      Isa <- c(Isa, init["Isa"])
-      
-      Sc <- c(Sc, init["Sc"])
-      Ic <- c(Ic, init["Ic"])
-      
-      init <- tmp
-    }
-    
-    #sum population based on column name
-    results<-data.frame(time, 
-                        Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
-      dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
-      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
-    
-    return(list(pars = pars, init = init2, time = time, results = results))
-    
-  }
-
-#with epsilon
 model2=
   function (pars, init, end.time)  {
     init2 <- init
@@ -224,7 +141,6 @@ model2=
         rate[15] <- epsilon * Sa
         change[15, ] <- c(0, 0, 0, 0, -1, 1)
         
-        
         init <- c(Sc = Sc, Ic = Ic, Ssa = Ssa, Isa = Isa, Sa = Sa, Ia = Ia)
         for (i in 1:15) {
           num <- rpois(1, rate[i] * tau)
@@ -266,20 +182,17 @@ parameters <- c(
   beta_c = 5e-5, beta_sa = 5e-5, beta_a = 5e-5,
   gamma_c = (1/(1/24))/365, gamma_sa = (1/(1/24))/365, gamma_a = (1/(1/24))/365,
   rho_c = 1, rho_sa = 1,  rho_a = 1,
-  #epsilon = 2e-5,
+  epsilon = 2e-5,
   mu_b = 0.34/365, 
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials),
   tau=1)
 
-sim_rep_m2<-replicate(n_rep,(model2_no_ep(pars = parameters, init = initials,
+sim_rep_m2<-replicate(n_rep,(model2(pars = parameters, init = initials,
                                           end.time = end.time)))
 
-sim_rep_m2_ep<-replicate(n_rep,(model2_ep(pars = parameters, init = initials,
-                                             end.time = end.time)))
-str(sim_rep_m2_ep[,1]$results)
-############## MODEL 3 Bovine tuberculosis  MULTIPLE RUNS  #####
+############## MODEL 3 SEI: Bovine tuberculosis  #####
 initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
 
 model3=
@@ -405,17 +318,16 @@ parameters <- c(
   gamma_c = 0, gamma_sa = 0, gamma_a = 0,
   rho_c = 0, rho_sa = 0, rho_a = 0.1, 
   epsilon = 2e-5,
-  N = sum(initials),
-  tau=1,
   mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
-  delta_c = 1/365, delta_sa = 1/(3*365))
+  delta_c = 1/365, delta_sa = 1/(3*365),
+  N = sum(initials), tau=1)
 
 sim_rep_m3<-replicate(n_rep,(model3(pars = parameters, init = initials,
                                              end.time = end.time)))
 str(sim_rep_m3[,1]$results)
 
-############## MODEL 4  Hemorrhagic septicemia   MULTIPLE RUNS  #####
+############## MODEL 4 SIRS: Hemorrhagic septicemia #####
 initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = a, Ia = 1, Ra = 0)
 
 model4 =
@@ -552,9 +464,8 @@ parameters <- c(
 
 sim_rep_m4<-replicate(n_rep,(model4(pars = parameters, init = initials,
                                     end.time = end.time)))
-str(sim_rep_m4[,1]$results)
 
-############## MODEL 5  Lumpy Skin Disease   MULTIPLE RUNS  #####
+############## MODEL 5 SEIRS: Lumpy Skin Disease #####
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
 
 model5=
@@ -717,8 +628,8 @@ parameters <- c(
 
 sim_rep_m5<-replicate(n_rep,(model5(pars = parameters, init = initials,
                                     end.time = end.time)))
-str(sim_rep_m5[,1]$results)
-############## MODEL 6 Foot and mouth disease  MULTIPLE RUNS  #####
+
+############## MODEL 6 SEIRMS/E Foot and mouth disease  #####
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
 
 model6=
@@ -889,7 +800,7 @@ parameters <- c(
   alpha = 0.5,
   omega_c = (1/120)/365, omega_sa =  (1/120)/365, omega_a = (1/565)/365, omega_m = (1/144)/365,
   epsilon = 2e-5,
-  mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
+  mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), 
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials),
@@ -897,8 +808,8 @@ parameters <- c(
 
 sim_rep_m6<-replicate(n_rep,(model6(pars = parameters, init = initials,
                                     end.time = end.time)))
-str(sim_rep_m6[,1]$results)
-############## MODEL 7 Bovine brucellosis MULTIPLE RUNS  #####
+
+############## MODEL 7 SEIRMS/E Bovine brucellosis #####
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
 
 model7=
@@ -1070,7 +981,7 @@ parameters <- c(
   alpha = 0.9,
   omega_c = (1/180)/365, omega_sa =  (1/180)/365, omega_a = (1/180)/365, omega_m = (1/180)/365,
   epsilon = 2e-5,
-  mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 10%  (assume)
+  mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), 
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials),

@@ -94,6 +94,8 @@ a = round((N/rat)*1.5,0)
 #SI parameters
 #same transmission rate (beta), case fatality rate (rho)
 #gaur
+initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
+end.time <- 2*365 #predict for ... years
 parameters <- c(
   beta_c = 5e-5,
   gamma_c = (1/(1/24))/365,
@@ -116,9 +118,9 @@ parameters <- c(
 )
 
 #single run
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-end.time <- 20*365 #predict for ... years
 
+model2(pars = parameters, init = initials,
+       end.time = end.time)
 
 ## MULTIPLE RUNS ################################
 
@@ -133,8 +135,6 @@ sim_run_anthrax_rep<-replicate(n_rep,(model2(pars = parameters, init = initials,
                                              end.time = end.time)))
 class(sim_run_anthrax_rep)
 
-write.matrix(format(sim_run_anthrax_rep, scientific=FALSE), 
-             file = "ant.csv", sep=",")
 
 write.table(sim_run_anthrax_rep, file="sim_run_anthrax_rep.txt", row.names=FALSE, col.names=FALSE)
 ####### plot SI ######

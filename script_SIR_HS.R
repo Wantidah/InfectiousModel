@@ -173,12 +173,13 @@ plot(res_sir_gaur$results$N, main = "HS: gaur total population",
 # plot sing single run
 p<-
  ggplot() + 
-  geom_line(data = res_sir_gaur$results,aes(x = time ,y = S, color = 'S'),size = 1) + 
-  geom_line(data = res_sir_gaur$results,aes(x = time, y = I, color = 'I' ),size = 1)+
-  geom_line(data = res_sir_gaur$results,aes(x = time, y = R, color = 'R' ),size = 1)+
-  geom_line(data = res_sir_gaur$results,aes(x = time, y = N, color = 'total' ),size = 1)+
+ # geom_line(data = s,aes(x = time ,y = S, color = 'S'),size = 1) + 
+  geom_line(data = s,aes(x = time, y = I, color = 'I' ),size = 0.1)+
+  theme_bw() 
+  #geom_line(data = s,aes(x = time, y = R, color = 'R' ),size = 1)+
+  #geom_line(data = s,aes(x = time, y = N, color = 'total' ),size = 1)+
   labs(x="days", y="total population (N)",
-       title='Gaur total population in 20 years') +
+       title='Gaur total population in 2 years') +
   #scale_linetype_manual()
   scale_color_manual(name = "population",
                      labels = c('S','I',"R","total"),
