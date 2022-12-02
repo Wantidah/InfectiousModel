@@ -16,9 +16,9 @@
 rm(list=ls())
 
 ############## LOAD PACKAGES ##########
-library(reshape)
 library(EpiDynamics)
-library(dplyr)     
+library(dplyr)   
+library(tidyverse)
 library(reshape2) 
 library(stringr)
 library(emdbook)  
@@ -165,7 +165,6 @@ model2=
     
   }
 ############## MODEL 3 SEI - Bovine tuberculosis  #####
-initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
 
 model3=
   function (pars, init, end.time)  {
@@ -886,7 +885,7 @@ sa = round((N/rat)*1.3,0)
 a = round((N/rat)*1.5,0) 
 
 end.time = 10 * 365 #duration of prediction
-
+n_rep = 100
 ############## SINGLE RUNS with plotting output - ALL MODELS  ###############################
 # > MODEL 1 - NO infection #####
 initials_m1 <- c(c = c, sa = sa, a = a )
@@ -896,7 +895,7 @@ parameters_m1 <- c(mu_b = 0.34/365,
                 mu_a = 0.165/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials_m1), 
                 tau = 1)
 res_model1 <- model1(pars = parameters_m1, init = initials_m1,
                 end.time = end.time)
@@ -912,7 +911,7 @@ parameters_m2 <- c(
   mu_b = 0.34/365, 
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials),
+  N = sum(initials_m2),
   tau=1)
 
 res_model2<-model2(pars = parameters_m2, init = initials_m2,
@@ -930,7 +929,7 @@ parameters_m3 <- c(
   mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials), tau=1)
+  N = sum(initials_m3), tau=1)
 
 res_model3<-model3(pars = parameters_m3, init = initials_m3,
                    end.time = end.time)
@@ -946,7 +945,7 @@ parameters_m4 <- c(
   epsilon = 2e-5,
   mu_b = 0.34/365, mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials),
+  N = sum(initials_m4),
   tau=1)
 res_model4<-model4(pars = parameters_m4, init = initials_m4,
                    end.time = end.time)
@@ -964,7 +963,7 @@ parameters_m5 <- c(
   mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials),
+  N = sum(initials_m5),
   tau=1)
 
 res_model5<-model5(pars = parameters_m5, init = initials_m5,
@@ -984,7 +983,7 @@ parameters_m6 <- c(
   mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials),
+  N = sum(initials_m6),
   tau=1)
 
 res_model6<-model6(pars = parameters_m6, init = initials_m6,
@@ -1314,7 +1313,8 @@ single_pop_sim_prep_N <- function(x, n_rep, end.time){ # x = simulation of model
   mdat$time = as.numeric(gsub("time", "", mdat$variable))
   mdat
 }
-
+m2t<-single_pop_sim_prep_N(x=m6, n_rep, end.time)
+str(m2t)
 ############## PARAMETER RANGE #######################
 
 #Anthrax

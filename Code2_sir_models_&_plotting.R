@@ -1051,7 +1051,7 @@ my_meta_ext_na<-function(x=time,y=I,y1=Ia...){
 single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
   mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
   for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$I
+    mat[i,]<-x[,i]$results$N
   }
   colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
   rownames(mat) = paste("run", seq(n_rep), sep="")
@@ -1413,12 +1413,12 @@ res_mx_p$model<-c(rep('1',dim(df_mx1)[1]),
 for (i in unique(res_mx_p$model)){
   subdata <- subset(res_mx_p, model == i)
   pdf(paste("plot_ts_mx", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(subdata, aes(x=time, y=value, group=run)) +
+  print(ggplot(s2, aes(x=time, y=N, group=run)) +
           theme_bw() +
           theme(panel.grid=element_blank()) +
           geom_line(size=0.2, alpha=0.15)+
           ylab('Numbers') + xlab('time')+
-          stat_summary(aes(group = 1), fun.y=mean, geom="line", colour="black",size = 1.1))
+          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
   dev.off()
 }
 
