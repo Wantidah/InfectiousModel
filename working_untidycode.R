@@ -28,16 +28,51 @@ n_change<-function(x=time,y=N,...){
   res_no<-vector()
   
 }
+my_imp_ext_na_I<-function(x=time,y=I,...){
+  
+  res_no<-vector()
+  
+  for (i in 2:length(x)) {
+    if(is.na(y[i]))
+    {res_no[i-1] = NA}
+    else
+      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
+        res_no[i-1] = 1
+      } else{
+        res_no[i-1] = 0
+      }
+  }
+  length(res_no[!is.na(res_no)])
+}
 
-t<-function(x=time,y=N,...){
+t<-function(x=x, y=y,...){
   res_no<-vector()
   for (i in 1:length(x)){
-    if (i == 1) {
-      res_no = 0
+    if (x == 1) {
+      res_no == 0
     }
-    else { res_no = (y[i+1]-y[i])/100 }
+    else { res_no = ((y[i+1]-y[i])/y[i+1])*100 }
+    
   }
+  res_no
 }
+1:length(w$time)
+w<-wow2
+
+w2<-w %>%
+  group_by(run) %>%
+  mutate(N_change = ((N - lag(N))/N)*100,
+         year = time/365)
+
+
+table(is.na(w2$N_change))
+table((w2$N_change==0))
+mean(w2$N_change)
+?round()
+View(w2)
+
+w$N_change<- t(x=wow2$time,y=wow2$N)
+str(w)
 
 # Dave's adjust version
 single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
@@ -47,7 +82,8 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
     run <- paste("run", seq(n_rep), sep="")
     names(df)[i]
     df[[i]]<- x[,i]$results[,-c(1)]
-    df[[i]]$time <- seq(from=1,to=end.time+1,by=1)
+    df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
+   
   }
     
     df<-map2(df,run, ~cbind(.x, run = .y))   # adding n_rep to the column
@@ -62,7 +98,8 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
    
      else  {
       return( df2 = data.frame(df2)) 
-      }
+     }
+
    }
 
 
@@ -81,52 +118,49 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
   mdat
 }
 
-wow<-single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = T)
-wow2<- single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = F)
-#total N
-dave<-single_pop_sim_prep(x = m6, n_rep=n_rep, end.time= end.time)
+df_m3<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = T)
+df_m3<- single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = F)
+df_m3_d<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time)
 
-table(dave$time)
-table(dave$run)
-table(wow2$time)
-table(wow2$run)
-str(dave)
-str(wow2)
+df_m2<-single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = F)
+df_m4<-single_pop_sim_prep(x=sim_rep_m4, n_rep=n_rep, end.time= end.time, melt = F)
 
+df_m6<-single_pop_sim_prep(x=sim_rep_m6, n_rep=n_rep, end.time= end.time, melt = F)
+
+df_m6<- df_m6%>%
+  group_by(run) %>%
+  mutate(N_change = ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
+  mutate(time_y = time_d/365) %>% #convert day to year for plotting
+  as.data.frame()        
+View(df_m6)
+str(df_m6)
 
 
 #plot
-#dave's
-#for (i in unique(res_mx_p$model)){
-#  subdata <- subset(res_mx_p, model == i)
-#  pdf(paste("plot_ts_mx", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(wow2, aes(x=time, y=N, group=run)) +
-          theme_bw() +
-          theme(panel.grid=element_blank()) +
-          geom_line(size=0.2, alpha=0.15)+
-          ylab('Numbers') + xlab('time')+
-          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
 
-#}
-png("gaur_anthrax_100y_SI.png",width = 25, height = 15, units = 'cm', res = 600)
+png("gaur_hs_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
 ggplot() + 
-    geom_line(data = wow2,aes(x = time ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.15) + 
-    geom_line(data = wow2,aes(x = time, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.15)+
-    #geom_line(data = s,aes(x = time, y = R, color = 'R' ),size = 1)+
-    #geom_line(data = wow2, aes(x = time, y = N,  color = 'total', group = run),size = 0.1, alpha = 0.15)+
+    geom_line(data = df_m4_w,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+    #geom_line(data = df_m4_w,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m4_w,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m4_w,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m4_w, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.15)+
+    #geom_line(data = df_m2_w, aes(x = time_y, y = N_change, group = run, color = 'total change (%)' ),size = 0.1, alpha = 0.15)+
+   
+  labs(x="years", y= "population",
+       title= 'Gaur population with HS infection, 100 simulations') +
     
-   labs(x="days", y= "population",
-       title= 'Gaur population with anthrax infection, 100 simulations') +
-
-    scale_color_manual( name = "population",
-                       #labels = c("I"),
-                       labels = c('S','I'),
-                       
+   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+    
+   scale_color_manual( name = "population",
+                       labels = c('S','I',"R",'total' ),#'total change (%)'),
                        values = c('S'='seagreen4',
-                                  'I'='firebrick'
-                                  #"R"='royalblue',
-                                  #"total"='black'
-                                  ))+ 
+                                  #'E'='darkorange2',
+                                  'I'='firebrick',
+                                  "R"='dodgerblue3',
+                                  "total"='#153030'))+ #blackgreen
+                                  #'total change (%)'='#0D9EAD' #teal
+                                  
       theme_bw() +
       theme( plot.title = element_text(size = 18),
            axis.title.x = element_text(size = 15),
@@ -134,8 +168,13 @@ ggplot() +
            legend.title=element_text(size=11),
            legend.text = element_text(size = 11),
            axis.text=element_text(size=13))+
-  stat_summary(wow2, mapping =aes( x = time, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
-  stat_summary(wow2, mapping = aes( x = time, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
-  stat_summary(wow2, mapping = aes(x = time, y = N, group = 1), fun=mean, geom="line", colour="springgreen4",size = 0.5)
+      guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+  
+  stat_summary(df_m4_w, mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+  #stat_summary(df_m4_w, mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+  stat_summary(df_m4_w, mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+  stat_summary(df_m4_w, mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+  stat_summary(df_m4_w, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+  #stat_summary(df_m4_w, mapping = aes(x = time_y, y = N_change, group = 1), fun=mean, geom="line", colour="#0D9EAD",size = 0.5) #teal
 
   dev.off()

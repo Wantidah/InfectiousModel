@@ -1161,7 +1161,7 @@ for (i in 1:length(mod_res)){
 for (i in 1:length(mod_res)){
   assign(paste0("Res_time_", i), out_put_fun_time(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
 }
-plot_res_min<-list(Res_min_1)
+
 plot_res_min<-list(Res_min_1,
                    Res_min_2,
                    Res_min_3,
