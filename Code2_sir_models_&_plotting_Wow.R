@@ -82,7 +82,7 @@ model1 =
   }
 
 ############## MODEL 2 SI - Anthrax #####
-model2=
+model2 = 
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -884,8 +884,9 @@ c = round((N/rat)*1.3, 0)
 sa = round((N/rat)*1.3,0) 
 a = round((N/rat)*1.5,0) 
 
-end.time = 10 * 365 #duration of prediction
+end.time = 100 * 365 #duration of prediction
 n_rep = 100
+
 ############## SINGLE RUNS with plotting output - ALL MODELS  ###############################
 # > MODEL 1 - NO infection #####
 initials_m1 <- c(c = c, sa = sa, a = a )
@@ -899,6 +900,7 @@ parameters_m1 <- c(mu_b = 0.34/365,
                 tau = 1)
 res_model1 <- model1(pars = parameters_m1, init = initials_m1,
                 end.time = end.time)
+
 PlotMods(res_model1)
 
 # > MODEL 2 SI - Anthrax #####
@@ -1003,7 +1005,7 @@ parameters_m7 <- c(
   mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 50%  (assume)
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials),
+  N = sum(initials_m7),
   tau=1
 )
 res_model7<-model7(pars = parameters_m7, init = initials_m7,
@@ -1012,7 +1014,7 @@ PlotMods(res_model7)
 
 ## MULTIPLE RUNS - ALL MODELS ################################
 #### set end.time and replication times 
-end.time <- 10 * 365
+end.time <- 100 * 365
 n_rep <- 100
 
 # use the parameters same as single run
@@ -1029,20 +1031,20 @@ sim_rep_m2<-replicate(n_rep,(model2(pars = parameters_m2, init = initials_m2,
 sim_rep_m3<-replicate(n_rep,(model3(pars = parameters_m3, init = initials_m3,
                                     end.time = end.time)))
 
-# > MODEL 4 SIRS - Hemorrhagic septicemia #####
+# > MX RUNS MODEL 4 SIRS - Hemorrhagic septicemia #####
 sim_rep_m4<-replicate(n_rep,(model4(pars = parameters_m4, init = initials_m4,
                                     end.time = end.time)))
 
-# > MODEL 5 SEIRS - Lumpy skin disease #####
+# > MX RUNS MODEL 5 SEIRS - Lumpy skin disease #####
 sim_rep_m5<-replicate(n_rep,(model5(pars = parameters_m5, init = initials_m5,
                                     end.time = end.time)))
 
-# > MODEL 6 SEIRS - Foot and mouth disease #####
+# > MX RUNS MODEL 6 SEIRS - Foot and mouth disease #####
 sim_rep_m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
                                     end.time = end.time)))
 
-# > MODEL 7 SEIRS - Lumpy skin disease #####
-sim_rep_m7<-replicate(n_rep,(model5(pars = parameters_m7, init = initials_m7,
+# > MX RUNS MODEL 7 SEIRS - Lumpy skin disease #####
+sim_rep_m7<-replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
                                     end.time = end.time)))
 
 
@@ -1116,6 +1118,7 @@ my_imp_ext_N<-function(x=time,y=N,...){
 # at time (i-1), and (i) I or N  == 0 , count == 1 
 # 1 = disease/population extinct from the population at time i
 # 0 = no disease/population extinction 
+# same as function #2 but the result is  == length(res_no[!is.na(res_no)])
 
 # disease persistence
 my_imp_ext_na_I<-function(x=time,y=I,...){
@@ -1154,82 +1157,193 @@ my_imp_ext_na_N<-function(x=time,y=N,...){
 ## SET UP FUNCTIONS FOR MODEL RUNS LOOP THROUGH PARS ################################
 #### set initial values - change for populations
 
-#gaur poplation
-N = 300 
-#ratio c:sa:a
-rat = 1.3+1.3+1.5
-N/rat
-c = round((N/rat)*1.3, 0)
-sa = round((N/rat)*1.3,0) 
-a = round((N/rat)*1.5,0) 
-
 ############## FUNCTION  6  MODEL PAR LOOPS MIN TIME & COUNT I EXTINCTIONS #######
 
-##### model 2 Anthrax SI #####
-my_fun_model2_ant_ep<-function() {
+model2_anth_extinct <-function() {
   for (k in 1:length(beta)){
   for (i in 1:length(rho)) {
-    parameters <- c(beta_a = beta[k], 
-                    beta_sa = beta[k], 
-                    beta_c = beta[k],
-                    gamma_c = (1/(1/24))/365,
-                    gamma_sa = (1/(1/24))/365,
-                    gamma_a = (1/(1/24))/365,
-                    rho_c= rho[i],
-                    rho_sa= rho[i],
-                    rho_a= rho[i],
+    parameters <- c(beta_a = beta[k], beta_sa = beta[k],  beta_c = beta[k],
+                    gamma_c = (1/(1/24))/365,gamma_sa = (1/(1/24))/365, gamma_a = (1/(1/24))/365,
+                    rho_c= rho[i], rho_sa= rho[i],rho_a= rho[i],
+                    mu_b = 0.34/365,  mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
+                    delta_c = 1/365,delta_sa = 1/(3*365), 
                     epsilon = 2e-5,
-                    N = sum(initials),
-                    tau=1,
-                    mu_b = 0.34/365, 
-                    mu_c = 0.27/365, 
-                    mu_sa = 0.15/365,
-                    mu_a = 0.165/365,
-                    delta_c = 1/365,
-                    delta_sa = 1/(3*365))
+                    N = sum(initials), 
+                    tau=1)
     
     initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+    
     get_time <- model2(pars = parameters, init = initials,
-                       end.time = end.time)
-    res_min[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-    res_num_ext[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-    res_time_inf[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
+                                   end.time = end.time)
+    
+    res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+    res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+    res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+    
+    res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+    res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+    res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
   }}
-  d <- list(res_min,res_num_ext,res_time_inf)
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
   d
 }
 
-model3_tb<-function() {
+model3_tb_extinct<-function() {
   for (k in 1:length(beta)){
     for (i in 1:length(rho)) {
      
-       parameters <- c(beta_a = beta[k], 
-                      beta_sa = beta[k], 
-                      beta_c = beta[k],
-                      gamma_c = (1/(1/24))/365,
-                      gamma_sa = (1/(1/24))/365,
-                      gamma_a = (1/(1/24))/365,
-                      rho_c= rho[i],
-                      rho_sa= rho[i],
-                      rho_a= rho[i],
-                      epsilon = 2e-5,
-                      N = sum(initials),
-                      tau=1,
-                      mu_b = 0.34/365, 
-                      mu_c = 0.27/365, 
-                      mu_sa = 0.15/365,
-                      mu_a = 0.165/365,
-                      delta_c = 1/365,
-                      delta_sa = 1/(3*365))
+       parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
+                        phi_c = 0.21/30, phi_sa = 0.21/30, phi_a = 0.21/30,
+                        gamma_c = 0, gamma_sa = 0, gamma_a = 0,
+                        rho_c= rho[i], rho_sa= rho[i],rho_a= rho[i],
+                        mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
+                        mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
+                        delta_c = 1/365, delta_sa = 1/(3*365),
+                        epsilon = 2e-5,
+                        N = sum(initials), tau=1)
       
-      initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
-      get_time <- model2_ep(pars = parameters, init = initials,
-                            end.time = end.time)
-      res_min[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
+      get_time <- model3(pars = parameters, init = initials,
+                         end.time = end.time)
+      
+      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      
+      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
     }}
-  d <- list(res_min,res_num_ext,res_time_inf)
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
+  d
+}
+
+model4_hs_extinct<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+      
+      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
+                       gamma_c  =1/3/365, gamma_sa =1/3/365, gamma_a =1/3/365,
+                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
+                       omega_c = 1/180/365, omega_sa = 1/180/365, omega_a = 1/180/365,
+                       epsilon = 2e-5,
+                       mu_b = 0.34/365, mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
+                       delta_c = 1/365, delta_sa = 1/(3*365),
+                       N = sum(initials),
+                       tau=1)
+      
+      initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = a, Ia = 1, Ra = 0)
+      
+      get_time <- model4_ep(pars = parameters, init = initials,
+                            end.time = end.time)
+      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      
+      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
+    }}
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
+  d
+}
+
+model5_lsd_extinct<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+      
+      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
+                       phi_c = 1/7/365, phi_sa = 1/7/365,phi_a = 1/7/365,
+                       gamma_c = 0, gamma_sa = 0,gamma_a = 0,
+                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
+                       omega_c = (1/365)/365, omega_sa =  (1/365)/365, omega_a = (1/365)/365,
+                       mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), 
+                       mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
+                       delta_c = 1/365, delta_sa = 1/(3*365),
+                       epsilon = 2e-5,
+                       N = sum(initials),
+                       tau=1)
+      
+      c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
+      
+      get_time <- model5(pars = parameters, init = initials,
+                            end.time = end.time)
+      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      
+      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
+    }}
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
+  d
+}
+
+model6_fmd_extinct<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+      
+      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
+                       phi_c = 1/8/365, phi_sa = 1/6/365, phi_a = 1/6/365,
+                       gamma_c = 1/5/365, gamma_sa = 1/5/365, gamma_a = 1/5/365,
+                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
+                       omega_c = (1/120)/365, omega_sa =  (1/120)/365, omega_a = (1/565)/365, omega_m = (1/144)/365,
+                       epsilon = 2e-5,
+                       mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
+                       mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
+                       delta_c = 1/365, delta_sa = 1/(3*365),
+                       N = sum(initials),
+                       tau=1)
+      
+      initials <- c c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
+      
+      get_time <- model6(pars = parameters, init = initials,
+                            end.time = end.time)
+      
+      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      
+      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
+    }}
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
+  d
+}
+
+model7_bru_extinct<-function() {
+  for (k in 1:length(beta)){
+    for (i in 1:length(rho)) {
+      
+      parameters <- c(beta_c = 2/365, beta_sa = 2/365,beta_a = 2/365,
+                      phi_c = 1/14/365, phi_sa = 1/14/365, phi_a = 1/14/365,
+                      gamma_c = 1/2*365, gamma_sa = 1/2*365, gamma_a = 1/2*365,
+                      rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
+                      alpha = 0.9,
+                      omega_c = (1/180)/365, omega_sa =  (1/180)/365, omega_a = (1/180)/365, omega_m = (1/180)/365,
+                      epsilon = 2e-5,
+                      mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 50%  (assume)
+                      mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
+                      delta_c = 1/365, delta_sa = 1/(3*365),
+                      N = sum(initials),
+                      tau=1)
+      
+      initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
+      get_time <- model6(pars = parameters, init = initials,
+                         end.time = end.time)
+      
+      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
+      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
+      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
+      
+      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
+      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
+      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
+    }}
+  
+  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
   d
 }
 ## PLOT DATA PREPARATION #################################

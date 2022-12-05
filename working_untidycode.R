@@ -81,8 +81,8 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
   mdat
 }
 
-wow<-single_pop_sim_prep(x = m6, n_rep=n_rep, end.time= end.time, melt = T)
-wow2<- single_pop_sim_prep(x = m6, n_rep=n_rep, end.time= end.time, melt = F)
+wow<-single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = T)
+wow2<- single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = F)
 #total N
 dave<-single_pop_sim_prep(x = m6, n_rep=n_rep, end.time= end.time)
 
@@ -92,6 +92,8 @@ table(wow2$time)
 table(wow2$run)
 str(dave)
 str(wow2)
+
+
 
 #plot
 #dave's
@@ -106,3 +108,34 @@ str(wow2)
           stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
 
 #}
+png("gaur_anthrax_100y_SI.png",width = 25, height = 15, units = 'cm', res = 600)
+ggplot() + 
+    geom_line(data = wow2,aes(x = time ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.15) + 
+    geom_line(data = wow2,aes(x = time, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.15)+
+    #geom_line(data = s,aes(x = time, y = R, color = 'R' ),size = 1)+
+    #geom_line(data = wow2, aes(x = time, y = N,  color = 'total', group = run),size = 0.1, alpha = 0.15)+
+    
+   labs(x="days", y= "population",
+       title= 'Gaur population with anthrax infection, 100 simulations') +
+
+    scale_color_manual( name = "population",
+                       #labels = c("I"),
+                       labels = c('S','I'),
+                       
+                       values = c('S'='seagreen4',
+                                  'I'='firebrick'
+                                  #"R"='royalblue',
+                                  #"total"='black'
+                                  ))+ 
+      theme_bw() +
+      theme( plot.title = element_text(size = 18),
+           axis.title.x = element_text(size = 15),
+           axis.title.y = element_text(size = 15),
+           legend.title=element_text(size=11),
+           legend.text = element_text(size = 11),
+           axis.text=element_text(size=13))+
+  stat_summary(wow2, mapping =aes( x = time, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+  stat_summary(wow2, mapping = aes( x = time, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+  stat_summary(wow2, mapping = aes(x = time, y = N, group = 1), fun=mean, geom="line", colour="springgreen4",size = 0.5)
+
+  dev.off()
