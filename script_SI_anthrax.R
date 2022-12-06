@@ -1,3 +1,11 @@
+############## LOAD PACKAGES ##########
+library(EpiDynamics)
+library(dplyr)   
+library(tidyverse)
+library(reshape2) 
+library(stringr)
+library(ggplot2); theme_set(theme_bw())
+
 ############## 2) SI model (Anthrax)  #####
 model2=
   function (pars, init, end.time)  {
@@ -82,8 +90,9 @@ model2=
     return(list(pars = pars, init = init2, time = time, results = results))
   }
 
-#estimate the age structure proportion
+# gaur population
 N=300
+
 #calf:subadult:adult ratio
 rat = 1.3+1.3+1.5
 N/rat
@@ -91,20 +100,20 @@ c = round((N/rat)*1.3, 0)
 sa = round((N/rat)*1.3,0) 
 a = round((N/rat)*1.5,0) 
 
+initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
+
+end.time <- 100*365 #predict for ... years
+
 #SI parameters
-#same transmission rate (beta), case fatality rate (rho)
-#gaur
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-end.time <- 2*365 #predict for ... years
 parameters <- c(
   beta_c = 5e-5,
-  gamma_c = (1/(1/24))/365,
+  gamma_c = 1,
   rho_c = 1,
   beta_sa = 5e-5,
-  gamma_sa = (1/(1/24))/365,
+  gamma_sa = 1,
   rho_sa = 1,
   beta_a = 5e-5,
-  gamma_a = (1/(1/24))/365,
+  gamma_a = 1,
   rho_a = 1,
   epsilon = 2e-5,
   N = sum(initials),
@@ -117,116 +126,48 @@ parameters <- c(
   delta_sa = 1/(3*365)
 )
 
-#single run
-
-model2(pars = parameters, init = initials,
+# TEST
+# single run
+res_model2 <-model2(pars = parameters, init = initials,
        end.time = end.time)
 
-## MULTIPLE RUNS ################################
+str(res_model2)
 
-#### set initial values - change for meta populaions
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-end.time <- 100*365 #predict for ... years
-n_rep <- 100
-############## MODEL 2) SI Anthrax MULTIPLE RUNS  #####
+#minimum I,N extinction
+min(subset(res_model2$results,I==0)$time)
+min(subset(res_model2$results,N==0)$time)
 
+#plot epi
+#PlotMods(res_model2)
 
-sim_run_anthrax_rep<-replicate(n_rep,(model2(pars = parameters, init = initials,
-                                             end.time = end.time)))
-class(sim_run_anthrax_rep)
+#convert to data.frame, change days -> years
+res_model2<-res_model2$results %>%
+  mutate(time_y = time/365) %>% #convert day to year for plotting
+  as.data.frame()
 
-
-write.table(sim_run_anthrax_rep, file="sim_run_anthrax_rep.txt", row.names=FALSE, col.names=FALSE)
-####### plot SI ######
-res_si_gaur <- model2(pars = parameters, init = initials,
-                      end.time = end.time)
-PlotMods(res_si_gaur)
-
-
-#sum of populations
-res_si_gaur$results$N<-rowSums(res_si_gaur$results[,2:6])
-class(res_si_gaur)
-plot(rowSums(res_si_gaur$results[,2:6]), main = "Anthrax: gaur total population", 
-     xlab="time",ylab="animal")
-
-
-res_si_gaur_df<-data.frame(res_si_gaur$total)
-View(res_si_gaur_df)
-#buffalo
-N = 70
-rat = 1+6+5
-N/rat
-c = (N/rat)*1
-sa = (N/rat)*6
-a = (N/rat)*5
-
-N==a+sa+c
-
-initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = a, Ia = 1 )
-
-end.time <- 100*365 
-
-parameters <- c(
-  beta_c = 0.0001,
-  gamma_c = (1/(1/24))/365,
-  rho_c = 1,
-  beta_sa = 0.0001,
-  gamma_sa = (1/(1/24))/365,
-  rho_sa = 1,
-  beta_a = 0.0001,
-  gamma_a = (1/(1/24))/365,
-  rho_a = 1,
-  epsilon = 2e-5,
-  N = sum(initials),
-  tau=1,
+# plot SI Anthrax ######
+p<-ggplot() + 
+  geom_line(data = res_model2,aes(x = time_y ,y = S, color = 'S')) + 
+  geom_line(data = res_model2,aes(x = time_y, y = I, color = 'I' ))+
+  geom_line(data = res_model2, aes(x = time_y, y = N,color = 'total'))+
   
-  mu_b = 0.37/365, 
-  mu_c = 0.27/365, 
-  mu_sa = 0.15/365,
-  mu_a = 0.15/365,
-  delta_c = 1/365,
-  delta_sa = 1/(3*365),
-  N = sum(initials), 
-  tau = 1)
-
-#plot
-res_si <- model2(pars = parameters, init = initials,
-                 end.time = end.time)
-PlotMods(res_si)
-
-View(res_si$results)
-
-min(subset(res_si$results,Isa==0)$time)
-
-#sum of populations
-res_si$total<-rowSums(res_si$results[,2:6])
-plot(rowSums(res_si$results[,2:6]), main = "Anthrax: buffalo total population", 
-     xlab="time",ylab="animal")
-
-
-#combine plot
-#get the total population compared between non-infectious and infectious
-non<-res_gaur_df
-inf<-res_si_gaur_df
-
-tot_df <-cbind(non, inf)
-tot_df$time <-seq.int(nrow(tot_df))
-
-str(tot_df)
-
-ggplot() + 
-  geom_line(data = tot_df,aes(x = time ,y = res_si_gaur.total, color = 'res_si_gaur.total')) + 
-  geom_line(data = tot_df,aes(x = time, y = res_g.total, color = 'res_g.total' ))+
-  labs(x="days", y="total population (N)",
-       title='Gaur total population in 100 years') +
-  scale_color_manual(name = "N",
-                     labels = c('non-infection','anthrax'),
-                     values = c('#009988','#cc6677'))+ #0c7bdc #0077bb
+  labs(x="years", y= "population",
+       title= 'Gaur population with anthrax infection, 1 simulation, 100 years') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  
+  scale_color_manual( name = "population",
+                      labels = c('S','I','total' ),
+                      values = c('S'='seagreen4',
+                                 'I'='firebrick',
+                                 "total"='#153030'))+ 
+  theme_bw() +
   theme( plot.title = element_text(size = 18),
          axis.title.x = element_text(size = 15),
          axis.title.y = element_text(size = 15),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))
+         axis.text=element_text(size=13))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-?scale_colour_manual
+ggsave("gaur_anthrax_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)

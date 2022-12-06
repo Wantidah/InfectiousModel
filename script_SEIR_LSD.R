@@ -1,15 +1,10 @@
-#estimate the age structure proportion
-N=300
-#calf:subadult:adult ratio
-rat = 1.3+1.3+1.5
-N/rat
-c = round((N/rat)*1.3, 0)
-sa = round((N/rat)*1.3,0) 
-a = round((N/rat)*1.5,0) 
-
-initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
-
-end.time <- 20*365 #predict for ... years
+############## LOAD PACKAGES ##########
+library(EpiDynamics)
+library(dplyr)   
+library(tidyverse)
+library(reshape2) 
+library(stringr)
+library(ggplot2); theme_set(theme_bw())
 
 ############## 5) SEIR MODEL  Lumpy skin disease ######
 
@@ -190,64 +185,66 @@ parameters <- c(
   tau=1
 )
 
+# gaur population
+N=300
+#calf:subadult:adult ratio
+rat = 1.3+1.3+1.5
+N/rat
+c = round((N/rat)*1.3, 0)
+sa = round((N/rat)*1.3,0) 
+a = round((N/rat)*1.5,0) 
 
-####### plot SEIR ######
-res_seir_gaur <- model5(pars = parameters, init = initials,
-                       end.time = end.time)
+initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
+              Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 
-min(subset(res_seir_gaur$results,Sa==0)$time)
+end.time <- 100*365 #predict for ... years
 
-PlotMods(res_seir_gaur)
-str(res_seir_gaur)
+# TEST
+# single run
+res_model5 <- model5(pars = parameters, init = initials,
+                     end.time = end.time)
+str(res_model5)
 
+#minimum I,N extinction
+min(subset(res_model5$results,I==0)$time)
+min(subset(res_model5$results,N==0)$time)
 
-plot(res_seir_gaur$results$N, main = "LSD gaur total population", 
-     xlab="time",ylab="animal")
+#plot epi
+#PlotMods(res_model5)
 
+#convert to data.frame, change days -> years
+res_model5<-res_model5$results %>%
+  mutate(time_y = time/365) %>% #convert day to year for plotting
+  as.data.frame()
 
-###### combine plot #####
-#get the total population compared between non-infectious and infectious
-non<-res_gaur_df
-inf<-res_seir_gaur_df
-
-tot_df <-cbind(non, inf)
-tot_df$time <-seq.int(nrow(tot_df))
-
-str(tot_df)
-tail(tot_df)
-
-end.time 
-
-if (end.time < 36500) {
-  ggplot() + 
-    geom_line(data = tot_df,aes(x = time ,y = res_seir_gaur.total, color = 'res_si_gaur.total')) + 
-    geom_line(data = tot_df,aes(x = time, y = res_g.total, color = 'res_g.total' ))+
-    labs(x="days", y="total population (N)",
-         title='Gaur total population in 20 years') +
-    scale_color_manual(name = "N",
-                       labels = c('non-infection','LSD'),
-                       values = c('#009988','#cc6677'))+ #0c7bdc #0077bb
-    theme( plot.title = element_text(size = 18),
-           axis.title.x = element_text(size = 15),
-           axis.title.y = element_text(size = 15),
-           legend.title=element_text(size=11),
-           legend.text = element_text(size = 11),
-           axis.text=element_text(size=13)) 
+# plot SEIR LSD ######
+p<-ggplot() + 
+  geom_line(data = res_model5,aes(x = time_y ,y = S, color = 'S')) + 
+  geom_line(data = res_model5,aes(x = time_y, y = E,  color = 'E' ))+
+  geom_line(data = res_model5,aes(x = time_y, y = I, color = 'I' ))+
+  geom_line(data = res_model5,aes(x = time_y, y = R, color = 'R' ))+
+  geom_line(data = res_model5, aes(x = time_y, y = N,color = 'total'))+
   
-} else {
-  ggplot() + 
-    geom_line(data = tot_df,aes(x = time ,y = res_seir_gaur.total, color = 'res_si_gaur.total')) + 
-    geom_line(data = tot_df,aes(x = time, y = res_g.total, color = 'res_g.total' ))+
-    labs(x="days", y="total population (N)",
-         title='Gaur total population in 100 years') +
-    scale_color_manual(name = "N",
-                       labels = c('non-infection','LSD'),
-                       values = c('#009988','#cc6677'))+ #0c7bdc #0077bb
-    theme( plot.title = element_text(size = 18),
-           axis.title.x = element_text(size = 15),
-           axis.title.y = element_text(size = 15),
-           legend.title=element_text(size=11),
-           legend.text = element_text(size = 11),
-           axis.text=element_text(size=13))
-}
+  labs(x="years", y= "population",
+       title= 'Gaur population with LSD infection, 1 simulation, 100 years') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'total' ),#'total change (%)'),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "total"='#153030'))+ 
+  
+  theme_bw() +
+  theme( plot.title = element_text(size = 18),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
+ggsave("gaur_LSD_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)

@@ -1,4 +1,3 @@
-
 ############## LOAD PACKAGES ##########
 library(EpiDynamics)
 library(dplyr)   
@@ -7,8 +6,8 @@ library(reshape2)
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
-############## 6) SEIRMS/E MODEL Foot and mouth disease ######
-model6=
+############## 7) SEIRMS/E MODEL Brucellosis ######
+model7=
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -24,7 +23,7 @@ model6=
         change[1, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[2] <- (1-alpha) * mu_bI * Ia 
         change[2, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)
+        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)/N
         change[3, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[4] <- phi_c * Ec 
         change[4, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -62,7 +61,7 @@ model6=
         rate[20] <- (delta_c * Sc) + (omega_m * M)  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
-        rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
+        rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
         change[21, ] <- c(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[22] <- mu_c * Sm
         change[22, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
@@ -70,7 +69,7 @@ model6=
         change[23, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
-        rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)
+        rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[24, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[25] <- phi_sa * Esa 
         change[25, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
@@ -102,7 +101,7 @@ model6=
         # adult
         rate[38] <- epsilon * Sa
         change[38, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0) 
-        rate[39] <- beta_a * Sa * (Ic+Isa+Ia)
+        rate[39] <- beta_a * Sa * (Ic+Isa+Ia)/N
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
         change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0)
@@ -158,7 +157,7 @@ model6=
     
     #sum population based on column name
     results<-data.frame(time, 
-                        Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra, M, Sm)%>% 
+                        Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
       dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
@@ -166,11 +165,13 @@ model6=
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
- 
-    }
+    
+  }
 
-#gaur population
+
+# gaur population
 N=300
+
 #calf:subadult:adult ratio
 rat = 1.3+1.3+1.5
 N/rat
@@ -183,65 +184,66 @@ initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, 
 
 end.time <- 100*365 #predict for ... years
 
-#SEIRM FMD parameter
+#SEIRM Brucellosis parameter
 parameters <- c( 
-  beta_c = 0.52/365,
-  beta_sa = 0.52/365,
-  beta_a = 0.52/365,
-  phi_c = 1/8,
-  phi_sa = 1/6,
-  phi_a = 1/6,
-  gamma_c = 1/5,
-  gamma_sa = 1/5,
-  gamma_a = 1/5,
+  beta_c = 2/365,
+  beta_sa = 2/365,
+  beta_a = 2/365,
+  phi_c = 1/14,
+  phi_sa = 1/14,
+  phi_a = 1/14,
+  gamma_c = 1/(2*365),
+  gamma_sa = 1/(2*365),
+  gamma_a = 1/(2*365),
   rho_c = 0.1,
   rho_sa = 0.05,
   rho_a = 0.03, 
-  alpha = 0.5,
-  omega_c = (1/120),
-  omega_sa =  (1/120), 
-  omega_a = (1/565),
-  omega_m = (1/144),
+  alpha = 0.9,
+  omega_c = 1/180,
+  omega_sa =  1/180, 
+  omega_a = 1/180,
+  omega_m = 1/180,
   epsilon = 2e-5,
-  mu_b = 0.34/365, 
-  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
+    mu_b = 0.34/365, 
+  mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 10%  (assume)
   mu_c = 0.27/365, 
   mu_sa = 0.15/365,
   mu_a = 0.165/365,
   delta_c = 1/365,
   delta_sa = 1/(3*365),
-  N = sum(initials),
+    N = sum(initials),
   tau=1
 )
 
 # TEST
 # single run
-res_model6 <- model6(pars = parameters, init = initials,
-                             end.time = end.time)
-str(res_model6)
+res_model7 <- model7(pars = parameters, init = initials,
+                     end.time = end.time)
+str(res_model7)
 
 #minimum I extinction
-min(subset(res_model6,N==0)$time)
+min(subset(res_model7$results,I==0)$time)
 
 #plot epi
-#PlotMods(res_model6)
+#PlotMods(res_model7)
 
 #convert to data.frame, change days -> years
-res_model6<-res_model6$results %>%
+res_model7<-res_model7$results %>%
   mutate(time_y = time/365) %>% #convert day to year for plotting
   as.data.frame()
 
-# plot SEIRM FMD ######
+
+# plot SEIRM Burcellosis ######
 p<-ggplot() + 
-  geom_line(data = res_model6,aes(x = time_y ,y = S, color = 'S')) + 
-  geom_line(data = res_model6,aes(x = time_y, y = E,  color = 'E' ))+
-  geom_line(data = res_model6,aes(x = time_y, y = I, color = 'I' ))+
-  geom_line(data = res_model6,aes(x = time_y, y = R, color = 'R' ))+
-  geom_line(data = res_model6, aes(x = time_y, y = M, color = 'M'))+
-  geom_line(data = res_model6, aes(x = time_y, y = N,color = 'total'))+
+  geom_line(data = res_model7,aes(x = time_y ,y = S, color = 'S')) + 
+  geom_line(data = res_model7,aes(x = time_y, y = E,  color = 'E' ))+
+  geom_line(data = res_model7,aes(x = time_y, y = I, color = 'I' ))+
+  geom_line(data = res_model7,aes(x = time_y, y = R, color = 'R' ))+
+  geom_line(data = res_model7, aes(x = time_y, y = M, color = 'M'))+
+  geom_line(data = res_model7, aes(x = time_y, y = N,color = 'total'))+
   
   labs(x="years", y= "population",
-       title= 'Gaur population with FMD infection, 1 simulation, 100 years') +
+       title= 'Gaur population with Brucellosis infection, 1 simulation, 100 years') +
   
   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
   
@@ -263,5 +265,4 @@ p<-ggplot() +
          axis.text=element_text(size=13))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-ggsave("gaur_fmd_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
-
+ggsave("gaur_bru_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)

@@ -5,10 +5,10 @@
 
 rm(list=ls())
 ############## LOAD PACKAGES ##########
-
-library(reshape)
 library(EpiDynamics)
-library(plyr)     
+library(dplyr)  
+library(plyr)
+library(tidyverse)
 library(reshape2) 
 library(stringr)
 library(emdbook)  
@@ -49,8 +49,7 @@ model1 =
         init <- c(c = c, sa = sa, a = a)
         for (i in 1:6) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] <0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -68,144 +67,90 @@ model1 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
-                        c,  sa,  a)%>% 
+    results<-data.frame(time, c,  sa,  a)%>% 
       dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
     
     return(list(pars = pars, init = init2, time = time, results = results))
+
+}
+  
+# TEST MODEL 1 Population dynamic, no infection ######
+# set initial values
+end.time <- 365 #predict for ... years
     
-  }
-
-
-############## --> TEST MODEL 1 Population dynamic, no infection ######
-
-#gaur population 
+#gaur population #########
 N = 300 
-
-#estimate the age structure proportion
 #calf:subadult:adult ratio
 rat = 1.3+1.3+1.5
 N/rat
 c = round((N/rat)*1.3, 0)
 sa = round((N/rat)*1.3,0) 
 a = round((N/rat)*1.5,0) 
+#same initials population for every species
+initials1 <- c(c = c, sa = sa, a = a )
 
-initials <- c(c = c, sa = sa, a = a )
-
-end.time <- 100*365 #predict for ... years
-
-parameters <- c(mu_b = 0.34/365, 
+pm1<- c(mu_b = 0.34/365, 
                 mu_c = 0.27/365, 
                 mu_sa = 0.15/365,
                 mu_a = 0.165/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials1), 
                 tau = 1)
-
-
-res_g <- model1(pars = parameters, init = initials,
-                end.time = end.time)
-
-PlotMods(res_g)
-
-str(res_g)
-##########################
-# banteng population
+# banteng population #########
 N = 290
 #calf:subadult:adult ratio
 rat = 1.1+1.3+1
 c = N/rat*1.1
 sa = N/rat*1.3
 a = N/rat*1
-c+sa+a
-
-initials <- c(c = c, sa = sa, a = a )
-end.time <- 20*365 #predict for ... years
-
-parameters <- c(mu_b = 0.4/365, 
+initials2 <- c(c = c, sa = sa, a = a )
+pm2 <- c(mu_b = 0.4/365, 
                 mu_c = 0.26/365, 
                 mu_sa = 0.26/365,
                 mu_a = 0.15/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials2), 
                 tau = 1)
 
-
-res_bt <- model1(pars = parameters, init = initials,
-                 end.time = end.time)
-PlotMods(res_bt)
-
-#sum of populations
-plot(rowSums(res_bt$results[,2:4]), 
-     main = "banteng total population",
-     xlab="time",ylab="animal")
-
-#buffalo population (HKK, Thailand)
+#buffalo population #########
 N = 70
+#calf:subadult:adult ratio
 rat = 1+6+5
 N/rat
 c = (N/rat)*1
 sa = (N/rat)*6
 a = (N/rat)*5
-
-
-initials <- c(c = c, sa = sa, a = a )
-end.time <- 100*365 #predict for ... years
-
-parameters <- c(mu_b = 0.37/365, 
+initials3 <- c(c = c, sa = sa, a = a )
+pm3 <- c(mu_b = 0.37/365, 
                 mu_c = 0.27/365, 
                 mu_sa = 0.15/365,
                 mu_a = 0.15/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials3), 
                 tau = 1)
 
-res_buf<- model1(pars = parameters, init = initials,
-                 end.time = end.time)
-PlotMods(res_buf)
-
-#sum of populations
-res_buf$total<-rowSums(res_buf$results[,2:4])
-plot(res_buf$total, main = "buffalo total population", 
-     xlab="time",ylab="animal")
-
-View(res_buf$results)
-
-res_buf_df<-data.frame(res_buf$total)
-View(res_buf_df)
-#serow population
-#assume, mortality as an average for mammal
+#serow population  #########
 N = 120 
-
+#calf:subadult:adult ratio
 rat = 1+1+1
 N/rat
 c = round((N/rat)*1,0)
 sa = round((N/rat)*1,0)
 a = round((N/rat)*1,0)
-N==a+sa+c
-
-parameters <- c(mu_b = 0.7/365, 
+initials4 <- c(c = c, sa = sa, a = a )
+pm4<- c(mu_b = 0.7/365, 
                 mu_c = 0.5/365, 
                 mu_sa = 0.15/365,
                 mu_a = 0.28/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials4), 
                 tau = 1)
 
-res_se<- model1(pars = parameters, init = initials,
-                end.time = end.time)
-PlotMods(res_se)
-
-#sum of populations
-res_se$total<-rowSums(res_se$results[,2:4])
-plot(res_se$total, main = "serow total population", 
-     xlab="time",ylab="animal")
-
-#goral population
+#goral population  #########
 #assume
 N = 292
 
@@ -214,24 +159,34 @@ N/rat
 c = round((N/rat)*1,0)
 sa = round((N/rat)*1,0)
 a = round((N/rat)*1,0)
-N==a+sa+c
-
-parameters <- c(mu_b = 0.5/365, 
+initials5 <- c(c = c, sa = sa, a = a )
+pm5<- c(mu_b = 0.5/365, 
                 mu_c = 0.45/365, 
                 mu_sa = 0.27/365,
                 mu_a = 0.17/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials), 
+                N = sum(initials5), 
                 tau = 1)
 
+# list of paramters
+init<-list(initials1,initials2,initials3,initials4,initials5)
+pm <- list (pm1,pm2,pm3,pm4,pm5)
+df<-list()
+nam<-c('Gaur', 'Banteng', 'Buffalo','Serow','Goral')
 
-res_gor<- model1(pars = parameters, init = initials,
-                 end.time = end.time)
-PlotMods(res_gor)
+# test plotting
+for (i in length(pm)) {
+ 
+  df[[i]]<-model1(pars = pm[[i]], init = init[[i]],
+                  end.time = end.time)
+  }
 
-#sum of populations
-res_gor$total<-rowSums(res_gor$results[,2:4])
-plot(res_gor$total, main = "goral total population", 
-     xlab="time",ylab="animal")
+  df[[5]]
+  dfPlotMods(df[[5]]$)
+  
+  #plot sum of populations
+    plot(df[[i]]$N, main = paste0(nam[[i]]," ","total population"), 
+       xlab="time",ylab="numbers")
 
+df

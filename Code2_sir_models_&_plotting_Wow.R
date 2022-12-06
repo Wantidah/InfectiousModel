@@ -14,7 +14,7 @@
 # 5) the outputs will be in matrix -> extract and plot the results
 
 rm(list=ls())
-
+set.seed(111)
 ############## LOAD PACKAGES ##########
 library(EpiDynamics)
 library(dplyr)   
@@ -245,8 +245,7 @@ model3=
         init <- c(Sc = Sc, Ec = Ec, Ic = Ic, Ssa = Ssa, Esa = Esa, Isa = Isa, Sa = Sa, Ea = Ea, Ia = Ia)
         for (i in 1:29) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -908,7 +907,7 @@ PlotMods(res_model1)
 initials_m2 <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 parameters_m2 <- c(
   beta_c = 5e-5, beta_sa = 5e-5, beta_a = 5e-5,
-  gamma_c = (1/(1/24))/365, gamma_sa = (1/(1/24))/365, gamma_a = (1/(1/24))/365,
+  gamma_c = 1, gamma_sa = 1, gamma_a = 1, #assume that animal die in 1 day
   rho_c = 1, rho_sa = 1,  rho_a = 1,
   epsilon = 2e-5,
   mu_b = 0.34/365, 
@@ -922,7 +921,7 @@ res_model2<-model2(pars = parameters_m2, init = initials_m2,
 PlotMods(res_model2)
 
 # >  MODEL 3 SEI - Bovine tuberculosis #####
-initials_m3 <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
+initials_m3 <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = (a-1), Ea = 0, Ia = 1)
 parameters_m3 <- c( 
   beta_c = 0.043/30, beta_sa = 0.043/30, beta_a = 0.043/30,
   phi_c = 0.21/30, phi_sa = 0.21/30, phi_a = 0.21/30,
@@ -941,21 +940,27 @@ PlotMods(res_model3)
 # >  MODEL 4 SIRS - Hemorrhagic septicemia #####
 initials_m4 <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), Ia = 1, Ra = 0)
 parameters_m4 <- c( 
-  beta_c = 0.33/365, beta_sa = 0.33/365, beta_a = 0.33/365,
-  gamma_c  =1/3/365, gamma_sa =1/3/365, gamma_a =1/3/365,
-  rho_c = 0.9, rho_sa = 0.43, rho_a = 0.43,
-  omega_c = 1/180/365, omega_sa = 1/180/365, omega_a = 1/180/365,
+  beta_c = 0.33/365,beta_sa = 0.33/365,beta_a = 0.33/365,
+  gamma_c  =1/3, gamma_sa =1/3, gamma_a =1/3,
+  rho_c = 0.9,rho_sa = 0.43,rho_a = 0.43,
+  omega_c = 1/180,omega_sa = 1/180, omega_a = 1/180,
   epsilon = 2e-5,
-  mu_b = 0.34/365, mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-  delta_c = 1/365, delta_sa = 1/(3*365),
+  mu_b = 0.34/365, 
+  mu_c = 0.27/365, 
+  mu_sa = 0.15/365,
+  mu_a = 0.165/365,
+  delta_c = 1/365,
+  delta_sa = 1/(3*365),
   N = sum(initials_m4),
-  tau=1)
+  tau=1
+)
 
 res_model4<-model4(pars = parameters_m4, init = initials_m4,
                    end.time = end.time)
 PlotMods(res_model4)
 
 # >  MODEL 5 SEIRS - Lumpy skin disease #####
+# FIX PARAMATERS before running#
 initials_m5 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
 parameters_m5 <- c( 
   beta_c = 0.043/30, beta_sa = 0.043/30, beta_a = 0.043/30, 
@@ -978,11 +983,11 @@ PlotMods(res_model5)
 initials_m6 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
 parameters_m6 <- c( 
   beta_c = 0.52/365, beta_sa = 0.52/365, beta_a = 0.52/365,
-  phi_c = 1/8/365, phi_sa = 1/6/365, phi_a = 1/6/365,
-  gamma_c = 1/5/365, gamma_sa = 1/5/365, gamma_a = 1/5/365,
+  phi_c = 1/8, phi_sa = 1/6, phi_a = 1/6,
+  gamma_c = 1/5, gamma_sa = 1/5, gamma_a = 1/5,
   rho_c = 0.1, rho_sa = 0.05, rho_a = 0.03, 
   alpha = 0.5,
-  omega_c = (1/120)/365, omega_sa =  (1/120)/365, omega_a = (1/565)/365, omega_m = (1/144)/365,
+  omega_c = (1/120), omega_sa =  (1/120), omega_a = (1/565), omega_m = (1/144),
   epsilon = 2e-5,
   mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
@@ -995,18 +1000,23 @@ res_model6<-model6(pars = parameters_m6, init = initials_m6,
 PlotMods(res_model6)
 
 # > MODEL 7 SEIRMS/E - Brucellosis  #####
-initials_m7 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
+initials_m7 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
+                 Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m7 <- c( 
-  beta_c = 2/365, beta_sa = 2/365,beta_a = 2/365,
-  phi_c = 1/14/365, phi_sa = 1/14/365, phi_a = 1/14/365,
-  gamma_c = 1/2*365, gamma_sa = 1/2*365, gamma_a = 1/2*365,
+  beta_c = 2/365, beta_sa = 2/365, beta_a = 2/365,
+  phi_c = 1/14, phi_sa = 1/14, phi_a = 1/14,
+  gamma_c = 1/(2*365), gamma_sa = 1/(2*365), gamma_a = 1/(2*365),
   rho_c = 0.1, rho_sa = 0.05, rho_a = 0.03, 
   alpha = 0.9,
-  omega_c = (1/180)/365, omega_sa =  (1/180)/365, omega_a = (1/180)/365, omega_m = (1/180)/365,
+  omega_c = 1/180, omega_sa =  1/180, omega_a = 1/180, omega_m = 1/180,
   epsilon = 2e-5,
-  mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 50%  (assume)
-  mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-  delta_c = 1/365, delta_sa = 1/(3*365),
+  mu_b = 0.34/365, 
+  mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 10%  (assume)
+  mu_c = 0.27/365, 
+  mu_sa = 0.15/365,
+  mu_a = 0.165/365,
+  delta_c = 1/365,
+  delta_sa = 1/(3*365),
   N = sum(initials_m7),
   tau=1
 )
@@ -1049,6 +1059,42 @@ sim_rep_m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
 sim_rep_m7<-replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
                                     end.time = end.time)))
 
+# FUNCTION for plotting simulations
+single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
+  df<-list()
+  #loop for storing new df
+  for (i in 1:n_rep){
+    run <- paste("run", seq(n_rep), sep="")
+    names(df)[i]
+    df[[i]]<- x[,i]$results[,-c(1)]
+    df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
+    
+  }
+  
+  df<-map2(df,run, ~cbind(.x, run = .y))   # adding n_rep to the column
+  df2<- data.table::rbindlist(df)          # binding row
+  
+  if (melt == T) {  #option for melting the data in case we need...
+    
+    df3 <- gather(df2, key = class, value = value, -c(time,run))
+    
+    return(df3 = data.frame(df3))
+  } 
+  
+  else  {
+    return( df2 = data.frame(df2)) 
+  }
+  
+}
+
+df_m4<-single_pop_sim_prep(x=sim_rep_m4, n_rep=n_rep, end.time= end.time, melt = F)
+
+df_m4<- df_m4%>%
+  group_by(run) %>%
+  mutate(N_change = rowSums(across(-c(time), na.rm=TRUE)))
+mutate(N_change = across(row_number() % ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
+                         mutate(time_y = time_d/365) %>% #convert day to year for plotting
+                           as.data.frame()
 
 ## SET UP FUNCTIONS FOR MX METRICS ################################
 
