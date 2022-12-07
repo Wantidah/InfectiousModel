@@ -157,33 +157,27 @@ model5=
 
 
 #SEIR parameter
+
 parameters <- c( 
-  beta_c = 0.043/30,
-  beta_sa = 0.043/30,
-  beta_a = 0.043/30,
-  phi_c = 1/7/365,
-  phi_sa = 1/7/365,
-  phi_a = 1/7/365,
-  gamma_c = 0,
-  gamma_sa = 0,
-  gamma_a = 0,
-  rho_c = 0.03,
-  rho_sa = 0.03,
-  rho_a = 0.03, 
-  omega_c = (1/365)/365,
-  omega_sa =  (1/365)/365, 
-  omega_a = (1/365)/365,
+  beta_c = 0.038, 
+  beta_sa = 0.038, 
+  beta_a = 0.038, 
+  phi_c = 1/7,
+  phi_sa = 1/7,
+  phi_a = 1/7,
+  gamma_c = 1/35, 
+  gamma_sa = 1/35,
+  gamma_a = 1/35,
+  rho_c = 0.05,
+  rho_sa = 0.03, 
+  rho_a = 0.01, 
+  omega_c = 1/180, omega_sa =  1/180, omega_a = 1/180,
   epsilon = 2e-5,
-  mu_b = 0.34/365, 
-  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
-  mu_c = 0.27/365, 
-  mu_sa = 0.15/365,
-  mu_a = 0.165/365,
-  delta_c = 1/365,
-  delta_sa = 1/(3*365),
+  mu_b = 0.34/365,  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10% (assume)   
+  mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
+  delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials),
-  tau=1
-)
+  tau=1)
 
 # gaur population
 N=300
@@ -247,4 +241,4 @@ p<-ggplot() +
          axis.text=element_text(size=13))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-ggsave("gaur_LSD_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+ggsave("gaur_LSD_1sim_100y_all_2.png",p, width = 25, height = 15, units = 'cm', dpi = 600)

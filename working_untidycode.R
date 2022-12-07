@@ -117,54 +117,88 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
   mdat$time = as.numeric(gsub("time", "", mdat$variable))
   mdat
 }
+View(df_m4)
+sim_rep_m<-list(#sim_rep_m1,
+                sim_rep_m2,
+                sim_rep_m3,
+                #sim_rep_m4,
+                sim_rep_m5,
+                #sim_rep_m6,
+                sim_rep_m7)
+
+m<-list()
+m2<-list()
+nam<-c(#'pop',
+       'anthrax',
+       'bTB',
+       #'HS',
+       'LSD',
+       #'FMD',
+       'bru')
+
+sim_rep_m[[1
+
+#Starting loop--------
+for (i in length(sim_rep_m)) {
+  names(sim_rep_m)[[i]]
+  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  m2[[i]]<- m[[i]]%>%
+    group_by(run) %>%
+    mutate(N_change =  ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
+    mutate(time_y = time_d/365) %>%#convert day to year for plotting
+    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%
+    as.data.frame()
+}
+
+str(m)
+
+saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) 
+
 
 df_m3<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = T)
 df_m3<- single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = F)
 df_m3_d<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time)
 
 df_m2<-single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = F)
-df_m4<-single_pop_sim_prep(x=sim_rep_m4, n_rep=n_rep, end.time= end.time, melt = F)
+df_m5<-single_pop_sim_prep(x=sim_rep_m5, n_rep=n_rep, end.time= end.time, melt = F)
 
-df_m6<-single_pop_sim_prep(x=sim_rep_m6, n_rep=n_rep, end.time= end.time, melt = F)
+df_m7<-single_pop_sim_prep(x=sim_rep_m7, n_rep=n_rep, end.time= end.time, melt = F)
 
-df_m6<- df_m6%>%
+df_m5<- df_m5%>%
   group_by(run) %>%
-  mutate(N_change = rowSums(across(-c(time), na.rm=TRUE)))
-  mutate(N_change = across(row_number() % ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
-  mutate(time_y = time_d/365) %>% #convert day to year for plotting
+  mutate(N_change =  ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
+  mutate(time_y = time_d/365) %>%#convert day to year for plotting
+  mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%
   as.data.frame()
 
-View(df_m6)
-str(df_m6)
+View(df_m5)
+str(df_m5)
 
-mutate(across(everything(), ~ if_else(row_number() %in% 3:5, ./2, .)))
+saveRDS(df_m5, file = paste0("df_m5lsd.rds")) 
 
 #plot
-
-png("gaur_fmd_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
+png("gaur_lsd_100sim_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
 ggplot() + 
-    geom_line(data = df_m6,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
-    geom_line(data = df_m6,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
-    #geom_line(data = df_m6, aes(x = time_y, y = N_change, group = run, color = 'total change (%)' ),size = 0.1, alpha = 0.15)+
+    geom_line(data = df_m5,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+    geom_line(data = df_m5,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m5,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m5,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+    #geom_line(data = df_m7, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
+    geom_line(data = df_m5, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
    
   labs(x="years", y= "population",
-       title= 'Gaur population with FMD infection, 100 simulations') +
+       title= 'Gaur population with LSD infection, 100 simulations') +
     
    scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
     
    scale_color_manual( name = "population",
-                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                       labels = c('S','E','I',"R",'total' ),#'total change (%)'),
                        values = c('S'='seagreen4',
                                   'E'='darkorange2',
                                   'I'='firebrick',
                                   "R"='dodgerblue3',
-                                  "M"='lavender',
+                                 # "M"='mediumorchid4',
                                   "total"='#153030'))+ #blackgreen
-                                  #'total change (%)'='#0D9EAD' #teal
                                   
       theme_bw() +
       theme( plot.title = element_text(size = 18),
@@ -175,12 +209,38 @@ ggplot() +
            axis.text=element_text(size=13))+
       guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
   
-  stat_summary(df_m6, mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
-  stat_summary(df_m6, mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
-  stat_summary(df_m6, mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
-  stat_summary(df_m6, mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
-  stat_summary(df_m6, mapping = aes( x = time_y, y = M, group = 1), fun=mean, geom="line", colour="lavender",size = 0.5)+
-  stat_summary(df_m6, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
-  #stat_summary(df_m6, mapping = aes(x = time_y, y = N_change, group = 1), fun=mean, geom="line", colour="#0D9EAD",size = 0.5) #teal
+  stat_summary(df_m5, mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+  stat_summary(df_m5, mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+  stat_summary(df_m5, mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+  stat_summary(df_m5, mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+  #stat_summary(df_m7, mapping = aes( x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",size = 0.5)+
+  stat_summary(df_m5, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+  
+dev.off()
 
-  dev.off()
+#Just total population
+png("gaur_lsd_100sim_100y_N.png",width = 25, height = 15, units = 'cm', res = 600)
+
+ggplot() + 
+    geom_line(data = df_m5, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+  
+  labs(x="years", y= "population",
+       title= 'Gaur population with LSD infection, 100 simulations') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  
+  scale_color_manual( name = "population",
+                      labels = c('total' ),
+                      values = c("total"='#153030'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 18),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+  stat_summary(df_m5, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+
+dev.off()
+
