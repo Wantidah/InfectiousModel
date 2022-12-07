@@ -263,5 +263,5 @@ p<-ggplot() +
          axis.text=element_text(size=13))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-ggsave("gaur_fmd_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+ggsave("gaur_fmd_1sim_100y_all_2.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
 

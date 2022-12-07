@@ -74,7 +74,7 @@ View(w2)
 w$N_change<- t(x=wow2$time,y=wow2$N)
 str(w)
 
-# Dave's adjust version
+# single_pop_sim_prep Dave's adjust version
 single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
   df<-list()
   #loop for storing new df
@@ -129,35 +129,40 @@ df_m6<-single_pop_sim_prep(x=sim_rep_m6, n_rep=n_rep, end.time= end.time, melt =
 
 df_m6<- df_m6%>%
   group_by(run) %>%
-  mutate(N_change = rowSums(across(-c(time), na.rm=TRUE)))
-  mutate(N_change = across(row_number() % ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
+  mutate(N_change = ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
   mutate(time_y = time_d/365) %>% #convert day to year for plotting
+  mutate(Ndiff = ((last(N)-first(N))/last(N))*100) %>% #calculate % population change between Nt-N0; NOTE: Ndiff will give the same number for each run group
   as.data.frame()
+
 
 View(df_m6)
 str(df_m6)
 
-mutate(across(everything(), ~ if_else(row_number() %in% 3:5, ./2, .)))
+#mutate(across(everything(), ~ if_else(row_number() %in% 3:5, ./2, .)))
 
 #plot
 
 png("gaur_fmd_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
 ggplot() + 
-    geom_line(data = df_m6,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
-    geom_line(data = df_m6,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m6, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
-    #geom_line(data = df_m6, aes(x = time_y, y = N_change, group = run, color = 'total change (%)' ),size = 0.1, alpha = 0.15)+
-   
+  geom_line(data = df_m6,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+  geom_line(data = df_m6,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+  geom_line(data = df_m6,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+  geom_line(data = df_m6,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+  geom_line(data = df_m6, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
+  geom_line(data = df_m6, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+  #geom_line(data = df_m6, aes(x = time_y, y = N_change, group = run, color = 'total change (%)' ),size = 0.1, alpha = 0.15)+
+  
   labs(x="years", y= "population",
        title= 'Gaur population with FMD infection, 100 simulations') +
     
    scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
     
    scale_color_manual( name = "population",
-                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                       labels = c('S',
+                                  'E',
+                                  'I',"R",
+                                  'M',
+                                  'total' ),#'total change (%)'),
                        values = c('S'='seagreen4',
                                   'E'='darkorange2',
                                   'I'='firebrick',
