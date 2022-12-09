@@ -898,6 +898,7 @@ parameters_m1 <- c(mu_b = 0.34/365,
                 delta_sa = 1/(3*365),
                 N = sum(initials_m1), 
                 tau = 1)
+
 res_model1 <- model1(pars = parameters_m1, init = initials_m1,
                 end.time = end.time)
 
@@ -1029,7 +1030,7 @@ PlotMods(res_model7)
 end.time <- 100 * 365
 n_rep <- 100
 
-# use the parameters same as single run
+# use the parameters same as a single run
 
 # > MX RUNS MODEL 1 - NO infection #####
 sim_rep_m1<-replicate(n_rep,(model1(pars = parameters_m1, init = initials_m1,
@@ -1059,7 +1060,7 @@ sim_rep_m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
 sim_rep_m7<-replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
                                     end.time = end.time)))
 
-# FUNCTION for plotting simulations
+# FUNCTION for plotting model's simulations #####
 single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
   df<-list()
   #loop for storing new df
@@ -1087,14 +1088,55 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
   
 }
 
-df_m4<-single_pop_sim_prep(x=sim_rep_m4, n_rep=n_rep, end.time= end.time, melt = F)
+#creating the model simulation list 
+sim_rep_m<-list(sim_rep_m1,
+                sim_rep_m2,
+                sim_rep_m3,
+                sim_rep_m4,
+                sim_rep_m5,
+                sim_rep_m6,
+                sim_rep_m7)
+#creating name list for each model (in an order)
+# from sim_rep_m1 to sim_rep_m7
+nam<-c('pop_dynamic',
+       'Anthrax',
+       'bTB',
+       'HS',
+       'LSD',
+       'FMD',
+       'Brucellosis')
 
-df_m4<- df_m4%>%
-  group_by(run) %>%
-  mutate(N_change = rowSums(across(-c(time), na.rm=TRUE)))
-mutate(N_change = across(row_number() % ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
-                         mutate(time_y = time_d/365) %>% #convert day to year for plotting
-                           as.data.frame()
+m<-list()
+
+#group and calculate total population change (%) loop--------
+for (i in 1:length(sim_rep_m)) {
+  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  m[[i]]<- m[[i]]%>%
+    group_by(run) %>%
+    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
+    mutate(time_y = time_d/365) %>% #convert day to year for plotting
+    as.data.frame()
+  
+  m[[i]]$model <- paste0(nam[[i]])
+  
+}
+for (i in 1:length(sim_rep_m)) {
+  #names(sim_rep_m)[[i]]
+  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  m[[i]]<- m[[i]]%>%
+    group_by(run) %>%
+    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%#calculate change in the total population at year100, and year0
+    mutate(time_y = time_d/365) %>%#convert day to year for plotting
+    as.data.frame()
+ }
+
+#loop for saving the data.frame as .rds
+for (i in 1:length(m)) {
+  saveRDS(m2[[i]], file = paste0("df_",nam[[i]],".rds")) 
+}
+
+## PLOT MODEL OUTPUTS: population line graphs #############################
+
 
 ## SET UP FUNCTIONS FOR MX METRICS ################################
 
@@ -1109,6 +1151,9 @@ my_min_ext_I<-function(x=get_time$results, y=get_time$results$I,...){
   }
   res_no
 }
+
+
+
 
 # minimum time that N == 0 
 my_min_ext_N<-function(x=get_time$results, y=get_time$results$N,...){
