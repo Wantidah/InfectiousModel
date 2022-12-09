@@ -13,7 +13,7 @@ library(reshape2)
 library(stringr)
 library(emdbook)  
 library(ggplot2); theme_set(theme_bw())
-
+set.seed(111)
 # Population dynamic model, no infection, 3 age classes
 # c = calf
 # sa = Subadult
@@ -76,16 +76,16 @@ model1 =
   
 # TEST MODEL 1 Population dynamic, no infection ######
 # set initial values
-end.time <- 365 #predict for ... years
+end.time <- 100*365 #predict for ... years
     
 #gaur population #########
-N = 300 
-#calf:subadult:adult ratio
-rat = 1.3+1.3+1.5
-N/rat
-c = round((N/rat)*1.3, 0)
-sa = round((N/rat)*1.3,0) 
-a = round((N/rat)*1.5,0) 
+  N = 300 
+  #calf:subadult:adult ratio
+  rat = 1.3+1.3+1.5
+  N/rat
+  c = round((N/rat)*1.3, 0)
+  sa = round((N/rat)*1.3,0) 
+  a = round((N/rat)*1.5,0) 
 #same initials population for every species
 initials1 <- c(c = c, sa = sa, a = a )
 
@@ -190,3 +190,52 @@ for (i in length(pm)) {
        xlab="time",ylab="numbers")
 
 df
+
+# TEST single run -------------
+res_model1 <- model1(pars = pm1, init = initials1,
+                     end.time = end.time)
+str(res_model1)
+
+#plot epi
+png("gaur_pop_1sim_epiplot.png",width = 25, height = 15, units = 'cm', res = 600)
+PlotMods(res_model1)
+dev.off()
+
+#minimum N extinction
+min(subset(res_model1$results,N==0)$time)
+
+#convert to data.frame, change days -> years
+res_model1<-res_model1$results %>%
+  mutate(time_y = time/365) %>% #convert day to year for plotting
+  as.data.frame()
+
+# plot population dynamic ######
+p<-ggplot() + 
+  geom_line(data = res_model1,aes(x = time_y ,y = a,  color = 'adult')) + 
+  geom_line(data = res_model1,aes(x = time_y, y = sa, color = 'subadult' ),) +
+  geom_line(data = res_model1,aes(x = time_y, y = c,  color = 'calf' ))+
+  geom_line(data = res_model1, aes(x = time_y, y = N, color = 'total')) +
+  
+  labs(x="years", y= "population",
+       title= 'Gaur population - no infection, 1 simulation, 100 years') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  
+  scale_color_manual( name = "population",
+                      labels = c('adult','subadult','calf','total' ),
+                      values = c('adult'='seagreen4',
+                                 'subadult'='firebrick',
+                                 "calf"='dodgerblue3',
+                                 "total"='#153030'))+ 
+  
+  theme_bw() +
+  theme( plot.title = element_text(size = 18),
+         axis.title.x = element_text(size = 15),
+         axis.title.y = element_text(size = 15),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=13))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+
+ggsave("gaur_pop_1sim.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+

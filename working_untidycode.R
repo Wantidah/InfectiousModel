@@ -102,6 +102,9 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
 
    }
 
+t<-df_pop %>% gather(key = class, value = value, -c(time_d,time_y,run))
+str(t)
+head(t)
 
 #dave's
 single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
@@ -117,162 +120,306 @@ single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, 
   mdat$time = as.numeric(gsub("time", "", mdat$variable))
   mdat
 }
-View(df_m4)
-sim_rep_m<-list(#sim_rep_m1,
+
+sim_rep_m<-list(sim_rep_m1,
                 sim_rep_m2,
                 sim_rep_m3,
-                #sim_rep_m4,
+                sim_rep_m4,
                 sim_rep_m5,
-                #sim_rep_m6,
+                sim_rep_m6,
                 sim_rep_m7)
 
 m<-list()
-m2<-list()
-nam<-c(#'pop',
-       'anthrax',
+
+nam<-c('pop_dynamic',
+       'Anthrax',
        'bTB',
-       #'HS',
+       'HS',
        'LSD',
-       #'FMD',
-       'bru')
+       'FMD',
+       'Brucellosis')
 
-sim_rep_m[[1
 
-#Starting loop--------
-for (i in length(sim_rep_m)) {
-  names(sim_rep_m)[[i]]
+#group and calculate total population change (%) loop--------
+for (i in 1:length(sim_rep_m)) {
   m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
-  m2[[i]]<- m[[i]]%>%
+  m[[i]]<- m[[i]]%>%
     group_by(run) %>%
-    mutate(N_change =  ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
-    mutate(time_y = time_d/365) %>%#convert day to year for plotting
-    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%
+    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
+    mutate(time_y = time_d/365) %>% #convert day to year for plotting
     as.data.frame()
+  
+    m[[i]]$model <- paste0(nam[[i]])
+   
 }
 
+#in case we want to save the data frame  (.rds)
+for (i in 1:length(m)) {
+saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) }
+
+#in case load the .rds file
+#add into the list()
+df_bru$model <- c("Brucellosis")
+m<-list(df_pop,df_bru)
 str(m)
+class(m)
+m[[1]]
 
-saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) 
+# PLOT MODEL OUTPUTS: population dynamic line graphs #############################
 
-
-df_m3<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = T)
-df_m3<- single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time, melt = F)
-df_m3_d<-single_pop_sim_prep(x = sim_rep_m3, n_rep=n_rep, end.time= end.time)
-
-df_m2<-single_pop_sim_prep(x = sim_rep_m2, n_rep=n_rep, end.time= end.time, melt = F)
-df_m5<-single_pop_sim_prep(x=sim_rep_m5, n_rep=n_rep, end.time= end.time, melt = F)
-
-df_m7<-single_pop_sim_prep(x=sim_rep_m7, n_rep=n_rep, end.time= end.time, melt = F)
-
-df_m5<- df_m5%>%
-  group_by(run) %>%
-<<<<<<< HEAD
-  mutate(N_change =  ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
-  mutate(time_y = time_d/365) %>%#convert day to year for plotting
-  mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%
-  as.data.frame()
-
-View(df_m5)
-str(df_m5)
-
-saveRDS(df_m5, file = paste0("df_m5lsd.rds")) 
-=======
-  mutate(N_change = ((N - lag(N))/lag(N))*100) %>% #calculate change percentages in the total population
-  mutate(time_y = time_d/365) %>% #convert day to year for plotting
-  mutate(Ndiff = ((last(N)-first(N))/last(N))*100) %>% #calculate % population change between Nt-N0; NOTE: Ndiff will give the same number for each run group
-  as.data.frame()
-
-
-View(df_m6)
-str(df_m6)
-
-#mutate(across(everything(), ~ if_else(row_number() %in% 3:5, ./2, .)))
->>>>>>> 20e45fe83ebec8d4c58dad016f58009d447edef7
-
-#plot
-png("gaur_lsd_100sim_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
-ggplot() + 
-<<<<<<< HEAD
-    geom_line(data = df_m5,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
-    geom_line(data = df_m5,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m5,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m5,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
-    #geom_line(data = df_m7, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
-    geom_line(data = df_m5, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
-   
-=======
-  geom_line(data = df_m6,aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
-  geom_line(data = df_m6,aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
-  geom_line(data = df_m6,aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
-  geom_line(data = df_m6,aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
-  geom_line(data = df_m6, aes(x = time_y, y = M,group = run, color = 'M'), size = 0.1, alpha = 0.12)+
-  geom_line(data = df_m6, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
-  #geom_line(data = df_m6, aes(x = time_y, y = N_change, group = run, color = 'total change (%)' ),size = 0.1, alpha = 0.15)+
+for (i in 1:length(m)){
+  #subdata <- subset(m, model == k)
   
->>>>>>> 20e45fe83ebec8d4c58dad016f58009d447edef7
-  labs(x="years", y= "population",
-       title= 'Gaur population with LSD infection, 100 simulations') +
-    
-   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-    
-   scale_color_manual( name = "population",
-<<<<<<< HEAD
-                       labels = c('S','E','I',"R",'total' ),#'total change (%)'),
-=======
-                       labels = c('S',
-                                  'E',
-                                  'I',"R",
-                                  'M',
-                                  'total' ),#'total change (%)'),
->>>>>>> 20e45fe83ebec8d4c58dad016f58009d447edef7
-                       values = c('S'='seagreen4',
-                                  'E'='darkorange2',
-                                  'I'='firebrick',
-                                  "R"='dodgerblue3',
-                                 # "M"='mediumorchid4',
-                                  "total"='#153030'))+ #blackgreen
-                                  
+  ## m1 - no infection plot ###### 
+  if (subset(m[[i]], model=="pop_dynamic")==T){
+  #if (m[[i]]$model=="pop_dynamic"){
+     p<-ggplot() + 
+      geom_line(data = m[[i]],aes(x = time_y ,y = a,  group = run, color = 'adult'),size = 0.1, alpha = 0.12) + 
+      geom_line(data = m[[i]],aes(x = time_y, y = sa, group = run, color = 'subadult' ),size = 0.1, alpha = 0.12) +
+      geom_line(data = m[[i]],aes(x = time_y, y = c,  group = run, color = 'calf' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = N, group = run, color = 'total'),size = 0.1, alpha = 0.12) +
+      
+      labs(x="years", y= "population",
+           title= 'Gaur population - no infection, 100 simulations') +
+      scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+      scale_color_manual( name = "population",
+                          labels = c('adult','subadult','calf','total' ),
+                          values = c('adult'='seagreen4',
+                                     'subadult'='firebrick',
+                                     "calf"='dodgerblue3',
+                                     "total"='#153030'))+ 
       theme_bw() +
       theme( plot.title = element_text(size = 18),
+             axis.title.x = element_text(size = 15),
+             axis.title.y = element_text(size = 15),
+             legend.title=element_text(size=11),
+             legend.text = element_text(size = 11),
+             axis.text=element_text(size=13))+
+      guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+      
+      stat_summary(m[[i]], mapping =aes( x = time_y, y = a, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = sa, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = c, group = 1), fun=mean, geom="line", colour="#153030",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = N, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5) #blackgreen
+    
+      ggsave("gaur_no_infection_100sim.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+  }
+  
+  ## m2 - Anthrax plot  ###### 
+  else if (m[[i]]$model=="Anthrax"){
+    p<-ggplot() + 
+      geom_line(data = m[[i]],aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+      geom_line(data = m[[i]],aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+      
+      labs(x="years", y= "population",
+           title= 'Gaur population with anthrax infection, 1 simulation, 100 years') +
+      scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+      scale_color_manual( name = "population",
+                          labels = c('S','I','total' ),
+                          values = c('S'='seagreen4',
+                                     'I'='firebrick',
+                                     "total"='#153030'))+ 
+      theme_bw() +
+      theme( plot.title = element_text(size = 18),
+             axis.title.x = element_text(size = 15),
+             axis.title.y = element_text(size = 15),
+             legend.title=element_text(size=11),
+             legend.text = element_text(size = 11),
+             axis.text=element_text(size=13))+
+      guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+      
+      stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+    
+      ggsave("gaur_anthrax_100sim.png",p,width = 25, height = 15, units = 'cm', dpi = 600)
+      }
+  
+  ## m3 - bTB plot ######  
+  else if (m[[i]]$model=="bTB") {
+    p<-ggplot() + 
+      geom_line(data = m[[i]],aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+      geom_line(data = m[[i]],aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]],aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+      
+      labs(x="years", y= "population",
+           title = paste0('Gaur population with bTB infection, 100 simulations')) +
+             scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+             scale_color_manual( name = "population",
+                                 labels = c('S','E','I','total' ),
+                                 values = c('S'='seagreen4',
+                                            'E'='darkorange2',
+                                            'I'='firebrick',
+                                            "total"='#153030'))+ #blackgreen
+             theme_bw() +
+             theme( plot.title = element_text(size = 18),
+                    axis.title.x = element_text(size = 15),
+                    axis.title.y = element_text(size = 15),
+                    legend.title=element_text(size=11),
+                    legend.text = element_text(size = 11),
+                    axis.text=element_text(size=13))+
+             guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+             
+             stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+             stat_summary(m[[i]], mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+             stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+             stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+           
+      ggsave("gaur_bTB_100sim.png",p,width = 25, height = 15, units = 'cm', dpi = 600)
+  }
+  
+  ## m4 - HS plot ###### 
+  else if (m[[i]]$model=="HS") {
+    p<-ggplot() + 
+      geom_line(data = m[[i]],aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+      geom_line(data = m[[i]],aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]],aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+      
+      labs(x="years", y= "population",
+           title = paste0('Gaur population with HS infection, 100 simulations')) +
+      scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+      scale_color_manual( name = "population",
+                          labels = c('S','I','R','total' ),
+                          values = c('S'='seagreen4',
+                                     'I'='firebrick',
+                                     "R"='dodgerblue3',
+                                     "total"='#153030'))+ #blackgreen
+      theme_bw() +
+      theme( plot.title = element_text(size = 18),
+             axis.title.x = element_text(size = 15),
+             axis.title.y = element_text(size = 15),
+             legend.title=element_text(size=11),
+             legend.text = element_text(size = 11),
+             axis.text=element_text(size=13))+
+      guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+      
+      stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+    
+    ggsave("gaur_HS_100sim.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+  }
+  
+ ## m5 - LSD plot ######  
+ else if (m[[i]]$model=="LSD") {
+  p<-ggplot() + 
+    geom_line(data = m[[i]],aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+    geom_line(data = m[[i]],aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]],aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]],aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+    
+    labs(x="years", y= "population",
+         title = paste0('Gaur population with LSD infection, 100 simulations')) +
+    scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+    scale_color_manual( name = "population",
+                        labels = c('S','E','I','R','total' ),
+                        values = c('S'='seagreen4',
+                                   'E'='darkorange2',
+                                   'I'='firebrick',
+                                   "R"='dodgerblue3',
+                                   "total"='#153030'))+ #blackgreen
+    theme_bw() +
+    theme( plot.title = element_text(size = 18),
            axis.title.x = element_text(size = 15),
            axis.title.y = element_text(size = 15),
            legend.title=element_text(size=11),
            legend.text = element_text(size = 11),
            axis.text=element_text(size=13))+
+    guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+    
+    stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+  
+  ggsave("gaur_LSD_100sim.png",p,width = 25, height = 15, units = 'cm', dpi = 600)
+ }
+  
+  ## m6 - FMD plot ######
+  else if (m[[i]]$model=="FMD") {
+  p<-ggplot() + 
+    geom_line(data = m[[i]], aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+    geom_line(data = m[[i]], aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]], aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]], aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]], aes(x = time_y, y = M, group = run, color = 'M'),size = 0.1, alpha = 0.12)+
+    geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+    
+    labs(x="years", y= "population",
+         title = paste0('Gaur population with FMD infection, 100 simulations')) +
+    scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+    scale_color_manual( name = "population",
+                        labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                        values = c('S'='seagreen4',
+                                   'E'='darkorange2',
+                                   'I'='firebrick',
+                                   "R"='dodgerblue3',
+                                   "M"='mediumorchid4',
+                                   "total"='#153030'))+ 
+    theme_bw() +
+    theme( plot.title = element_text(size = 18),
+           axis.title.x = element_text(size = 15),
+           axis.title.y = element_text(size = 15),
+           legend.title=element_text(size=11),
+           legend.text = element_text(size = 11),
+           axis.text=element_text(size=13))+
+    guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+    
+    stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes( x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",size = 0.5)+
+    stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+  
+  ggsave(paste0("gaur_fmd_100sim.png"),p, width = 25, height = 15, units = 'cm', dpi = 600)
+  
+  }
+  
+  ## m7 - Brucellosis plot ######
+  else  {
+    p<-ggplot() + 
+      geom_line(data = m[[i]], aes(x = time_y ,y = S, group = run, color = 'S'),size = 0.1, alpha = 0.12) + 
+      geom_line(data = m[[i]], aes(x = time_y, y = E, group = run, color = 'E' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = I, group = run, color = 'I' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = R, group = run, color = 'R' ),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = M, group = run, color = 'M'),size = 0.1, alpha = 0.12)+
+      geom_line(data = m[[i]], aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
+      
+      labs(x="years", y= "population",
+           title = paste0('Gaur population with brucellosis infection, 100 simulations')) +
+      scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+      scale_color_manual( name = "population",
+                          labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                          values = c('S'='seagreen4',
+                                     'E'='darkorange2',
+                                     'I'='firebrick',
+                                     "R"='dodgerblue3',
+                                     "M"='mediumorchid4',
+                                     "total"='#153030'))+ 
+      theme_bw() +
+      theme( plot.title = element_text(size = 18),
+             axis.title.x = element_text(size = 15),
+             axis.title.y = element_text(size = 15),
+             legend.title=element_text(size=11),
+             legend.text = element_text(size = 11),
+             axis.text=element_text(size=13))+
       guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
+      
+      stat_summary(m[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes( x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",size = 0.5)+
+      stat_summary(m[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
+    
+    ggsave(paste0("gaur_brucellosis_100sim.png"),p, width = 25, height = 15, units = 'cm', dpi = 600)
+  }
   
-  stat_summary(df_m5, mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',size = 0.5)+
-  stat_summary(df_m5, mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",size = 0.5)+
-  stat_summary(df_m5, mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",size = 0.5)+
-  stat_summary(df_m5, mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",size = 0.5)+
-  #stat_summary(df_m7, mapping = aes( x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",size = 0.5)+
-  stat_summary(df_m5, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
-  
-dev.off()
-
-#Just total population
-png("gaur_lsd_100sim_100y_N.png",width = 25, height = 15, units = 'cm', res = 600)
-
-ggplot() + 
-    geom_line(data = df_m5, aes(x = time_y, y = N,group = run, color = 'total'), size = 0.1, alpha = 0.12)+
-  
-  labs(x="years", y= "population",
-       title= 'Gaur population with LSD infection, 100 simulations') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  
-  scale_color_manual( name = "population",
-                      labels = c('total' ),
-                      values = c("total"='#153030'))+ #blackgreen
-  theme_bw() +
-  theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
-         legend.title=element_text(size=11),
-         legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))+
-  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))+
-  stat_summary(df_m5, mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",size = 0.5) #blackgreen
-
-dev.off()
-
+ }

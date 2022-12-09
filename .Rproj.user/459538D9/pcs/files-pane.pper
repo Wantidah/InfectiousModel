@@ -3,6 +3,10 @@
         {
             "columnIndex": 2,
             "ascending": true
+        },
+        {
+            "columnIndex": 4,
+            "ascending": true
         }
     ],
     "path": "~/Library/CloudStorage/OneDrive-MasseyUniversity/InfectiousModel"
