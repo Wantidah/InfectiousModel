@@ -157,13 +157,18 @@ for (i in 1:length(sim_rep_m)) {
 for (i in 1:length(m)) {
 saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) }
 
+#########this one can skip##############
 #in case load the .rds file
 #add into the list()
-df_bru$model <- c("Brucellosis")
-m<-list(df_pop,df_bru)
-str(m)
-class(m)
-m[[1]]
+nam<-c('pop_dynamic','bTB',"Brucellosis")
+for (i in 1:length(m)) {
+  
+    m[[i]]$model <- paste0(nam[[i]])
+    }
+m<-list(df_pop,
+        df_bTB,
+        df_bru)
+#######################################
 
 # PLOT MODEL OUTPUTS: population dynamic line graphs #############################
 

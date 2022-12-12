@@ -1008,7 +1008,7 @@ parameters_m7 <- c(
   phi_c = 1/14, phi_sa = 1/14, phi_a = 1/14,
   gamma_c = 1/(2*365), gamma_sa = 1/(2*365), gamma_a = 1/(2*365),
   rho_c = 0.1, rho_sa = 0.05, rho_a = 0.03, 
-  alpha = 0.9,
+  alpha = 0.9,   
   omega_c = 1/180, omega_sa =  1/180, omega_a = 1/180, omega_m = 1/180,
   epsilon = 2e-5,
   mu_b = 0.34/365, 
