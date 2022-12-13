@@ -106,13 +106,13 @@ end.time <- 100*365 #predict for ... years
 
 #SI parameters
 parameters <- c(
-  beta_c = 5e-5,
+  beta_c = 0.0001,
   gamma_c = 1,
   rho_c = 1,
-  beta_sa = 5e-5,
+  beta_sa = 0.0001,
   gamma_sa = 1,
   rho_sa = 1,
-  beta_a = 5e-5,
+  beta_a = 0.0001,
   gamma_a = 1,
   rho_a = 1,
   epsilon = 2e-5,
@@ -169,5 +169,5 @@ p<-ggplot() +
          legend.text = element_text(size = 11),
          axis.text=element_text(size=13))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
-
+print(p)
 ggsave("gaur_anthrax_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
