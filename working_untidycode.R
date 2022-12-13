@@ -138,8 +138,7 @@ nam<-c('pop_dynamic',
        'LSD',
        'FMD',
        'Brucellosis')
-
-
+nam<-c('Anthrax')
 #group and calculate total population change (%) loop--------
 for (i in 1:length(sim_rep_m)) {
   m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
@@ -156,18 +155,17 @@ for (i in 1:length(sim_rep_m)) {
 #in case we want to save the data frame  (.rds)
 for (i in 1:length(m)) {
 saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) }
-
 #########this one can skip##############
 #in case load the .rds file
 #add into the list()
-nam<-c('pop_dynamic','bTB',"Brucellosis")
-for (i in 1:length(m)) {
-  
-    m[[i]]$model <- paste0(nam[[i]])
-    }
-m<-list(df_pop,
+m<-list(df_pop_dynamic,
+        df_Anthrax,
         df_bTB,
-        df_bru)
+        df_HS,
+        df_LSD,
+        df_fmd,
+        df_Brucellosis)
+
 #######################################
 
 # PLOT MODEL OUTPUTS: population dynamic line graphs #############################
@@ -428,3 +426,112 @@ for (i in 1:length(m)){
   }
   
  }
+#load .rds file
+m<-list(df_pop_dynamic,
+        df_Anthrax,
+        df_bTB,
+        df_HS,
+        df_LSD,
+        df_fmd,
+        df_Brucellosis)
+names(m[[1]])
+
+
+mt<-list()
+for(i in 1:length(m))  {
+  m[[i]]<-m[[i]] %>% 
+    dplyr::select(Ndiff,run,model)%>%
+    drop_na()%>%
+    distinct()
+  mt<-data.table::rbindlist(mt)
+}
+
+head(dft2)
+tail(dft2)
+dft2<-data.table::rbindlist(mt)
+str(dft2)
+table(is.na(dft2))
+dft2<-drop_na(dft2)
+
+write_csv(dft2,"df_all.csv")
+
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(ggstatsplot)
+
+# Boxplot
+box<-dft2 %>%
+  ggplot( aes(x=model, y=Ndiff, fill=model)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Gaur population change (%) with and without infectious diseases") +
+  xlab("Model")
+
+print(box)
+ggsave("gaur_ndiff_100sim.png",box,width = 25, height = 15, units = 'cm', dpi = 600)
+
+v<-dft2 %>%
+  ggplot( aes(x=model, y=Ndiff, fill=model)) +
+  geom_violin() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Gaur populatin change (%)") +
+  xlab("Model")
+
+print(v)
+
+ggsave("gaur_ndiff_vplot_100sim.png",v,width = 25, height = 15, units = 'cm', dpi = 600)
+
+plt <- ggbetweenstats(
+  data = dft2,
+  x = model,
+  y = Ndiff
+)
+
+## plot extinction times
+head(mt)
+str(m)
+df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
+df.ag<-(df.agg[df.agg$value==0,c('model','time')])
+
+neworder <- c("1","2","3","4","5","9","10","6","7","8")
+library(plyr)  ## or dplyr (transform -> mutate)
+df.ag <- arrange(transform(df.ag,
+                           model=factor(model,levels=neworder)),model)
+labs <- c('1' = "SIR",
+          '2' = "SI*R",
+          '3' = "SI*R+",
+          '4' = "S[I]R",
+          '5' = "S[I]*R",
+          '6' = "SIR*",
+          '7' = 'S[I]*R',
+          '8' = 'S[I]R*',
+          '9' = 'SEIR',
+          '10' = 'SEI*R')
+p<-ggplot(df.ag, aes(x=time))+
+  geom_histogram(color="black", fill="grey")+
+  facet_wrap(model~., ncol = 5,labeller = labeller(model = labs))+
+  scale_x_continuous(breaks = c(0, 800, 1600), labels = c("0", "800", "1600"))
+pdf("extinctions.pdf", width = 5, height = 3)
+p
+dev.off()
+
+p_yr<-ggplot(df.ag, aes(x=time))+
+  geom_histogram(color="black", fill="grey")+
+  facet_wrap(model~., ncol = 5,labeller = labeller(model = labs))+
+  scale_x_continuous(limits = c(0,1000),breaks = c(0, 400, 800), labels = c("0", "400", "800")) +
+  ylim(0,60)
+pdf("extinctions_1yr.pdf", width = 5, height = 3)
+p_yr
+dev.off()
