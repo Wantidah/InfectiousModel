@@ -907,7 +907,7 @@ PlotMods(res_model1)
 # > MODEL 2 SI - Anthrax #####
 initials_m2 <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 parameters_m2 <- c(
-  beta_c = 5e-5, beta_sa = 5e-5, beta_a = 5e-5,
+  beta_c = 0.0001, beta_sa = 0.0001, beta_a = 0.0001,
   gamma_c = 1, gamma_sa = 1, gamma_a = 1, #assume that animal die in 1 day
   rho_c = 1, rho_sa = 1,  rho_a = 1,
   epsilon = 2e-5,
@@ -1105,7 +1105,7 @@ nam<-c('pop_dynamic',
        'LSD',
        'FMD',
        'Brucellosis')
-
+nam<-c('LSD')
 m<-list()
 
 #group and calculate total population change (%) loop--------
@@ -1120,19 +1120,10 @@ for (i in 1:length(sim_rep_m)) {
   m[[i]]$model <- paste0(nam[[i]])
   
 }
-for (i in 1:length(sim_rep_m)) {
-  #names(sim_rep_m)[[i]]
-  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
-  m[[i]]<- m[[i]]%>%
-    group_by(run) %>%
-    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>%#calculate change in the total population at year100, and year0
-    mutate(time_y = time_d/365) %>%#convert day to year for plotting
-    as.data.frame()
- }
 
 #loop for saving the data.frame as .rds
 for (i in 1:length(m)) {
-  saveRDS(m2[[i]], file = paste0("df_",nam[[i]],".rds")) 
+  saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) 
 }
 
 ## PLOT MODEL OUTPUTS: population line graphs #############################

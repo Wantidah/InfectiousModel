@@ -2,79 +2,26 @@
 # ongoning
 # the for loop is works and can make a dataframe we want, but kust have to find a nicer way of plotting graph
 
-n_rep = 20
-end.time = 3650
+############## LOAD PACKAGES ##########
+library(EpiDynamics)
+library(plyr)     
+library(reshape2) 
+library(stringr)
+library(emdbook)  
+library(ggplot2); theme_set(theme_bw())
+library(dplyr)   
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(ggstatsplot)
+
+n_rep = 5
+end.time = 365
 
 m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
                                     end.time = end.time)))
 
-#TEST: create data.frame from model with population class == works :)
-df<-list()
-
-for (i in 1:n_rep){
-  run <- paste("run", seq(n_rep), sep="")
-  names(df)[i]
-  df[[i]]<- m6[,i]$results[,-c(1)]
-  df[[i]]$time <- seq(from=1,to=end.time+1,by=1)
-}
-  df2<-map2(df,run, ~cbind(.x, run = .y))
-  df3<- data.table::rbindlist(df2) #bind row
-
-str(df3)
-table(df3$N)
-
-#TEST 2: create function calculating N change from time t to t+1
-n_change<-function(x=time,y=N,...){
-  res_no<-vector()
-  
-}
-my_imp_ext_na_I<-function(x=time,y=I,...){
-  
-  res_no<-vector()
-  
-  for (i in 2:length(x)) {
-    if(is.na(y[i]))
-    {res_no[i-1] = NA}
-    else
-      if(y[i-1]>0 & y[i]==0 & !is.na(y[i])){
-        res_no[i-1] = 1
-      } else{
-        res_no[i-1] = 0
-      }
-  }
-  length(res_no[!is.na(res_no)])
-}
-
-t<-function(x=x, y=y,...){
-  res_no<-vector()
-  for (i in 1:length(x)){
-    if (x == 1) {
-      res_no == 0
-    }
-    else { res_no = ((y[i+1]-y[i])/y[i+1])*100 }
-    
-  }
-  res_no
-}
-1:length(w$time)
-w<-wow2
-
-w2<-w %>%
-  group_by(run) %>%
-  mutate(N_change = ((N - lag(N))/N)*100,
-         year = time/365)
-
-
-table(is.na(w2$N_change))
-table((w2$N_change==0))
-mean(w2$N_change)
-?round()
-View(w2)
-
-w$N_change<- t(x=wow2$time,y=wow2$N)
-str(w)
-
-# single_pop_sim_prep Dave's adjust version
+# TEST: single_pop_sim_prep Dave's adjust version
 single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
   df<-list()
   #loop for storing new df
@@ -83,16 +30,14 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
     names(df)[i]
     df[[i]]<- x[,i]$results[,-c(1)]
     df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
-   
   }
-    
     df<-map2(df,run, ~cbind(.x, run = .y))   # adding n_rep to the column
     df2<- data.table::rbindlist(df)          # binding row
     
     if (melt == T) {  #option for melting the data in case we need...
      
-      df3 <- gather(df2, key = class, value = value, -c(time,run))
-     
+    #df3 <- gather(df2, key = class, value = value, -c(time_d,run))
+      df3 <- melt(df2, id.vars = c('time_d','run'))
     return(df3 = data.frame(df3))
      } 
    
@@ -102,24 +47,6 @@ single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of m
 
    }
 
-t<-df_pop %>% gather(key = class, value = value, -c(time_d,time_y,run))
-str(t)
-head(t)
-
-#dave's
-single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
-  mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
-  for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$N
-  }
-  colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
-  rownames(mat) = paste("run", seq(n_rep), sep="")
-  dat = as.data.frame(mat)
-  dat$run = rownames(dat)
-  mdat = melt(dat, id.vars="run")
-  mdat$time = as.numeric(gsub("time", "", mdat$variable))
-  mdat
-}
 
 sim_rep_m<-list(sim_rep_m1,
                 sim_rep_m2,
@@ -138,39 +65,48 @@ nam<-c('pop_dynamic',
        'LSD',
        'FMD',
        'Brucellosis')
-nam<-c('Anthrax')
-#group and calculate total population change (%) loop--------
+
+sim_rep_m<-list(sim_rep_m7)
+
+#group and calculate total population change (%) loop
 for (i in 1:length(sim_rep_m)) {
-  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  m[[i]]<- single_pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F) 
+ 
   m[[i]]<- m[[i]]%>%
     group_by(run) %>%
     mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
     mutate(time_y = time_d/365) %>% #convert day to year for plotting
     as.data.frame()
   
-    m[[i]]$model <- paste0(nam[[i]])
-   
-}
+  m[[i]]$model <- paste0(nam[[i]]) # adding name
+  
+  }
 
-#in case we want to save the data frame  (.rds)
+# ########this one can be skipped
+# save the data frame  (.rds) for working next time
 for (i in 1:length(m)) {
 saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) }
-#########this one can skip##############
-#in case load the .rds file
-#add into the list()
-m<-list(df_pop_dynamic,
-        df_Anthrax,
-        df_bTB,
-        df_HS,
-        df_LSD,
-        df_fmd,
-        df_Brucellosis)
+
+# Load the .rds file back and put it as a list ########
+l <- list.files(path = getwd(), pattern = "*.rds")
+m = lapply(l, readRDS)
+m
 
 #######################################
+# OR if we want to have melt data for plotting the graph (probably is easier to melt the data earlier)
+# loop for melt 
 
-# PLOT MODEL OUTPUTS: population dynamic line graphs #############################
+m2<-list()
 
 for (i in 1:length(m)){
+
+m2[[i]] <- melt(m[[i]], id.vars = c('time_d','time_y','run','model','Ndiff'),
+           value.name = 'value', variable.name = 'class')
+}
+str(m2)
+
+# PLOT MODEL OUTPUTS: population dynamic line graphs #############################
+for (i in 1:length(m2)){
   #subdata <- subset(m, model == k)
   
   ## m1 - no infection plot ###### 
@@ -426,59 +362,60 @@ for (i in 1:length(m)){
   }
   
  }
-#load .rds file
-m<-list(df_pop_dynamic,
-        df_Anthrax,
-        df_bTB,
-        df_HS,
-        df_LSD,
-        df_fmd,
-        df_Brucellosis)
-names(m[[1]])
+
+m3 <-data.table::rbindlist(m2)
+str(m3)
+write_csv(m3,"df_melt.csv")
+#Prepare the dataframe for boxplotting ########
+#the % of population change in 100 for all the models
+dft<-m3 %>% 
+  dplyr::select(Ndiff,run,model)%>% 
+  drop_na()%>%
+  distinct()
 
 
-mt<-list()
-for(i in 1:length(m))  {
-  m[[i]]<-m[[i]] %>% 
-    dplyr::select(Ndiff,run,model)%>%
-    drop_na()%>%
-    distinct()
-  mt<-data.table::rbindlist(mt)
-}
 
-head(dft2)
-tail(dft2)
-dft2<-data.table::rbindlist(mt)
-str(dft2)
-table(is.na(dft2))
-dft2<-drop_na(dft2)
 
-write_csv(dft2,"df_all.csv")
+dft$model <- recode_factor(dft$model, pop_dynamic = "no_infection" )
+table(dft$model)
+str(dft)
 
-library(tidyverse)
-library(hrbrthemes)
-library(viridis)
-library(ggstatsplot)
+write_csv(dft,"df_all.csv")
+
+#load df back
+dft <- read_csv("df_all.csv")
+
+#calculating mean,median
+s <- dft |>
+  group_by(model)|>
+  summarise(Median = median(Ndiff),
+            Mean = mean(Ndiff))
+
+s
 
 # Boxplot
-box<-dft2 %>%
-  ggplot( aes(x=model, y=Ndiff, fill=model)) +
+box<-dft %>%
+  ggplot(aes(x= reorder(model,-Ndiff), y = Ndiff,fill=model)) +
   geom_boxplot() +
   scale_fill_viridis(discrete = TRUE, alpha=0.6) +
-  geom_jitter(color="black", size=0.4, alpha=0.9) +
+  geom_jitter(color="black", size=0.6, alpha=0.4) +
   theme_ipsum() +
   theme(
     legend.position="none",
-    plot.title = element_text(size=11)
-  ) +
-  ggtitle("Gaur population change (%) with and without infectious diseases") +
-  xlab("Model")
+    plot.title = element_text(size=11)) +
+  ggtitle("Gaur population change by disease models in 100 years") +
+  xlab("") +
+  ylab("Population change (%)")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                                       breaks = seq(from = -200, to = 500, by = 100))
+
 
 print(box)
-ggsave("gaur_ndiff_100sim.png",box,width = 25, height = 15, units = 'cm', dpi = 600)
+ggsave("gaur_ndiff_box1_100sim.png",box,width = 20, height = 15, units = 'cm', dpi = 600)
 
-v<-dft2 %>%
-  ggplot( aes(x=model, y=Ndiff, fill=model)) +
+#violoin plot
+v<-dft %>%
+  ggplot(aes(x=reorder(model,-Ndiff),y = Ndiff,fill=model)) +
   geom_violin() +
   scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
   theme_ipsum() +
@@ -486,32 +423,62 @@ v<-dft2 %>%
     legend.position="none",
     plot.title = element_text(size=11)
   ) +
-  ggtitle("Gaur populatin change (%)") +
-  xlab("Model")
+  ggtitle("Gaur population change by disease models in 100 years") +
+  xlab("")+
+  ylab("Population change (%)")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
+
 
 print(v)
 
 ggsave("gaur_ndiff_vplot_100sim.png",v,width = 25, height = 15, units = 'cm', dpi = 600)
 
-plt <- ggbetweenstats(
-  data = dft2,
-  x = model,
-  y = Ndiff
-)
+#reorder by population change max-min
+dft$model <- factor(dft$model, 
+                     levels = c("no_infection", 
+                                "HS",
+                                "LSD",
+                                "Anthrax",
+                                "FMD",
+                                "bTB",
+                                "Brucellosis"))
+?ggbetweenstats()
+
+plt<-dft%>%ggbetweenstats(
+  x=model,
+  y=Ndiff,
+  k=0,
+  plot.type = "boxviolin",
+  pairwise.comparisons=F,
+  bf.message = F,
+  results.subtitle = FALSE,
+  centrality.point.args = list(size = 2, color = "darkred"),
+  title= "Gaur population change by disease models in 100 years",
+  xlab = "",
+  ylab = "Population change (%)",
+  package = "ggsci",
+  palette = "default_jco")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
+  
+print(plt)
+
+ggsave("gaur_ndiff_boxviolin_max-min2_100sim.png",plt,width = 20, height = 15, units = 'cm', dpi = 600)
 
 ## plot extinction times
-head(mt)
-str(m)
-df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
-df.ag<-(df.agg[df.agg$value==0,c('model','time')])
 
-neworder <- c("1","2","3","4","5","9","10","6","7","8")
-library(plyr)  ## or dplyr (transform -> mutate)
+
+df.agg <- aggregate(time_y ~ run + value + model, m3, min)
+df.ag<-(df.agg[df.agg$value==0,c('model','time_y')])
+
+neworder <- c("1","2","3","4","5","6","7","8")
+
 df.ag <- arrange(transform(df.ag,
                            model=factor(model,levels=neworder)),model)
-labs <- c('1' = "SIR",
-          '2' = "SI*R",
-          '3' = "SI*R+",
+labs <- c('1' = "no_infectious",
+          '2' = "SI (Anthrax)",
+          '3' = "",
           '4' = "S[I]R",
           '5' = "S[I]*R",
           '6' = "SIR*",
