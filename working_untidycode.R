@@ -443,7 +443,7 @@ dft$model <- factor(dft$model,
                                 "FMD",
                                 "bTB",
                                 "Brucellosis"))
-?ggbetweenstats()
+#?ggbetweenstats()
 
 plt<-dft%>%ggbetweenstats(
   x=model,

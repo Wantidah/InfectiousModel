@@ -12,8 +12,6 @@
 # then there's a bit of re-coding for the meta-population models
 #
 ############## LOAD PACKAGES ##########
-
-library(reshape)
 library(EpiDynamics)
 library(plyr)     
 library(reshape2) 
