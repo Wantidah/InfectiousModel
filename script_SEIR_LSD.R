@@ -6,11 +6,8 @@ library(reshape2)
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
+set.seed(111)
 ############## 5) SEIR MODEL  Lumpy skin disease ######
-
-#THESE ARE TRIAL VERSION CODE #the code works fine !!! :)
-# **** haven't change the parameter to LSD ****###
-
 model5=
   function (pars, init, end.time)  {
     init2 <- init
@@ -145,19 +142,17 @@ model5=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc ,Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra )%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>% 
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
    
   }
 
-
 #SEIR parameter
-
 parameters <- c( 
   beta_c = 0.038, 
   beta_sa = 0.038, 
@@ -197,7 +192,6 @@ end.time <- 100*365 #predict for ... years
 # single run
 res_model5 <- model5(pars = parameters, init = initials,
                      end.time = end.time)
-str(res_model5)
 
 #minimum I,N extinction
 min(subset(res_model5$results,I==0)$time)
@@ -206,39 +200,76 @@ min(subset(res_model5$results,N==0)$time)
 #plot epi
 #PlotMods(res_model5)
 
-#convert to data.frame, change days -> years
-res_model5<-res_model5$results %>%
-  mutate(time_y = time/365) %>% #convert day to year for plotting
-  as.data.frame()
+#convert to data.frame, change days -> years, and melt class into one column
+r5<-res_model5$results %>%
+  mutate(time_y = time/365) %>%
+  melt(id.vars = c('time','time_y'),
+       value.name = 'value', variable.name = 'class')
+str(r5)
+
+#check min,max,mean
+r5 |> group_by(class) |>
+  summarise(Median = median(value), 
+            Mean = mean(value),
+            Max=max(value),
+            Min=min(value))
+rm5<-r5 |>
+  filter(class %in% c("S","E","I","R","N"))
+
+str(rm5)
 
 # plot SEIR LSD ######
-p<-ggplot() + 
-  geom_line(data = res_model5,aes(x = time_y ,y = S, color = 'S')) + 
-  geom_line(data = res_model5,aes(x = time_y, y = E,  color = 'E' ))+
-  geom_line(data = res_model5,aes(x = time_y, y = I, color = 'I' ))+
-  geom_line(data = res_model5,aes(x = time_y, y = R, color = 'R' ))+
-  geom_line(data = res_model5, aes(x = time_y, y = N,color = 'total'))+
+p5<-ggplot(rm5) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
   
   labs(x="years", y= "population",
-       title= 'Gaur population with LSD infection, 1 simulation, 100 years') +
+       title= 'E) LSD infection') +
   
   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  
+#  ylim(0, 1000) +
   scale_color_manual( name = "population",
-                      labels = c('S','E','I',"R",'total' ),#'total change (%)'),
+                      labels = c('S','E','I',"R",'total' ),
                       values = c('S'='seagreen4',
                                  'E'='darkorange2',
                                  'I'='firebrick',
                                  "R"='dodgerblue3',
-                                 "total"='#153030'))+ 
-  
+                                 "N"='#153030'))+ 
   theme_bw() +
-  theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))+
+         axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+print(p5)
 
-ggsave("gaur_LSD_1sim_100y_all_2.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+ggsave("gaur_LSD_1sim_100y_all.png",p5, width = 25, height = 15, units = 'cm', dpi = 600)
+
+#scale
+p5s<-ggplot(rm5) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  
+  labs(x="years", y= "population",
+       title= 'E) LSD infection') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'total' ),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+print(p5s)
+
+ggsave("gaur_LSD_1sim_100y_all_scale.png",p5s, width = 25, height = 15, units = 'cm', dpi = 600)

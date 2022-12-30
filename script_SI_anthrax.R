@@ -5,7 +5,7 @@ library(tidyverse)
 library(reshape2) 
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
-
+set.seed(111)
 ############## 2) SI model (Anthrax)  #####
 model2=
   function (pars, init, end.time)  {
@@ -83,9 +83,10 @@ model2=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
+      
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
-      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(N = rowSums(across(-c(time,S,I), na.rm=TRUE)))
     
     return(list(pars = pars, init = init2, time = time, results = results))
   }
@@ -131,8 +132,6 @@ parameters <- c(
 res_model2 <-model2(pars = parameters, init = initials,
        end.time = end.time)
 
-str(res_model2)
-
 #minimum I,N extinction
 min(subset(res_model2$results,I==0)$time)
 min(subset(res_model2$results,N==0)$time)
@@ -140,34 +139,73 @@ min(subset(res_model2$results,N==0)$time)
 #plot epi
 #PlotMods(res_model2)
 
-#convert to data.frame, change days -> years
-res_model2<-res_model2$results %>%
+#convert to data.frame, change days -> years, and melt class into one column
+r2<-res_model2$results %>%
   mutate(time_y = time/365) %>% #convert day to year for plotting
-  as.data.frame()
+  melt(id.vars = c('time','time_y'),
+       value.name = 'value', variable.name = 'class')
 
+# the class order should be S,I,N 
+str(r2)
+
+#check min, max, mean 
+r2 |> group_by(class) |>
+  summarise(Mean = mean(value),
+            Max=max(value),
+            Min=min(value))
+rm2 <- r2 %>%  filter(class %in% c("S","I","N"))
+table(rm2$class)
+View(rm2)
 # plot SI Anthrax ######
-p<-ggplot() + 
-  geom_line(data = res_model2,aes(x = time_y ,y = S, color = 'S')) + 
-  geom_line(data = res_model2,aes(x = time_y, y = I, color = 'I' ))+
-  geom_line(data = res_model2, aes(x = time_y, y = N,color = 'total'))+
+p2<-ggplot(rm2) + 
+  geom_line(data = rm2,aes(x = time_y ,y = value,  color = class))  +
   
   labs(x="years", y= "population",
-       title= 'Gaur population with anthrax infection, 1 simulation, 100 years') +
+       title= 'B) Anthrax infection') +
   
   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  
   scale_color_manual( name = "population",
-                      labels = c('S','I','total' ),
+                      labels = c('S','I', 'total') , #this one label is manual
                       values = c('S'='seagreen4',
                                  'I'='firebrick',
-                                 "total"='#153030'))+ 
+                                 'N'='#153030'))+
   theme_bw() +
-  theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))+
+         axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
-print(p)
-ggsave("gaur_anthrax_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+
+print(p2)
+
+ggsave("gaur_anthrax_1sim_100y.png",p2, width = 25, height = 15, units = 'cm', dpi = 600)
+
+#scale
+p2s<-ggplot(rm2) + 
+  geom_line(data = rm2,aes(x = time_y ,y = value,  color = class))  +
+  
+  labs(x="years", y= "population",
+       title= 'B) Anthrax infection') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+ 
+  ylim(0, 1000)+
+  scale_color_manual( name = "population",
+                      labels = c('S','I', 'total') , #this one label is manual
+                      values = c('S'='seagreen4',
+                                 'I'='firebrick',
+                                 'N'='#153030'))+
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+
+print(p2s)
+
+ggsave("gaur_anthrax_1sim_100y_scale.png",p2s, width = 25, height = 15, units = 'cm', dpi = 600)

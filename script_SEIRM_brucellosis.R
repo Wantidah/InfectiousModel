@@ -6,6 +6,7 @@ library(reshape2)
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
+set.seed(111)
 ############## 7) SEIRMS/E MODEL Brucellosis ######
 model7=
   function (pars, init, end.time)  {
@@ -158,11 +159,11 @@ model7=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
     
@@ -219,34 +220,43 @@ parameters <- c(
 # single run
 res_model7 <- model7(pars = parameters, init = initials,
                      end.time = end.time)
-str(res_model7)
 
-#minimum I extinction
+#minimum I, N extinction
 min(subset(res_model7$results,I==0)$time)
+min(subset(res_model7$results,N==0)$time)
 
 #plot epi
 #PlotMods(res_model7)
 
-#convert to data.frame, change days -> years
-res_model7<-res_model7$results %>%
-  mutate(time_y = time/365) %>% #convert day to year for plotting
-  as.data.frame()
+#convert to data.frame, change days -> years, and melt class into one column
+r7<-res_model7$results %>% 
+  relocate(M,.after = R) %>% #relocate M after R (for plotting)
+  mutate(time_y = time/365) %>%
+  melt(id.vars = c('time','time_y'),
+       value.name = 'value', variable.name = 'class')
+str(r7)
+table(r7$class)
+
+#check min,max,mean
+r7 |> group_by(class) |>
+  summarise(Median = median(value), 
+            Mean = mean(value),
+            Max=max(value),
+            Min=min(value))
+
+rm7<-r7 |>
+  filter(class %in% c("S","E","I","R","M","N"))
 
 
 # plot SEIRM Burcellosis ######
-p<-ggplot() + 
-  geom_line(data = res_model7,aes(x = time_y ,y = S, color = 'S')) + 
-  geom_line(data = res_model7,aes(x = time_y, y = E,  color = 'E' ))+
-  geom_line(data = res_model7,aes(x = time_y, y = I, color = 'I' ))+
-  geom_line(data = res_model7,aes(x = time_y, y = R, color = 'R' ))+
-  geom_line(data = res_model7, aes(x = time_y, y = M, color = 'M'))+
-  geom_line(data = res_model7, aes(x = time_y, y = N,color = 'total'))+
+p7<-ggplot(rm7) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
   
   labs(x="years", y= "population",
-       title= 'Gaur population with Brucellosis infection, 1 simulation, 100 years') +
+       title= 'G) Brucellosis infection') +
   
   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  
+  #ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
                       values = c('S'='seagreen4',
@@ -254,15 +264,48 @@ p<-ggplot() +
                                  'I'='firebrick',
                                  "R"='dodgerblue3',
                                  "M"='mediumorchid4',
-                                 "total"='#153030'))+ 
+                                 "N"='#153030'))+ 
   
   theme_bw() +
-  theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))+
+         axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-ggsave("gaur_bru_1sim_100y_all.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+print(p7)
+
+ggsave("gaur_bru_1sim_100y.png",p7, width = 25, height = 15, units = 'cm', dpi = 600)
+
+#scale
+p7s<-ggplot(rm7) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  
+  labs(x="years", y= "population",
+       title= 'G) Brucellosis infection') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "M"='mediumorchid4',
+                                 "N"='#153030'))+ 
+  
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+
+print(p7s)
+
+ggsave("gaur_bru_1sim_100y_scale.png",p7s, width = 25, height = 15, units = 'cm', dpi = 600)

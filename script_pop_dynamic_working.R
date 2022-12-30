@@ -19,7 +19,7 @@ set.seed(111)
 # sa = Subadult
 # a = adult
 # unit == day (per day)
-
+set.seed(111)
 ############## Run the model function ############### 
 ############## MODEL 1 population dynamic model, no infection, 3 age-classes ######
 model1 =
@@ -67,7 +67,7 @@ model1 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, c,  sa,  a)%>% 
+    results<-data.frame(time, a,  sa,  c)%>% 
       dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
     
     return(list(pars = pars, init = init2, time = time, results = results))
@@ -87,7 +87,7 @@ end.time <- 100*365 #predict for ... years
   sa = round((N/rat)*1.3,0) 
   a = round((N/rat)*1.5,0) 
 #same initials population for every species
-initials1 <- c(c = c, sa = sa, a = a )
+initials_m1 <- c(c = c, sa = sa, a = a )
 
 pm1<- c(mu_b = 0.34/365, 
                 mu_c = 0.27/365, 
@@ -95,7 +95,7 @@ pm1<- c(mu_b = 0.34/365,
                 mu_a = 0.165/365,
                 delta_c = 1/365,
                 delta_sa = 1/(3*365),
-                N = sum(initials1), 
+                N = sum(initials_m1), 
                 tau = 1)
 # banteng population #########
 N = 290
@@ -182,8 +182,6 @@ for (i in length(pm)) {
                   end.time = end.time)
   }
 
-  df[[5]]
-  dfPlotMods(df[[5]]$)
   
   #plot sum of populations
     plot(df[[i]]$N, main = paste0(nam[[i]]," ","total population"), 
@@ -192,7 +190,7 @@ for (i in length(pm)) {
 df
 
 # TEST single run -------------
-res_model1 <- model1(pars = pm1, init = initials1,
+res_model1 <- model1(pars = pm1, init = initials_m1,
                      end.time = end.time)
 str(res_model1)
 
@@ -205,37 +203,77 @@ dev.off()
 min(subset(res_model1$results,N==0)$time)
 
 #convert to data.frame, change days -> years
-res_model1<-res_model1$results %>%
+r1<-res_model1$results %>%
   mutate(time_y = time/365) %>% #convert day to year for plotting
-  as.data.frame()
+  melt(id.vars = c('time','time_y'), 
+       value.name = 'value', variable.name = 'class')
+
+# the df may need to be in an order we want. Just for easier when plotting the line graph 
+# in a class column it should be: adult, subadult, calf, total
+str(r1)
+
+#check min, max, mean for all class, and we can set the  limit of y scale
+r1 |> group_by(class) |>
+  summarise(Mean = mean(value),
+            Max=max(value),
+            Min=min(value))
 
 # plot population dynamic ######
-p<-ggplot() + 
-  geom_line(data = res_model1,aes(x = time_y ,y = a,  color = 'adult')) + 
-  geom_line(data = res_model1,aes(x = time_y, y = sa, color = 'subadult' ),) +
-  geom_line(data = res_model1,aes(x = time_y, y = c,  color = 'calf' ))+
-  geom_line(data = res_model1, aes(x = time_y, y = N, color = 'total')) +
-  
+p1<-ggplot(r1) + 
+  geom_line(aes(x = time_y ,y = value,  color = class))  +
+ 
   labs(x="years", y= "population",
-       title= 'Gaur population - no infection, 1 simulation, 100 years') +
+       title= 'No infection') +
   
   scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  
+
   scale_color_manual( name = "population",
-                      labels = c('adult','subadult','calf','total' ),
-                      values = c('adult'='seagreen4',
-                                 'subadult'='firebrick',
-                                 "calf"='dodgerblue3',
-                                 "total"='#153030'))+ 
+                    labels = c( 'adult','subadult','calf','total' ),
+                      values = c('a'='seagreen4',
+                                 'sa'='firebrick',
+                                 'c'='dodgerblue3',
+                                 'N'='#153030'))+ 
   
   theme_bw() +
-  theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
          legend.title=element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))+
+         axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
-ggsave("gaur_pop_1sim.png",p, width = 25, height = 15, units = 'cm', dpi = 600)
+print(p1)
+
+ggsave("gaur_pop_1sim.png",p1, width = 25, height = 15, units = 'cm', dpi = 600)
+
+#scale: ylim(0, 1000)
+p1s<-ggplot(r1) + 
+  geom_line(aes(x = time_y ,y = value,  color = class))  +
+  
+  labs(x="years", y= "population",
+       title= 'A) no infection') +
+  
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  ylim(0, 1000)+
+  scale_color_manual( name = "population",
+                      labels = c( 'adult','subadult','calf','total' ),
+                      values = c('a'='seagreen4',
+                                 'sa'='firebrick',
+                                 'c'='dodgerblue3',
+                                 'N'='#153030'))+ 
+  
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+
+print(p1s)
+
+ggsave("gaur_pop_1sim_scale.png",p1s, width = 25, height = 15, units = 'cm', dpi = 600)
+
 

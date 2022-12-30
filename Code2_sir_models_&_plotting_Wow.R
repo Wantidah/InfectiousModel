@@ -1,8 +1,13 @@
 ############## NOTES ##################
 # Infectious disease modelling code for wild Bovidae population
 # - 18 Nov 2022-
+
 # # Reference R Code: https://github.com/dtsh2/ebola_model; 
 # # Reference Article:https://doi.org/10.1098/rsif.2021.0638  (Transmission models indicate Ebola virus persistence in non-human primate populations is unlikely)
+
+# Working on:  R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
+# RStudio 2022.07.1+554 "Spotted Wakerobin" Release (7872775ebddc40635780ca1ed238934c3345c5de, 2022-07-22) for macOS
+# Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0_1)
 
 # All models have 3 age classes (c = calf, a = Subadult, a = adult)
 # unit == day (per day)
@@ -21,9 +26,11 @@ library(dplyr)
 library(tidyverse)
 library(reshape2) 
 library(stringr)
-library(emdbook)  
-library(ggplot2); theme_set(theme_bw())
-
+library(ggplot2)
+library(tidyverse)
+library(hrbrthemes)
+library(viridis)
+library(ggstatsplot)
 ############## Run the model function ############### 
 
 ############## MODEL 1 - population dynamic model, no infection ######
@@ -73,10 +80,8 @@ model1 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
-                        c,  sa,  a)%>% 
+    results<-data.frame(time, a,  sa,  c)%>% 
       dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
-    
     return(list(pars = pars, init = init2, time = time, results = results))
     
   }
@@ -157,10 +162,9 @@ model2 =
     #sum population based on column name
     results<-data.frame(time, 
                         Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
-      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
-    
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(N = rowSums(across(-c(time,S,I), na.rm=TRUE)))
     return(list(pars = pars, init = init2, time = time, results = results))
     
   }
@@ -274,10 +278,10 @@ model3=
     #sum population based on column name
     results = data.frame(time, 
                          Sc, Ec, Ic, Ssa, Esa, Isa, Sa, Ea, Ia)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
-      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))
+      dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
+      dplyr::mutate(N = rowSums(across(c(S,E,I), na.rm=TRUE))) 
     
     return(list(pars = pars, init = init2, time = time, results = results))
   }
@@ -396,10 +400,10 @@ model4 =
     #sum population based on column name
     results<-data.frame(time, 
                         Sc,  Ic, Rc, Ssa, Isa, Rsa, Sa, Ia, Ra)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
+      dplyr::mutate(N = rowSums(across(c (S,I,R), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
   }
@@ -539,11 +543,11 @@ model5=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc ,Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra )%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>% 
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
   }
@@ -699,11 +703,11 @@ model6=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra, M, Sm)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
     
@@ -861,11 +865,11 @@ model7=
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))
+      dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
     
@@ -885,10 +889,9 @@ sa = round((N/rat)*1.3,0)
 a = round((N/rat)*1.5,0) 
 
 end.time = 100 * 365 #duration of prediction
-n_rep = 100
 
 ############## SINGLE RUNS with plotting output - ALL MODELS  ###############################
-# > MODEL 1 - NO infection #####
+#> MODEL 1 - NO infection #####
 initials_m1 <- c(c = c, sa = sa, a = a )
 parameters_m1 <- c(mu_b = 0.34/365, 
                 mu_c = 0.27/365, 
@@ -902,9 +905,9 @@ parameters_m1 <- c(mu_b = 0.34/365,
 res_model1 <- model1(pars = parameters_m1, init = initials_m1,
                 end.time = end.time)
 
-PlotMods(res_model1)
+#PlotMods(res_model1)
 
-# > MODEL 2 SI - Anthrax #####
+#> MODEL 2 SI - Anthrax #####
 initials_m2 <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 parameters_m2 <- c(
   beta_c = 0.0001, beta_sa = 0.0001, beta_a = 0.0001,
@@ -919,9 +922,9 @@ parameters_m2 <- c(
 
 res_model2<-model2(pars = parameters_m2, init = initials_m2,
        end.time = end.time)
-PlotMods(res_model2)
+# PlotMods(res_model2)
 
-# >  MODEL 3 SEI - Bovine tuberculosis #####
+#> MODEL 3 SEI - Bovine tuberculosis #####
 initials_m3 <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = (a-1), Ea = 0, Ia = 1)
 parameters_m3 <- c( 
   beta_c = 0.043/30, beta_sa = 0.043/30, beta_a = 0.043/30,
@@ -936,9 +939,9 @@ parameters_m3 <- c(
 
 res_model3<-model3(pars = parameters_m3, init = initials_m3,
                    end.time = end.time)
-PlotMods(res_model3)
+#PlotMods(res_model3)
 
-# >  MODEL 4 SIRS - Hemorrhagic septicemia #####
+#>  MODEL 4 SIRS - Hemorrhagic septicemia #####
 initials_m4 <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), Ia = 1, Ra = 0)
 parameters_m4 <- c( 
   beta_c = 0.33/365,beta_sa = 0.33/365,beta_a = 0.33/365,
@@ -958,10 +961,9 @@ parameters_m4 <- c(
 
 res_model4<-model4(pars = parameters_m4, init = initials_m4,
                    end.time = end.time)
-PlotMods(res_model4)
+#PlotMods(res_model4)
 
-# >  MODEL 5 SEIRS - Lumpy skin disease #####
-# FIX PARAMATERS before running#
+#>  MODEL 5 SEIRS - Lumpy skin disease #####
 initials_m5 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m5 <- c( 
   beta_c = 0.038, beta_sa = 0.038, beta_a = 0.038, 
@@ -970,7 +972,7 @@ parameters_m5 <- c(
   rho_c = 0.05,rho_sa = 0.03, rho_a = 0.01, 
   omega_c = 1/180, omega_sa =  1/180, omega_a = 1/180,
   epsilon = 2e-5,
-  mu_b = 0.34/365,  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 27%   
+  mu_b = 0.34/365,  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10% (assumed)  
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials_m5),
@@ -978,10 +980,11 @@ parameters_m5 <- c(
 
 res_model5<-model5(pars = parameters_m5, init = initials_m5,
                    end.time = end.time)
-PlotMods(res_model5)
+#PlotMods(res_model5)
 
-# > MODEL 6 SEIRMS/E - Foot and mouth disease  #####
-initials_m6 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
+#> MODEL 6 SEIRMS/E - Foot and mouth disease  #####
+initials_m6 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
+                 Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m6 <- c( 
   beta_c = 0.52/365, beta_sa = 0.52/365, beta_a = 0.52/365,
   phi_c = 1/8, phi_sa = 1/6, phi_a = 1/6,
@@ -998,9 +1001,11 @@ parameters_m6 <- c(
 
 res_model6<-model6(pars = parameters_m6, init = initials_m6,
                    end.time = end.time)
-PlotMods(res_model6)
+res_model6$results<-res_model6$results %>% 
+  relocate(M,.after = R) 
+#PlotMods(res_model6)
 
-# > MODEL 7 SEIRMS/E - Brucellosis  #####
+#> MODEL 7 SEIRMS/E - Brucellosis  #####
 initials_m7 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
                  Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m7 <- c( 
@@ -1023,7 +1028,10 @@ parameters_m7 <- c(
 )
 res_model7<-model7(pars = parameters_m7, init = initials_m7,
                    end.time = end.time)
-PlotMods(res_model7)
+res_model7$results<-res_model7$results %>% 
+  relocate(M,.after = R) 
+
+#PlotMods(res_model7)
 
 ## MULTIPLE RUNS - ALL MODELS ################################
 #### set end.time and replication times 
@@ -1032,53 +1040,85 @@ n_rep <- 100
 
 # use the parameters same as a single run
 
-# > MX RUNS MODEL 1 - NO infection #####
+#> MX RUNS MODEL 1 - NO infection #####
 sim_rep_m1<-replicate(n_rep,(model1(pars = parameters_m1, init = initials_m1,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 2 SI - Anthrax #####
+#> MX RUNS MODEL 2 SI - Anthrax #####
 sim_rep_m2<-replicate(n_rep,(model2(pars = parameters_m2, init = initials_m2,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 3 SEI - Bovine tuberculosis #####
+#> MX RUNS MODEL 3 SEI - Bovine tuberculosis #####
 sim_rep_m3<-replicate(n_rep,(model3(pars = parameters_m3, init = initials_m3,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 4 SIRS - Hemorrhagic septicemia #####
+#> MX RUNS MODEL 4 SIRS - Hemorrhagic septicemia #####
 sim_rep_m4<-replicate(n_rep,(model4(pars = parameters_m4, init = initials_m4,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 5 SEIRS - Lumpy skin disease #####
+#> MX RUNS MODEL 5 SEIRS - Lumpy skin disease #####
 sim_rep_m5<-replicate(n_rep,(model5(pars = parameters_m5, init = initials_m5,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 6 SEIRMS/E - Foot and mouth disease #####
+#> MX RUNS MODEL 6 SEIRMS/E - Foot and mouth disease #####
 sim_rep_m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
                                     end.time = end.time)))
 
-# > MX RUNS MODEL 7 SEIRMS/E - Brucellosis #####
+#> MX RUNS MODEL 7 SEIRMS/E - Brucellosis #####
 sim_rep_m7<-replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
                                     end.time = end.time)))
 
+
+# SET UP single run plots ########
+
+# convert res_model to data.frame, change days -> years
+s<-list(res_model1,
+                res_model2,
+                res_model3,
+                res_model4,
+                res_model5,
+                res_model6,
+                res_model7)
+nam<-c('no_infection',
+       'Anthrax',
+       'bTB',
+       'HS',
+       'LSD',
+       'FMD',
+       'Brucellosis')
+
+for(i in 1:length(s)){
+  s[[i]]<-s[[i]]$results %>%
+  mutate(time_y = time/365) %>% #convert day to year for plotting
+  melt(id.vars = c('time','time_y'),
+         value.name = 'value', variable.name = 'class')
+  
+  s[[i]]$model <- paste0(nam[[i]]) # adding name
+}
+
+s[[i]]$model <- paste0(nam[[i]]) 
+# save the data frame  (.rds) for working next time
+for (i in 1:length(s)) {
+  saveRDS(s[[i]], file = paste0("df_m",i,"_",nam[[i]],"_1run.rds")) }
+saveRDS(r6,file = "df_m6_fmd_1run.rds")
+
+## SET UP FUNCTIONS FOR MX plots ################################
 # FUNCTION for plotting model's simulations #####
 single_pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
   df<-list()
-  #loop for storing new df
   for (i in 1:n_rep){
     run <- paste("run", seq(n_rep), sep="")
     names(df)[i]
     df[[i]]<- x[,i]$results[,-c(1)]
     df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
-    
   }
   
-  df<-map2(df,run, ~cbind(.x, run = .y))   # adding n_rep to the column
+  df<-map2(df,run, ~cbind(.x, run = .y))   # adding number of replications to the column
   df2<- data.table::rbindlist(df)          # binding row
   
   if (melt == T) {  #option for melting the data in case we need...
     
-    df3 <- gather(df2, key = class, value = value, -c(time,run))
-    
+    df3 <- melt(df2, id.vars = c('time_d','run'))
     return(df3 = data.frame(df3))
   } 
   
@@ -1096,16 +1136,17 @@ sim_rep_m<-list(sim_rep_m1,
                 sim_rep_m5,
                 sim_rep_m6,
                 sim_rep_m7)
-#creating name list for each model (in an order)
-# from sim_rep_m1 to sim_rep_m7
-nam<-c('pop_dynamic',
+
+#creating name list for each model
+# model name list: sim_rep_m1 - sim_rep_m7
+nam<-c('no_infection',
        'Anthrax',
        'bTB',
        'HS',
        'LSD',
        'FMD',
        'Brucellosis')
-nam<-c('LSD')
+
 m<-list()
 
 #group and calculate total population change (%) loop--------
@@ -1116,20 +1157,688 @@ for (i in 1:length(sim_rep_m)) {
     mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
     mutate(time_y = time_d/365) %>% #convert day to year for plotting
     as.data.frame()
-  
   m[[i]]$model <- paste0(nam[[i]])
   
 }
 
-#loop for saving the data.frame as .rds
-for (i in 1:length(m)) {
-  saveRDS(m[[i]], file = paste0("df_",nam[[i]],".rds")) 
+#relocate columns of FMD and Brucellosis models, this should be in order SEIRMN which will easier for plotting-labeling
+m[[6]]<-m[[6]]%>% 
+  relocate(M,.after = R) 
+m[[7]]<-m[[7]]%>% 
+  relocate(M,.after = R) 
+# check columns before plotting: the population class should be in an order like SIRN, SIN, SIERN, if not back to the relocate
+for (i in 1:length(m)){
+  names(m)[i]
+  print(head(m[[i]]))
 }
 
-## PLOT MODEL OUTPUTS: population line graphs #############################
+# save the data frame  (.rds) for working next time
+for (i in 1:length(m)) {
+  saveRDS(m[[i]], file = paste0("df_m",i,"_",nam[[i]],"_100runs.rds")) }
+
+######### PLOTTING infectious disease #############
+#######this can skip #######
+# Load single runs .rds files and create a list ########
+sl <- list.files(path = getwd(), pattern = "_1run.rds")
+sl
+s = lapply(sl, readRDS)
+
+str(s)
+
+# summarise max-min values
+for(i in 1:length(s)){
+  print(s[[i]] |> group_by(class) |>
+          dplyr::summarise(Mean = mean(value),
+                           Max=max(value),
+                           Min=min(value)))
+}
+
+#  plot signle run ######
+#> p1 - plot 1 run no infection ########
+p1<-ggplot(s[[1]]) + 
+  geom_line(aes(x = time_y ,y = value,  color = class))  +
+  labs(x="years", y= "population",
+       title= 'A) No infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c( 'adult','subadult','calf','total' ),
+                      values = c('a'='seagreen4',
+                                 'sa'='firebrick',
+                                 'c'='dodgerblue3',
+                                 'N'='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+
+#print(p1)
+#ggsave("gaur_m1_noinf_1run.png",p1,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p2 - plot 1 run SI Anthrax ######
+s2 <- s[[2]] %>%  filter(class %in% c("S","I","N"))
+p2<-ggplot(s2) + 
+  geom_line(aes(x = time_y ,y = value,  color = class))  +
+  labs(x="years", y= "population",
+       title= 'B) Anthrax infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','I', 'total') , #this one label is manual
+                      values = c('S'='seagreen4',
+                                 'I'='firebrick',
+                                 'N'='#153030'))+
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+
+#print(p2)
+#ggsave("gaur_m2_anthrax_1run.png",p2, width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p3 - plot 1 run SEI bTB ######
+s3 <- s[[3]] %>% filter(class %in% c("S","E","I", "N"))
+p3 <-ggplot(s3) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'C) bTB infection') +
+  # ylim(0,1000)+
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I','total' ),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+
+#print(p3)
+#ggsave("gaur_m3_btb_1run.png",p3, width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p4 plot 1 run SEI HS ######
+s4 <- s[[4]] %>% filter(class %in% c("S","I","R", "N"))
+p4 <-ggplot(s4) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'D) HS infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','I','R','total' ),
+                      values = c('S'='seagreen4',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+
+#print(p4)
+#ggsave("gaur_m4_HS_1run.png",p4, width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p5 plot 1 run SEIR LSD ######
+s5<-s[[5]] |>filter(class %in% c("S","E","I","R","N"))
+p5<-ggplot(s5) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'E) LSD infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'total' ),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+
+#print(p5)
+#ggsave("gaur_m5_LSD_1run.png",p5, width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p6 plot 1 run SEIRMS/E FMD ######
+s6<-s[[6]] |>filter(class %in% c("S","E","I","R","M","N"))
+p6 <-ggplot(s6) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'F) FMD infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "M"='mediumorchid4',
+                                 "N"='#153030'))+ 
+  
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
+#print(p6)
+#ggsave("gaur_m6_fmd_1run.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> p7 plot 1 run SEIRMS/E Brucellosis ######
+s7<-s[[7]] |>filter(class %in% c("S","E","I","R","M","N"))
+p7<-ggplot(s7) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'G) Brucellosis infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  #ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "M"='mediumorchid4',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7))) 
+
+#print(p7)
+#ggsave("gaur_m7_bru_1run.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
+
+# zoom in FMD in 10 years
+library(egg) # for facet labeling
+
+z<-s6 |>
+  filter(between(time_y,10,20))|>
+  mutate(year=c("10 - 20 years"))
+head(z)
+
+z2<-s6 |> filter(between(time_y,90,100))|>
+  mutate(year=c("90 - 100 years"))
+head(z2)
+
+z3<-rbind(z,z2)
+head(z3)
+
+p6z<-ggplot(z3) + 
+  geom_line(aes(x = time_y, y = value, color = class), linewidth = 1)+
+  labs(x="years", y= "population",
+       title= 'Gaur population with FMD infection') +
+  facet_wrap(year~., scale = "free_x") +
+  
+  scale_x_continuous(breaks=seq(0, (365*10), by = 2))+
+  
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'M','total' ),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "M"='mediumorchid4',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+  
+print(p6z)
+#ref:https://stackoverflow.com/questions/56064042/using-facet-tags-and-strip-labels-together-in-ggplot2
+tag_facet2 <- function(p, open = "(", close = ")", tag_pool = letters, x = -Inf, y = Inf, 
+                       hjust = -0.5, vjust = 1.5, fontface = 2, family = "", ...) {
+  
+  gb <- ggplot_build(p)
+  lay <- gb$layout$layout
+  tags <- cbind(lay, label = paste0(open, tag_pool[lay$PANEL], close), x = x, y = y)
+  p + geom_text(data = tags, aes_string(x = "x", y = "y", label = "label"), ..., hjust = hjust, 
+                vjust = vjust, fontface = fontface, family = family, inherit.aes = FALSE)
+}
+
+p6z2<-tag_facet2(p6z)
+print(p6z2)
+
+ggsave("gaur_fmd_1sim_zoom10y3.png",p6z2, width = 25, height = 15, units = 'cm', dpi = 600)
+
+##### this can skip #####
+# Load multiple runs .rds files and create a list ########
+l<- list.files(path = getwd(), pattern = "_100runs.rds")
+l
+m = lapply(l, readRDS)
+str(m)
+
+#summerize basic stat
+mx<-list()
+for (i in 1:length(m)){
+  
+  mx[[i]] <- melt(m[[i]], id.vars = c('time_y','time_d','run','model',"Ndiff"),
+                  value.name = 'value', variable.name = 'class')
+}
+
+for (i in 1:length(mx)){
+  print(mx[[i]] |> group_by(class) |>
+          dplyr::summarise(Median = median(value), 
+                           Mean = mean(value),
+                           Max=max(value),
+                           Min=min(value)))
+}
+
+table(mx[[7]]$class)
+m[[7]] |> group_by(N) |>
+  dplyr::summarise(Median = median(value), 
+                   Mean = mean(value),
+                   Max=max(value),
+                   Min=min(value))
+# # # # #
+
+# multiple run plots ###### 
+#  > pl1 - plot 100 runs no infection ########
+head(m[[1]])
+pl1<-ggplot(m[[1]]) + 
+  geom_line(aes(x = time_y ,y = a,  group = run, color = 'adult'), linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = sa, group = run, color = 'subadult'),linewidth = 0.1, alpha = 0.12) +
+  geom_line(aes(x = time_y, y = c,  group = run, color = 'calf' ), linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = N,  group = run, color = 'total'), linewidth = 0.1, alpha = 0.12) +
+  labs(x="years", y= "population", title = 'H) No infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c( 'adult','subadult','calf','total'),
+                      values = c('seagreen4',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 '#153030'),
+                      breaks = c('adult','subadult','calf','total'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth =0.7 )))+
+  
+  stat_summary(m[[1]], mapping =aes( x = time_y, y = a, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[1]], mapping =aes( x = time_y, y = sa, group = 1), fun=mean, geom="line", colour= 'firebrick',linewidth = 0.5)+
+  stat_summary(m[[1]], mapping =aes( x = time_y, y = c, group = 1), fun=mean, geom="line", colour= 'dodgerblue3',linewidth = 0.5)+
+  stat_summary(m[[1]], mapping =aes( x = time_y, y = N, group = 1), fun=mean, geom="line", colour= '#153030',linewidth = 0.5)
+
+#print(pl1)
+#ggsave("gaur_m1_noinf_100runs.png",pl1,width = 22, height = 15, units = 'cm', dpi = 600)
+
+pl1<-ggplot(mx[[1]]) + 
+  geom_line(aes(x = time_y ,y = value, group = run,  colour = class), linewidth = 0.1, alpha = 0.12) +
+  labs(x="years", y= "population", title = 'H) No infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('adult','subadult','calf','total'),
+                      values = c('seagreen4',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 '#153030'),
+                      breaks = c('adult','subadult','calf','total'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth =0.7 )))+
+  
+  stat_summary(mx[[1]], mapping = aes( x = time_y, y = value, group = run), fun=mean, geom="line", colour=class, linewidth = 0.5)
+
+print(pl1)
+
+#> pl2 - plot 100 runs SI Anthrax ######
+pl2<-ggplot(m[[2]])+ 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'), linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'), linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ), linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title= 'I) Anthrax infection') +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','I', 'total') , #this one label is manual
+                      values = c('seagreen4',
+                                 'firebrick',
+                                 '#153030'),
+                      breaks = c('S','I','total'))+
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))+
+  stat_summary(m[[2]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
+  stat_summary(m[[2]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[2]], mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom ="line", colour="firebrick",linewidth = 0.5)
+ 
+#print(pl2)
+#ggsave("gaur_m2_anthrax_100runs.png",pl2,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> pl3 - plot 100 runs SEI bTB ######
+pl3<-ggplot(m[[3]]) + 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title = ('J) bTB infection')) +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I','total'),
+                      values = c('seagreen4',
+                                 'darkorange2',
+                                 'firebrick',
+                                 '#153030'),
+                      breaks = c('S','E','I','total'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
+  stat_summary(m[[3]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[3]], mapping = aes( x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
+  stat_summary(m[[3]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[3]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5) #blackgreen
+
+#print(pl3)
+#ggsave("gaur_m3_bTB_100runs.png",pl3,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> pl4 - plot 100 runs SIRS HS ######
+pl4 <-ggplot(m[[4]]) + 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title = ('K) HS infection')) +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','I','R','total'),
+                      values = c('seagreen4',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 '#153030'),
+                      breaks = c('S','I','R','total'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
+  stat_summary(m[[4]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
+  stat_summary(m[[4]], mapping = aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[4]], mapping = aes( x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[4]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)
+ 
+#print(pl4)
+#ggsave("gaur_m4_HS_100runs.png",pl4,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> pl5 - plot 100 runs SEIRS LSD ######
+pl5 <-ggplot(m[[5]]) + 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title = ('K) LSD infection')) +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I','R','total'),
+                      values = c('seagreen4',
+                                 'darkorange2',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 '#153030'),
+                      breaks = c('S','E','I','R','total'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
+  stat_summary(m[[5]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+
+  stat_summary(m[[5]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[5]], mapping = aes(x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
+  stat_summary(m[[5]], mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[5]], mapping = aes(x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)#blackgreen
+
+#print(pl5)
+#ggsave("gaur_m5_LSD_100runs.png",pl5,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> pl6 - plot 100 runs SEIRMS/E FMD ######
+pl6 <-ggplot(m[[6]]) + 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = M, group = run, color = 'M' ),linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title = ('M) FMD infection')) +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I','R','M','total'),
+                      values = c('seagreen4',
+                                 'darkorange2',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 'mediumorchid4',
+                                 '#153030'),
+                      breaks = c('S','E','I','R','M','total'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size = 11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size = 11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)+
+  stat_summary(m[[6]], mapping = aes(x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",linewidth = 0.5)
+  
+#print(pl6)
+#ggsave("gaur_m6_FMD_100runs.png",pl6,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#> pl7 - plot 100 runs SEIRMS/E Brucellosis ######
+pl7 <-ggplot(m[[7]]) + 
+  geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
+  geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
+  geom_line(aes(x = time_y, y = M, group = run, color = 'M' ),linewidth = 0.1, alpha = 0.12)+
+  labs(x="years", y= "population", title = ('N) Brucellosis infection')) +
+  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I','R','M','total'),
+                      values = c('seagreen4',
+                                 'darkorange2',
+                                 'firebrick',
+                                 'dodgerblue3',
+                                 'mediumorchid4',
+                                 '#153030'),
+                      breaks = c('S','E','I','R','M','total'))+ #blackgreen
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title =element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = N, group = 1), fun=mean, geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",linewidth = 0.5)
+  
+#print(pl7)
+#ggsave("gaur_m7_Brucellosis_100runs.png",pl7,width = 22, height = 15, units = 'cm', dpi = 600)
+
+# patchwork: combine plots #######
+library(patchwork)
+
+png("test_patchwork2.png",width = 30, height = 40, units = 'cm', res = 600)
+pp<- p1/p2/p3/p4/p5/p6/p7 | pl1/pl2/pl3/pl4/pl5/pl6/pl7 
+pp 
+dev.off()
+
+pp1 <- p1/p2/p3/p4/p5/p6/p7 +  plot_annotation(title = '1 simulation') 
+pp2<- pl1/pl2/pl3/pl4/pl5/pl6/pl7 + plot_annotation(title = "100 simulations") 
+pp3<-pp1|pp2 
+pp3<-p1/p2/p3/p4/p5/p6/p7 +  plot_annotation(title = '1 simulation') |  pl1/pl2/pl3/pl4/pl5/pl6/pl7 + plot_annotation(title = "100 simulations") 
+png("test_patchwork4.png",width = 30, height = 40, units = 'cm', res = 600)
+print(pp3)
+dev.off()
+
+# Plot the average population change ##########
+# Prepare the dataframe for boxplot 
+# the % of population change in 100 for all the models
+
+mx2 <-data.table::rbindlist(mx)
+
+str(mx2)
+#Prepare the dataframe for boxplotting ########
+#the % of population change in 100 for all the models
+dft<-mx2 %>% 
+  dplyr::select(Ndiff,run,model)%>% 
+  drop_na()%>%
+  distinct()
+
+table(dft$model)
+write_csv(dft,"df_ndiff.csv")
+
+#load df back
+#dft <- read_csv("df_ndiff.csv")
+
+#calculating mean,median
+dft |>
+  group_by(model)|>
+  summarise(Median = median(Ndiff),
+            Mean = mean(Ndiff))
+
+# Boxplot
+box<-dft %>%
+  ggplot(aes(x= reorder(model,-Ndiff), y = Ndiff,fill=model)) +
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  geom_jitter(color="black", size=0.6, alpha=0.4) +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)) +
+  ggtitle("Gaur population change by infectious disease models in 100 years") +
+  xlab("") +
+  ylab("Population change (%)")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
 
 
-## SET UP FUNCTIONS FOR MX METRICS ################################
+print(box)
+ggsave("gaur_ndiff_box1_100sim.png",box,width = 22, height = 15, units = 'cm', dpi = 600)
+
+#violoin plot
+v<-dft %>%
+  ggplot(aes(x=reorder(model,-Ndiff),y = Ndiff,fill=model)) +
+  geom_violin() +
+  scale_fill_viridis(discrete = TRUE, alpha=0.6, option="A") +
+  theme_ipsum() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  ) +
+  ggtitle("Gaur population change by infectious disease models in 100 years") +
+  xlab("")+
+  ylab("Population change (%)")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
+
+
+print(v)
+#ggsave("gaur_ndiff_vplot_100sim.png",v,width = 20, height = 15, units = 'cm', dpi = 600)
+
+#reorder by population change max-min
+dft$model <- recode_factor(dft$model, no_infection = "no infection" )
+dft$model2 <- factor(dft$model, 
+                    levels = c("no infection", 
+                               "HS",
+                               "LSD",
+                               "Anthrax",
+                               "FMD",
+                               "bTB",
+                               "Brucellosis"))
+?ggbetweenstats()
+plt<-dft%>%ggbetweenstats(
+  x=model2,
+  y=Ndiff,
+  k=0,
+  plot.type = "boxviolin",
+  pairwise.comparisons=F,
+  bf.message = F,
+  results.subtitle = FALSE,
+  centrality.point.args = list(size = 2, color = "darkred"),
+  title= "Gaur population change by infectious disease models in 100 years",
+  xlab = "",
+  ylab = "Population change (%)",
+  package = "ggsci",
+  palette = "default_jco")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
+
+print(plt)
+
+ggsave("gaur_ndiff_boxviolin_max-min2_100sim.png",plt,width = 20, height = 15, units = 'cm', dpi = 600)
+
 
 ############## FUNCTION  1 COUNT EXTINCTIONS ########
 # minimum time that I == 0 
@@ -1142,9 +1851,6 @@ my_min_ext_I<-function(x=get_time$results, y=get_time$results$I,...){
   }
   res_no
 }
-
-
-
 
 # minimum time that N == 0 
 my_min_ext_N<-function(x=get_time$results, y=get_time$results$N,...){
@@ -1243,623 +1949,4 @@ my_imp_ext_na_N<-function(x=time,y=N,...){
 
 ############## FUNCTION  6  MODEL PAR LOOPS MIN TIME & COUNT I EXTINCTIONS #######
 
-model2_anth_extinct <-function() {
-  for (k in 1:length(beta)){
-  for (i in 1:length(rho)) {
-    parameters <- c(beta_a = beta[k], beta_sa = beta[k],  beta_c = beta[k],
-                    gamma_c = (1/(1/24))/365,gamma_sa = (1/(1/24))/365, gamma_a = (1/(1/24))/365,
-                    rho_c= rho[i], rho_sa= rho[i],rho_a= rho[i],
-                    mu_b = 0.34/365,  mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-                    delta_c = 1/365,delta_sa = 1/(3*365), 
-                    epsilon = 2e-5,
-                    N = sum(initials), 
-                    tau=1)
-    
-    initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
-    
-    get_time <- model2(pars = parameters, init = initials,
-                                   end.time = end.time)
-    
-    res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-    res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-    res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-    
-    res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-    res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-    res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-  }}
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
 
-model3_tb_extinct<-function() {
-  for (k in 1:length(beta)){
-    for (i in 1:length(rho)) {
-     
-       parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
-                        phi_c = 0.21/30, phi_sa = 0.21/30, phi_a = 0.21/30,
-                        gamma_c = 0, gamma_sa = 0, gamma_a = 0,
-                        rho_c= rho[i], rho_sa= rho[i],rho_a= rho[i],
-                        mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
-                        mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
-                        delta_c = 1/365, delta_sa = 1/(3*365),
-                        epsilon = 2e-5,
-                        N = sum(initials), tau=1)
-      
-      initials <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = a, Ea = 0, Ia = 1)
-      get_time <- model3(pars = parameters, init = initials,
-                         end.time = end.time)
-      
-      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-      
-      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
-
-model4_hs_extinct<-function() {
-  for (k in 1:length(beta)){
-    for (i in 1:length(rho)) {
-      
-      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
-                       gamma_c  =1/3/365, gamma_sa =1/3/365, gamma_a =1/3/365,
-                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
-                       omega_c = 1/180/365, omega_sa = 1/180/365, omega_a = 1/180/365,
-                       epsilon = 2e-5,
-                       mu_b = 0.34/365, mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-                       delta_c = 1/365, delta_sa = 1/(3*365),
-                       N = sum(initials),
-                       tau=1)
-      
-      initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = a, Ia = 1, Ra = 0)
-      
-      get_time <- model4_ep(pars = parameters, init = initials,
-                            end.time = end.time)
-      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-      
-      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
-
-model5_lsd_extinct<-function() {
-  for (k in 1:length(beta)){
-    for (i in 1:length(rho)) {
-      
-      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
-                       phi_c = 1/7/365, phi_sa = 1/7/365,phi_a = 1/7/365,
-                       gamma_c = 0, gamma_sa = 0,gamma_a = 0,
-                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
-                       omega_c = (1/365)/365, omega_sa =  (1/365)/365, omega_a = (1/365)/365,
-                       mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), 
-                       mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
-                       delta_c = 1/365, delta_sa = 1/(3*365),
-                       epsilon = 2e-5,
-                       N = sum(initials),
-                       tau=1)
-      
-      c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
-      
-      get_time <- model5(pars = parameters, init = initials,
-                            end.time = end.time)
-      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-      
-      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
-
-model6_fmd_extinct<-function() {
-  for (k in 1:length(beta)){
-    for (i in 1:length(rho)) {
-      
-      parameters <- c( beta_a = beta[k], beta_sa = beta[k], beta_c = beta[k],
-                       phi_c = 1/8/365, phi_sa = 1/6/365, phi_a = 1/6/365,
-                       gamma_c = 1/5/365, gamma_sa = 1/5/365, gamma_a = 1/5/365,
-                       rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
-                       omega_c = (1/120)/365, omega_sa =  (1/120)/365, omega_a = (1/565)/365, omega_m = (1/144)/365,
-                       epsilon = 2e-5,
-                       mu_b = 0.34/365, mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
-                       mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-                       delta_c = 1/365, delta_sa = 1/(3*365),
-                       N = sum(initials),
-                       tau=1)
-      
-      initials <- c c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
-      
-      get_time <- model6(pars = parameters, init = initials,
-                            end.time = end.time)
-      
-      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-      
-      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-    }}
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
-
-model7_bru_extinct<-function() {
-  for (k in 1:length(beta)){
-    for (i in 1:length(rho)) {
-      
-      parameters <- c(beta_c = 2/365, beta_sa = 2/365,beta_a = 2/365,
-                      phi_c = 1/14/365, phi_sa = 1/14/365, phi_a = 1/14/365,
-                      gamma_c = 1/2*365, gamma_sa = 1/2*365, gamma_a = 1/2*365,
-                      rho_c= rho[i], rho_sa= rho[i], rho_a= rho[i],
-                      alpha = 0.9,
-                      omega_c = (1/180)/365, omega_sa =  (1/180)/365, omega_a = (1/180)/365, omega_m = (1/180)/365,
-                      epsilon = 2e-5,
-                      mu_b = 0.34/365, mu_bI = (0.34/365)*(0.5), #Ia birth rate reduce by = 50%  (assume)
-                      mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
-                      delta_c = 1/365, delta_sa = 1/(3*365),
-                      N = sum(initials),
-                      tau=1)
-      
-      initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = a, Ea = 0, Ia = 1, Ra = 0)
-      get_time <- model6(pars = parameters, init = initials,
-                         end.time = end.time)
-      
-      res_min_N[k,i]<- my_min_ext_N(x=get_time$results,y=get_time$results$N)
-      res_num_ext_N[k,i]<- my_imp_ext_N(x=get_time$time,y=get_time$results$N)
-      res_time_inf_N[k,i]<- my_imp_ext_na_N(x=get_time$time,y=get_time$results$N)
-      
-      res_min_I[k,i]<- my_min_ext_I(x=get_time$results,y=get_time$results$I)
-      res_num_ext_I[k,i]<- my_imp_ext_I(x=get_time$time,y=get_time$results$I)
-      res_time_inf_I[k,i]<- my_imp_ext_na_I(x=get_time$time,y=get_time$results$I)
-    }}
-  
-  d <- list(res_min_N,res_num_ext_N,res_time_inf_N,res_min_I,res_num_ext_I,res_time_inf_I)
-  d
-}
-## PLOT DATA PREPARATION #################################
-
-out_put_fun_min<-function(x, par1, par2, ...){ # x = out, par1, par2 = beta_a, rho_a, ...
-  output <- array(unlist(x), dim = c(length(par1),length(par2),n_rep*3))
-  output_min<-output[,,seq(from=1,to=n_rep*3,by=3)]
-  output_min
-}
-
-out_put_fun_num<-function(x, par1, par2, ...){ # x = out, par1, par2 = beta_a, rho_a, ...
-  output <- array(unlist(x), dim = c(length(par1),length(par2),n_rep*3))
-  output_num<-output[,,seq(from=2,to=n_rep*3,by=3)]
-  output_num
-}
-
-out_put_fun_time<-function(x, par1, par2, ...){ # x = out, par1, par2 = beta_a, rho_a, ...
-  output <- array(unlist(x), dim = c(length(par1),length(par2),n_rep*3))
-  output_time<-output[,,seq(from=3,to=n_rep*3,by=3)]/end.time
-  output_time
-}
-
-############## FUNCTION 15 PREP OUTPUT FOR PLOTTING TIME TO EXTINCTION or NUMBER OF EXTINCTIONS #############
-
-my_plot_min<-function(x, par1, par2, par1_n, par2_n){ 
-  # x = data run, e.g. big_run, par1, par2 are parameters varied, e.g. beta_a, rho_a, par1_n, par2_n are names, e.g. 'beta', 'rho', op is output, either time or extinctions
-  plot_res<-apply(x, c(1,2), mean, na.rm = T)
-  row.names(plot_res)<-par1; colnames(plot_res)<-par2
-  df <- melt(plot_res)
-  colnames(df)<-c(par1_n,par2_n,'duration')
-  df
-}
-
-############## FUNCTION 16 PREP OUTPUT FOR PLOTTING PROPORTION OF OUTBREAKS PERSISTING ########
-
-my_plot_num<-function(x, par1, par2, par1_n, par2_n){ # x = data run, e.g. big_run, par1, par2 are parameters varied, e.g. beta_a, rho_a
-  x[!is.finite(x)] <- 0
-  plot_res<-apply(x, c(1,2), sum, na.rm = T)/n_rep
-  row.names(plot_res)<-par1; colnames(plot_res)<-par2
-  df <- melt(plot_res)
-  colnames(df)<-c(par1_n,par2_n,'outbreaks')
-  df
-}
-
-############## FUNCTION 17 PREP OUTPUT FOR PLOTTING TIME TO EXTINCTION WITH NO INFINITE FROM PERSISTENCE ######
-
-my_plot_time<-function(x, par1, par2, par1_n, par2_n){ # x = data run, e.g. big_run, par1, par2 are parameters varied, e.g. beta_a, rho_a
-  x[!is.finite(x)] <- end.time
-  plot_res<-apply(x, c(1,2), mean, na.rm = T)
-  row.names(plot_res)<-par1; colnames(plot_res)<-par2
-  df <- melt(plot_res)
-  colnames(df)<-c(par1_n,par2_n,'time')
-  df
-}
-
-############## FUNCTION 18 PREP OUTPUT FOR PLOTTING MX SIMULATIONS - SINGLE POP ####
-single_pop_sim_prep_I <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
-  mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
-  for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$I
-  }
-  colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
-  rownames(mat) = paste("run", seq(n_rep), sep="")
-  dat = as.data.frame(mat)
-  dat$run = rownames(dat)
-  mdat = melt(dat, id.vars="run")
-  mdat$time = as.numeric(gsub("time", "", mdat$variable))
-  mdat
-}
-
-single_pop_sim_prep_N <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
-  mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
-  for (i in 1:n_rep){
-    mat[i,]<-x[,i]$results$N
-  }
-  colnames(mat) = paste("time", seq(from=1,to=end.time+1,by=1), sep="")
-  rownames(mat) = paste("run", seq(n_rep), sep="")
-  dat = as.data.frame(mat)
-  dat$run = rownames(dat)
-  mdat = melt(dat, id.vars="run")
-  mdat$time = as.numeric(gsub("time", "", mdat$variable))
-  mdat
-}
-
-############## PARAMETER RANGE #######################
-
-#Anthrax
-beta <- seq(from = 5e-5,to = 0.01, length.out=10)
-rho <- seq(from = 0.1, to = 1, length.out=10)
-
-#TB
-beta <- seq(from = 0.0003,to = 0.0276, length.out=10)
-rho <- seq(from = 0, to = 0.11, length.out=10)
-
-d <- as.data.frame(matrix(NA, length(beta),length(rho)))
-res_min<-array(unlist(d), dim=c(length(beta), length(rho)))
-res_num_ext<-array(unlist(d), dim=c(length(beta), length(rho)))
-res_time_inf<-array(unlist(d), dim=c(length(beta), length(rho)))
-
-n_rep = 100
-end.time = 100 * 365
-
-############## RUN Big MODEL #####
-big_model2<-replicate(n_rep,my_fun_model2_ant_ep())
-
-############## RUN MODEL 2 #####
-
-big_run_model2<-replicate(n_rep,my_fun_model2())
-
-############## RUN MODEL 3 ##############
-
-big_run_model3<-replicate(n_rep,my_fun_model3())
-
-############## RUN MODEL 4 ###########
-
-big_run_model4<-replicate(n_rep,my_fun_model4())
-
-############## RUN MODEL 5 ###########
-
-big_run_model5<-replicate(n_rep,my_fun_model5())
-
-
-## MODEL OUTPUTS PREPARATION #######################
-
-############## MODELS 1-6 OUTPUT PREPARATION #############################
-mod_res<-list(big_model2_ant_no_ep_N,
-              big_model2_ant_ep)
-              
-
-mod_res<-list(big_run_model1,
-              big_run_model2,
-              big_run_model3,
-              big_run_model4,
-              big_run_model5,
-              big_run_meta)
-
-for (i in 1:length(mod_res)){
-  assign(paste0("Res_min_", i), out_put_fun_min(x=mod_res[[i]], par1 = beta, par2 = rho))
-}
-
-for (i in 1:length(mod_res)){
-  assign(paste0("Res_num_", i), out_put_fun_num(x=mod_res[[i]],par1 = beta ,par2 = rho))
-}
-
-for (i in 1:length(mod_res)){
-  assign(paste0("Res_time_", i), out_put_fun_time(x=mod_res[[i]],par1 = beta,par2 = rho))
-}
-
-plot_res_min<-list(Res_min_1,
-                   Res_min_2)
-                   
-
-plot_res_min <- lapply(plot_res_min,function(x) replace(x,is.infinite(x),end.time))
-
-plot_res_num<-list(Res_num_1,
-                   Res_num_2)
-                   
-
-plot_res_time<-list(Res_time_1,
-                    Res_time_2)
-                    
-
-for (i in 1:length(plot_res_min)){
-  assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta, par2 = rho, par1_n = 'beta', par2_n = 'rho'))
-}
-
-for (i in 1:length(plot_res_num)){
-  assign(paste0("df_num_", i), my_plot_num(x=plot_res_num[[i]],par1 = beta,par2 = rho, par1_n = 'beta', par2_n = 'rho'))
-}
-
-for (i in 1:length(plot_res_time)){
-  assign(paste0("df_time_", i), my_plot_time(x=plot_res_time[[i]],par1 = beta,par2 = rho, par1_n = 'beta', par2_n = 'rho'))
-}
-
-n = length(plot_res_time)
-for(i in 1:n){
-  t1 <- do.call(cbind, mget(paste0("df_min_", 1:n) ) )
-}
-for(i in 1:n){
-  t2 <- do.call(cbind, mget(paste0("df_num_", 1:n) ) )
-}
-for(i in 1:n){
-  t3 <- do.call(cbind, mget(paste0("df_time_", 1:n) ) )
-}
-
-res<-cbind(t1,t2,t3)
-
-colnames(res) <- colnames(res) %>% str_replace(".*.beta", "beta")
-colnames(res) <- colnames(res) %>% str_replace(".*.rho", "rho")
-
-res_all = melt(res, id.vars=c("beta",'rho'))
-
-## PLOT MODEL OUTPUTS TILES #############################
-
-for (k in unique(res_all$variable)){
-  subdata <- subset(res_all, variable == k)
-  if (str_detect(subdata$variable, "duration")==T){
-    pname <- paste0("duration365-",k)
-    p<-(ggplot(subdata, aes(x = beta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("whitesmoke","royalblue","seagreen","orange","red","brown"))(500),
-                               name="Average\noutbreak\nduration", na.value = "grey", limits = c(0,365)) +
-          labs(x = expression(beta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    pname <- paste0("duration-",k)
-    p<-(ggplot(subdata, aes(x = beta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("whitesmoke","royalblue","seagreen","orange","red","brown"))(500),
-                               name="Average\noutbreak\nduration", na.value = "grey") +
-          labs(x = expression(beta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    }
-  else if
-  (str_detect(subdata$variable, "outbreaks")==T){
-    pname <- paste0("extinctions100-",k)
-    p<-(ggplot(subdata, aes(x = beta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\nnumber\nextinctions", limits = c(0,100)) +
-          labs(x = expression(beta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    pname <- paste0("extinctions-",k)
-    p<-(ggplot(subdata, aes(x = beta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\nnumber\nextinctions") +
-          labs(x = expression(beta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    }
-  else
-  {
-    pname <- paste0("time-",k)
-    p<-(ggplot(subdata, aes(x = beta, y = rho, fill = value))+
-          geom_tile()+
-          scale_fill_gradientn(colors=colorRampPalette(c("brown","red","orange","seagreen","royalblue","whitesmoke"))(500),
-                               name="Average\ntime", limits = c(0,1)) +
-          labs(x = expression(beta),y=expression(rho)) +
-          theme_bw())
-    ggsave(paste0(pname,".pdf"),p, width = 4.5, height = 3.9)
-    }
-}
-
-## SINGLE POPULATION PRINT PREPS #######
-
-res_mx<-list(sim_rep_m2,
-              sim_rep_m3,
-              sim_rep_m4,
-              sim_rep_m5,
-              sim_rep_m6,
-              sim_rep_m7)
-
-res_mx<-list(sim_rep_m2,
-             sim_rep_m3)
-#change single_pop_sim_prep from I to N
-
-for (i in 1:length(res_mx)){
-  assign(paste0("df_mx_I", i), single_pop_sim_prep(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
-}
-
-for (i in 1:length(res_mx)){
-  assign(paste0("df_mx_I", i), single_pop_sim_prep(x=res_mx[[i]],n_rep = n_rep, end.time = end.time))
-}
-df_mx_I_m3<-single_pop_sim_prep_I(x=sim_rep_m3,n_rep = n_rep, end.time = end.time)
-df_mx_N_m3<-single_pop_sim_prep_N(x=sim_rep_m3,n_rep = n_rep, end.time = end.time)
-
-res_mx_p<-rbind( df_mx1,
-                df_mx2,
-                df_mx3,
-                df_mx4,
-                df_mx5,
-                df_mx6)
-
-res_mx_p<-rbind(df_mx1,
-                df_mx2)
-
-res_mx_p$model<-c(rep('1',dim(df_mx1)[1]),
-                  rep('2',dim(df_mx2)[1]),
-                  rep('3',dim(df_mx3)[1]),
-                  rep('4',dim(df_mx4)[1]),
-                  rep('5',dim(df_mx5)[1]),
-                  rep('6',dim(df_mx6)[1]))
-
-res_mx_p$model<-c(rep('1',dim(df_mx1)[1]),
-                  rep('2',dim(df_mx2)[1]))
-## SINGLE POPULATION PLOTS #######
-
-for (i in unique(res_mx_p$model)){
-  subdata <- subset(res_mx_p, model == 1)
-  pdf(paste("plot_ts_tb_I.pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(df_mx_I_m3, aes(x=time, y=value, group=run)) +
-          theme_bw() +
-          theme(panel.grid=element_blank()) +
-          geom_line(size=0.2, alpha=0.15)+
-          ylab('I (Numbers)') + xlab('time')+
-          ggtitle("bTB infectious of gaur population, 100 runs")+
-          theme(plot.title = element_text(size=8))+
-          
-          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
-  dev.off()
-}
-
-#for (i in unique(res_mx_p$model)){
-#  subdata <- subset(res_mx_p, model == 2)
-  pdf(paste("plot_ts_btb_N.pdf", sep = ""), width = 4, height = 3)
-  print(ggplot(df_mx_N_m3, aes(x=time, y=value, group=run)) +
-          theme_bw() +
-          theme(panel.grid=element_blank()) +
-          geom_line(size=0.2, alpha=0.15)+
-          ylab('N (Numbers)') + xlab('time')+
-          ggtitle("gaur total population with bTB infections, 100 runs")+
-          theme(plot.title = element_text(size=8))+
-          
-          stat_summary(aes(group = 1), fun=mean, geom="line", colour="black",size = 1.1))
-  dev.off()
-#}
-
-
-############### PLOT ALL TS SINGLE RUNS ##############
-
-res_p_ts<-list(sim_rep_m2,
-               sim_rep_m3,
-               sim_rep_m4,
-               sim_rep_m5,
-               sim_rep_m6,
-               sim_rep_m7)
-res_p_ts<-list(sim_rep_m2,
-                 sim_rep_m3)
-# Make plots. Single runs
-for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts_all", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot() + 
-          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$N), color = "blue", size =1.2) +
-          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$S), color = "black", size =1.2) +
-          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$E), color = "yellow", size =1.2) +
-          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
-          #geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$R), color = "seagreen", size =1.2, linetype = "dotted") +
-          xlab('Time') +
-          ylab('Infection State Numbers'))
-  dev.off()
-}
-
-#pdf(paste("plotts_all_anth.pdf", sep = ""), width = 4, height = 3)
-png("gaur_btb_100y_all.png",width = 25, height = 15, units = 'cm', res = 600)
-print(ggplot() +
-        geom_line(data = res_p_ts[[2]][[4]], aes(x = res_p_ts[[2]][[4]]$time, y = res_p_ts[[2]][[4]]$S), color = "seagreen4", size =1.2) +
-        geom_line(data = res_p_ts[[2]][[4]], aes(x = res_p_ts[[2]][[4]]$time, y = res_p_ts[[2]][[4]]$E), color = "darkorange2", size =1.2) +
-        geom_line(data = res_p_ts[[2]][[4]], aes(x = res_p_ts[[2]][[4]]$time, y = res_p_ts[[2]][[4]]$I), color = "firebrick", size =1.2) +
-        #geom_line(data = res_p_ts[[1]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$R), color = "seagreen", size =1.2, linetype = "dotted") +
-        geom_line(data = res_p_ts[[2]][[4]], aes(x = res_p_ts[[2]][[4]]$time, y = res_p_ts[[2]][[4]]$N), color = "#153030", size =1.2) +
-        xlab('Time') +
-        ylab('Infection State Numbers'))+
-        ggtitle("Gaur population with bTB, 100 years")+
-  scale_color_manual( name = "class",
-                      #labels = c("I"),
-                      labels = c('S','E','I', 'total'),
-                      values = c('S'='seagreen4',
-                                  'E'='darkorange2',
-                                  'I'='firebrick',
-                                   #"R"='dodgerlblue3',
-                                  "total"='#153030'))+ #blackgreen
-                       
-        theme_bw() +
-        theme( plot.title = element_text(size = 18),
-         axis.title.x = element_text(size = 15),
-         axis.title.y = element_text(size = 15),
-         legend.title=element_text(size=11),
-         legend.text = element_text(size = 11),
-         axis.text=element_text(size=13))
-          guides(color = guide_legend(override.aes = list(alpha = 1,size=0.5)))
-
-dev.off()
-
-############### PLOT ALL TS SINGLE RUNS I ONLY ##############
-
-# Make plots. Single runs
-for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts_i_I", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot() + 
-          geom_line(data = res_p_ts[[i]][[4]], aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
-          xlab('Time') +
-          ylab('Infection Numbers'))
-  dev.off()
-}
-
-# Make plots. Single runs - SCALED
-for (i in 1:length(res_p_ts)) {
-  pdf(paste("plotts_i_scale_I", i, ".pdf", sep = ""), width = 4, height = 3)
-  print(ggplot() + 
-          geom_line(data = res_p_ts[[i]][[4]], 
-                    aes(x = res_p_ts[[i]][[4]]$time, y = res_p_ts[[i]][[4]]$I), color = "red", size =1.2) +
-          xlab('Time') +
-          ylim(0, 500) + 
-          ylab('Infection Numbers'))
-  dev.off()
-}
-
-## plot extinction times
-
-df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
-
-df.agg <- aggregate(time ~ run + value + model, sim_rep_m3, min)
-
-df.ag<-(df.agg[df.agg$value==0,c('model','time')])
-
-neworder <- c("1","2","3","4","5","6")
-library(plyr)  ## or dplyr (transform -> mutate)
-df.ag <- arrange(transform(df.ag,
-                           model=factor(model,levels=neworder)),model)
-labs <- c('1' = "SI",
-          '2' = "SEI",
-          '3' = "SIRS+",
-          '4' = "SEIRS",
-          '5' = "SEIRM-FMD",
-          '6' = "SEIRM-Bru")
-
-p<-ggplot(df.ag, aes(x=time))+
-  geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 6, labeller = labeller(model = labs))+
-  scale_x_continuous(breaks = c(0, 800, 1600), labels = c("0", "800", "1600"))
-pdf("extinctions.pdf", width = 8, height = 3)
-p
-dev.off()
-
-p_yr<-ggplot(df.ag, aes(x=time))+
-  geom_histogram(color="black", fill="grey")+
-  facet_wrap(model~., ncol = 6,labeller = labeller(model = labs))+
-  scale_x_continuous(limits = c(0,1000),breaks = c(0, 400, 800), labels = c("0", "400", "800")) +
-  ylim(0,60)
-pdf("extinctions_1yr.pdf", width = 5, height = 3)
-p_yr
-dev.off()
