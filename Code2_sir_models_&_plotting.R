@@ -1045,7 +1045,6 @@ my_meta_ext_na<-function(x=time,y=I,y1=Ia...){
 }
 
 ############## FUNCTION 18 PREP OUTPUT FOR PLOTTING MX SIMULATIONS - SINGLE POP ####
-
 single_pop_sim_prep <- function(x, n_rep, end.time){ # x = simulation of model, e.g. sim_run_m1
   mat = matrix(NA, nrow=n_rep, ncol = end.time+1)
   for (i in 1:n_rep){
@@ -1140,7 +1139,7 @@ big_run_model6_mig<-replicate(n_rep,my_fun_model6_mig())
 ## MODEL OUTPUTS PREPARATION #######################
 
 ############## MODELS 1-6 OUTPUT PREPARATION #############################
-mod_res<-list(big_run_model1)
+
 mod_res<-list(big_run_model1,
               big_run_model2,
               big_run_model3,
@@ -1279,7 +1278,6 @@ for (i in 1:length(mod_resd)){
   assign(paste0("Res_time_d", i), out_put_fun_time(x=mod_resd[[i]],par1 = delta_a,par2 = rho_a))
 }
 
-plot_res_mind<-list(Res_min_d1)
 plot_res_mind <- lapply(plot_res_mind,function(x) replace(x,is.infinite(x),end.time))
 
 plot_res_numd<-list(Res_num_d1)
@@ -1517,7 +1515,8 @@ for (i in 1:length(res_p_ts)) {
 ## plot extinction times
 
 df.agg <- aggregate(time ~ run + value + model, res_mx_p, min)
-df.ag<-(df.agg[df.agg$value==0,c('model','time')])
+
+df.ag <- (df.agg[df.agg$value==0,c('model','time')])
 
 neworder <- c("1","2","3","4","5","9","10","6","7","8")
 library(plyr)  ## or dplyr (transform -> mutate)
@@ -1533,6 +1532,7 @@ labs <- c('1' = "SIR",
           '8' = 'S[I]R*',
           '9' = 'SEIR',
           '10' = 'SEI*R')
+
 p<-ggplot(df.ag, aes(x=time))+
   geom_histogram(color="black", fill="grey")+
   facet_wrap(model~., ncol = 5,labeller = labeller(model = labs))+

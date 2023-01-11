@@ -26,3 +26,15 @@ png("test_patchwork3.png",width = 30, height = 40, units = 'cm', res = 600)
 print(pp3)
 dev.off()
 
+png("patchwork.png",width = 30, height = 40, units = 'cm', res = 600)
+pp<- p1/p2/p3/p4/p5/p6/p7 | pl1/pl2/pl3/pl4/pl5/pl6/pl7 
+pp 
+dev.off()
+
+pp1 <- p1/p2/p3/p4/p5/p6/p7 & plot_annotation(title = '1 simulation') & theme(plot.title = element_text(hjust = .1))
+pp2 <- pl1/pl2/pl3/pl4/pl5/pl6/pl7 & plot_annotation (title = "100 simulations") & theme(plot.title = element_text(hjust = .1))
+pp3 <- (pp1|pp2) + plot_annotation(tag_levels = 'A)')
+
+png("patchwork2.png",width = 30, height = 40, units = 'cm', res = 600)
+print(pp3)
+dev.off()
