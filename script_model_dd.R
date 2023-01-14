@@ -1169,48 +1169,37 @@ for (i in 1:length(sim_rep_m)) {
     as.data.frame()
   m[[i]]$model <- paste0(nam[[i]])
 }
-m7<- pop_sim_prep(x = sim_rep_m7, n_rep=n_rep, end.time= end.time, melt = F)
+m7<- pop_sim_prep(x = m7, n_rep=100, end.time= 100*365, melt = F)
 m7<- m7%>%
   group_by(run) %>%
   mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
   mutate(time_y = time_d/365) %>% #convert day to year for plotting
   as.data.frame()
 m7$model <- paste0("Brucellosis")
-
-m4<-pop_sim_prep(x = sim_rep_m4, n_rep=n_rep, end.time= end.time, melt = F)
-m42<- m4%>%
-  group_by(run) %>%
-  mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
-  mutate(time_y = time_d/365) %>% #convert day to year for plotting
-  as.data.frame()
-m42$model <- paste0("HS")
-str(m42)
-
-m7<-m7%>% 
-  relocate(M,.after = R) 
-str(m7)
 # relocate columns of FMD and Brucellosis models, this should be in order SEIRMN which will easier for plotting-labeling
 m[[6]]<-m[[6]]%>% 
   relocate(M,.after = R) 
-m[[7]]<-m[[7]]%>% 
+m7<-m7%>% 
   relocate(M,.after = R) 
 # check columns before plotting: the population class should be in an order like SIRN, SIN, SIERN, if not back to the relocate
 for (i in 1:length(m)){
   names(m)[i]
   print(head(m[[i]]))
 }
+m7
 
 # save the data frame  (.rds) for working next time
 for (i in 1:length(m)) {
   saveRDS(m[[i]], file = paste0("df_m",i,"_",nam[[i]],"_100runs.rds")) }
-saveRDS(m42, file = "df_m4_HS_100runs_dd.rds")
+saveRDS(m7, file = paste0("df_m7_Brucellosis_100runs_fd.rds"))
 
 # PLOTTING models #######
 
 ######## plotting signle run ######
 ####### this can skip #######
 # Load single runs .rds files and create a list
-sl <- list.files(path = getwd(), pattern = "_1run.rds")
+sl <- union(list.files(path = getwd(), pattern = "df_m1_no_infection_1run.rds"),
+            list.files(path = getwd(), pattern = "_1run_dd.rds"))
 sl
 s = lapply(sl, readRDS)
 str(s)
@@ -1290,7 +1279,7 @@ p3 <-ggplot(s3) +
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
 
 #print(p3)
-ggsave("gaur_m3_btb_1run_dd.png",p3, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m3_btb_1run_dd.png",p3, width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> p4 plot 1 run SEI HS ######
 s4 <- s[[4]] %>% filter(class %in% c("S","I","R", "N"))
@@ -1316,7 +1305,7 @@ p4 <-ggplot(s4) +
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
 
 #print(p4)
-ggsave("gaur_m4_HS_1run_dd.png",p4, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m4_HS_1run_dd.png",p4, width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> p5 plot 1 run SEIR LSD ######
 s5<-s[[5]] |>filter(class %in% c("S","E","I","R","N"))
@@ -1343,7 +1332,7 @@ p5<-ggplot(s5) +
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
 
 #print(p5)
-ggsave("gaur_m5_LSD_1run_dd.png",p5, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m5_LSD_1run_dd.png",p5, width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> p6 plot 1 run SEIRMS/E FMD ######
 s6<-s[[6]] |>filter(class %in% c("S","E","I","R","M","N"))
@@ -1371,7 +1360,7 @@ p6 <-ggplot(s6) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
 #print(p6)
-ggsave("gaur_m6_fmd_1run_dd.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m6_fmd_1run_dd.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> p7 plot 1 run SEIRMS/E Brucellosis ######
 s7<-s[[7]] |>filter(class %in% c("S","E","I","R","M","N"))
@@ -1398,15 +1387,17 @@ p7<-ggplot(s7) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7))) 
 #print(p7)
-ggsave("gaur_m7_bru_1run_dd.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m7_bru_1run_dd.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
 
 # plotting multiple runs ###### 
 
 ####### this can skip #######
 # Load multiple runs .rds files and create a list
-l<- list.files(path = getwd(), pattern = "_100runs.rds")
+l <- union(list.files(path = getwd(), pattern = "df_m1_no_infection_100runs.rds"),
+           list.files(path = getwd(), pattern = "_100runs_dd.rds"))
 l
 m = lapply(l, readRDS)
+
 str(m)
 # # # # #
 #  > pl1 - plot 100 runs no infection ########
@@ -1530,7 +1521,7 @@ pl4 <-ggplot(m[[4]]) +
   stat_summary(m[[4]], mapping = aes( x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)
 
 #print(pl4)
-#ggsave("gaur_m4_HS_100runs.png",pl4,width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m4_HS_100runs_dd.png",pl4,width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> pl5 - plot 100 runs SEIRS LSD ######
 pl5 <-ggplot(m[[5]]) + 
@@ -1604,7 +1595,7 @@ pl6 <-ggplot(m[[6]]) +
 #ggsave("gaur_m6_FMD_100runs.png",pl6,width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> pl7 - plot 100 runs SEIRMS/E Brucellosis ######
-pl7 <-ggplot(m7) + 
+pl7 <-ggplot(m[[7]]) + 
   geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
   geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
   geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
@@ -1630,18 +1621,15 @@ pl7 <-ggplot(m7) +
          legend.text = element_text(size = 11),
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
-  stat_summary(m7, mapping = aes(x = time_y, y = N, group = 1), fun=mean, geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
-  stat_summary(m7, mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
-  stat_summary(m7, mapping = aes(x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
-  stat_summary(m7, mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
-  stat_summary(m7, mapping = aes(x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)+
-  stat_summary(m7, mapping = aes(x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",linewidth = 0.5)
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = N, group = 1), fun=mean, geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = E, group = 1), fun=mean, geom="line", colour="darkorange2",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = I, group = 1), fun=mean, geom="line", colour="firebrick",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = R, group = 1), fun=mean, geom="line", colour="dodgerblue3",linewidth = 0.5)+
+  stat_summary(m[[7]], mapping = aes(x = time_y, y = M, group = 1), fun=mean, geom="line", colour="mediumorchid4",linewidth = 0.5)
 
 #print(pl7)
 ggsave("gaur_m7_Brucellosis_100runs_dd.png",pl7,width = 22, height = 15, units = 'cm', dpi = 600)
-
-#print(p7)
-#ggsave("gaur_m7_bru_1run.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
 
 # Combine plots using Patchwork #######
 library(patchwork)
@@ -1874,7 +1862,7 @@ p<-ggplot(df.ag2,aes(x=time_y,fill=class)) +
   theme(legend.position=c(.91, .9),legend.box.background = element_rect(colour = "black"))
 print(p)  
 
-tiff("extinction_bru_ni.png",width = 12, height = 10, units = 'cm', res = 600)
+png("extinction_bru_ni.png",width = 12, height = 10, units = 'cm', res = 600)
 print(p)
 dev.off()
 
@@ -1902,7 +1890,7 @@ p2<-ggplot(df.ag2,aes(x=time_y,fill=run)) +
 
 print(p2)  
 
-tiff("extinction_bru_facet.png",width = 12, height = 9, units = 'cm', res = 600)
+png("extinction_bru_facet.png",width = 12, height = 9, units = 'cm', res = 600)
 print(p2)
 dev.off()
 

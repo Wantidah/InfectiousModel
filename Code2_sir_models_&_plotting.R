@@ -542,7 +542,6 @@ res <- model7(pars = parameters, init = initials,
 PlotMods(res)
 min(subset(res$results,I==0)$time)
 
-
 ## SINGLE RUNS - ALL MODELS ################################
 
 ############## SINGLE RUN MODEL 1 - NO MORTALITY #####
@@ -632,7 +631,7 @@ df_model7_res2=res$results
 #### set initial values - change for meta populaions
 initials <- c(S = 10000, I = 1, R = 0)
 end.time <- 20 * 365
-n_rep <- 100
+n_rep <- 10
 ############## MX RUNS MODEL 1 - NO MORTALITY #####
 
 parameters <- c(beta = 2 / 10, gamma = 1 / 10, mu = 5e-4, N = 10000, tau = 1, rho = 0)
@@ -1147,6 +1146,8 @@ mod_res<-list(big_run_model1,
               big_run_model5,
               big_run_meta)
 
+mod_res<-list(big_run_model1)
+
 for (i in 1:length(mod_res)){
   assign(paste0("Res_min_", i), out_put_fun_min(x=mod_res[[i]],par1 = beta_a,par2 = rho_a))
 }
@@ -1165,6 +1166,7 @@ plot_res_min<-list(Res_min_1,
                    Res_min_4,
                    Res_min_5,
                    Res_min_6)
+plot_res_min<-list(Res_min_1)
 plot_res_min <- lapply(plot_res_min,function(x) replace(x,is.infinite(x),end.time))
 
 plot_res_num<-list(Res_num_1,
@@ -1180,6 +1182,9 @@ plot_res_time<-list(Res_time_1,
                     Res_time_4,
                     Res_time_5,
                     Res_time_6)
+
+plot_res_num<-list(Res_num_1)
+plot_res_time<-list(Res_time_1)
 
 for (i in 1:length(plot_res_min)){
   assign(paste0("df_min_", i), my_plot_min(x=plot_res_min[[i]],par1 = beta_a, par2 = rho_a, par1_n = 'beta', par2_n = 'rho'))

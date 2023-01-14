@@ -242,7 +242,7 @@ model3=
         change[22, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0)
         rate[23] <- phi_a * Ea 
         change[23, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 1)
-        rate[24] <-   rho_a * gamma_a * Ia
+        rate[24] <- rho_a * gamma_a * Ia
         change[24, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[25] <-  mu_a * Sa
         change[25, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0)  
@@ -931,7 +931,7 @@ parameters_m3 <- c(
   gamma_c = 0, gamma_sa = 0, gamma_a = 0,
   rho_c = 0, rho_sa = 0, rho_a = 0.1, 
   epsilon = 2e-5,
-  mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%   
+  mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%    
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials_m3), tau=1)
@@ -1107,19 +1107,9 @@ for(i in 1:length(s)){
   s[[i]]$model <- paste0(nam[[i]]) # adding name
 }
 
-  ms6<-res_model6$results%>%
-    mutate(time_y = time/365) %>% #convert day to year for plotting
-    melt(id.vars = c('time','time_y'),
-         value.name = 'value', variable.name = 'class')
-  
-  ms6$model <- paste0('FMD') # adding name
-
-str(ms6)
-
 # save the data frame  (.rds) for working next time
 for (i in 1:length(s)) {
   saveRDS(s[[i]], file = paste0("df_m",i,"_",nam[[i]],"_1run_fd.rds")) }
-saveRDS(ms6,file = "df_m6_fmd_1run_fd.rds")
 
 # SET UP mutiple run df&plots ########
 # > FUNCTION for plotting model's simulations #####
@@ -1179,16 +1169,7 @@ for (i in 1:length(sim_rep_m)) {
   m[[i]]$model <- paste0(nam[[i]])
 }
 
-m6<-pop_sim_prep(x = sim_rep_m6, n_rep=n_rep, end.time= end.time, melt = F)
-m62<- m6%>%
-  group_by(run) %>%
-  mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
-  mutate(time_y = time_d/365) %>% #convert day to year for plotting
-  as.data.frame()
-m62$model <- paste0("FMD")
-str(m62)
-m62<-m62%>% 
-  relocate(M,.after = R) 
+
 # relocate columns of FMD and Brucellosis models, this should be in order SEIRMN which will easier for plotting-labeling
 m[[6]]<-m[[6]]%>% 
   relocate(M,.after = R) 
@@ -1212,6 +1193,7 @@ for (i in 1:length(m)) {
 sl <- union(list.files(path = getwd(), pattern = "df_m1_no_infection_1run.rds"),
             list.files(path = getwd(), pattern = "_1run_fd.rds"))
 sl
+
 s = lapply(sl, readRDS)
 str(s)
 # # # #
@@ -1370,10 +1352,12 @@ p6 <-ggplot(s6) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))
 #print(p6)
-ggsave("gaur_m6_fmd_1run_fd.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_m6_fmd_1run_fd.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> p7 plot 1 run SEIRMS/E Brucellosis ######
 s7<-s[[7]] |>filter(class %in% c("S","E","I","R","M","N"))
+s7<-s7 |>filter(class %in% c("S","E","I","R","M","N"))
+
 p7<-ggplot(s7) + 
   geom_line(aes(x = time_y, y = value, color = class))+
   labs(x="years", y= "population",
@@ -1397,14 +1381,15 @@ p7<-ggplot(s7) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7))) 
 
-#print(p7)
+print(p7)
 #ggsave("gaur_m7_bru_1run_fd.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
 
 # multiple run plots ###### 
 
 ####### this can skip #######
 # Load multiple runs .rds files and create a list
-l<- list.files(path = getwd(), pattern = "_100runs.rds")
+l <- union(list.files(path = getwd(), pattern = "df_m1_no_infection_100runs.rds"),
+            list.files(path = getwd(), pattern = "_100runs_fd.rds"))
 l
 m = lapply(l, readRDS)
 str(m)
@@ -1604,6 +1589,7 @@ pl6 <-ggplot(m[[6]]) +
 #ggsave("gaur_m6_FMD_100runs_fd.png",pl6,width = 22, height = 15, units = 'cm', dpi = 600)
 
 #> pl7 - plot 100 runs SEIRMS/E Brucellosis ######
+
 pl7 <-ggplot(m[[7]]) + 
   geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
   geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
@@ -1640,19 +1626,15 @@ pl7 <-ggplot(m[[7]]) +
 #print(pl7)
 #ggsave("gaur_m7_Brucellosis_100runs.png",pl7,width = 22, height = 15, units = 'cm', dpi = 600)
 
-#print(p7)
-#ggsave("gaur_m7_bru_1run.png",p7, width = 22, height = 15, units = 'cm', dpi = 600)
 
 # Combine plots using Patchwork #######
 library(patchwork)
 library(grid)
-pp1 <- p1/p2/p3/p4/p5/p6/p7 & plot_annotation(title = 'Frequeny dependent, 1 simulation') & theme(plot.title = element_text(hjust = 0.1))
-pp2 <- pl1/pl2/pl3/pl4/pl5/pl6/pl7 & plot_annotation (title = "100 simulations")  & theme(plot.title = element_text(hjust = 0.1))
+pp1 <- p1/p2/p3/p4/p5/p6/p7 & plot_annotation(title = 'FD, 1 simulation') & theme(plot.title = element_text(hjust = 0.1))
+pp2 <- pl1/pl2/pl3/pl4/pl5/pl6/pl7 & plot_annotation (title = "FD, 100 simulations")  & theme(plot.title = element_text(hjust = 0.1))
 pp3 <- pp1|pp2 #& plot_annotation(tag_levels = 'A', tag_suffix = ')')
 
-png("patchwork_fd_1run.png",width = 20, height = 40, units = 'cm', res = 600)
-print(pp1)
-dev.off()
+ggsave("patchwork_fd_all2.png",pp3,width = 30, height = 40, units = 'cm', dpi = 600)
 
 # > zoom in FMD in 10 years
 z<-s6 |>
