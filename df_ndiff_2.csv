@@ -1,0 +1,694 @@
+Ndiff,run,model,transmit
+199.3333333,run1,no infection,no
+274.6666667,run2,no infection,no
+203.3333333,run3,no infection,no
+213,run4,no infection,no
+325.3333333,run5,no infection,no
+328.3333333,run6,no infection,no
+187,run7,no infection,no
+276.3333333,run8,no infection,no
+165.6666667,run9,no infection,no
+123.6666667,run10,no infection,no
+301,run11,no infection,no
+187.6666667,run12,no infection,no
+84.66666667,run13,no infection,no
+230.3333333,run14,no infection,no
+243.3333333,run15,no infection,no
+68.66666667,run16,no infection,no
+421,run17,no infection,no
+196.6666667,run18,no infection,no
+190.3333333,run19,no infection,no
+325.3333333,run20,no infection,no
+246,run21,no infection,no
+182,run22,no infection,no
+257.3333333,run23,no infection,no
+237.6666667,run24,no infection,no
+292.6666667,run25,no infection,no
+176.6666667,run26,no infection,no
+111.6666667,run27,no infection,no
+139,run28,no infection,no
+96.66666667,run29,no infection,no
+449.3333333,run30,no infection,no
+243.6666667,run31,no infection,no
+243,run32,no infection,no
+301.6666667,run33,no infection,no
+296.3333333,run34,no infection,no
+315.6666667,run35,no infection,no
+184,run36,no infection,no
+229.3333333,run37,no infection,no
+336.6666667,run38,no infection,no
+174,run39,no infection,no
+143.6666667,run40,no infection,no
+152,run41,no infection,no
+261,run42,no infection,no
+148.6666667,run43,no infection,no
+270.6666667,run44,no infection,no
+320.6666667,run45,no infection,no
+163.6666667,run46,no infection,no
+256.3333333,run47,no infection,no
+303.6666667,run48,no infection,no
+159,run49,no infection,no
+373.3333333,run50,no infection,no
+128,run51,no infection,no
+314,run52,no infection,no
+239.3333333,run53,no infection,no
+163.3333333,run54,no infection,no
+237.3333333,run55,no infection,no
+37.66666667,run56,no infection,no
+113.3333333,run57,no infection,no
+247.6666667,run58,no infection,no
+295.3333333,run59,no infection,no
+99.33333333,run60,no infection,no
+155.6666667,run61,no infection,no
+210,run62,no infection,no
+275.6666667,run63,no infection,no
+182.6666667,run64,no infection,no
+279,run65,no infection,no
+209,run66,no infection,no
+185.3333333,run67,no infection,no
+140,run68,no infection,no
+291.3333333,run69,no infection,no
+226.6666667,run70,no infection,no
+313.6666667,run71,no infection,no
+155,run72,no infection,no
+167.3333333,run73,no infection,no
+135.3333333,run74,no infection,no
+295.3333333,run75,no infection,no
+276.6666667,run76,no infection,no
+344,run77,no infection,no
+489.6666667,run78,no infection,no
+177.6666667,run79,no infection,no
+200.6666667,run80,no infection,no
+178,run81,no infection,no
+227,run82,no infection,no
+272.6666667,run83,no infection,no
+199,run84,no infection,no
+305,run85,no infection,no
+247,run86,no infection,no
+213,run87,no infection,no
+323.6666667,run88,no infection,no
+246.3333333,run89,no infection,no
+298.6666667,run90,no infection,no
+228.6666667,run91,no infection,no
+417.3333333,run92,no infection,no
+175.6666667,run93,no infection,no
+219,run94,no infection,no
+157,run95,no infection,no
+183.6666667,run96,no infection,no
+164.6666667,run97,no infection,no
+235.6666667,run98,no infection,no
+243,run99,no infection,no
+92,run100,no infection,no
+132,run1,Anthrax,FD
+170.3333333,run2,Anthrax,FD
+68,run3,Anthrax,FD
+85.33333333,run4,Anthrax,FD
+4.333333333,run5,Anthrax,FD
+42,run6,Anthrax,FD
+105.6666667,run7,Anthrax,FD
+13,run8,Anthrax,FD
+132.6666667,run9,Anthrax,FD
+-4.333333333,run10,Anthrax,FD
+137.3333333,run11,Anthrax,FD
+144.6666667,run12,Anthrax,FD
+19.66666667,run13,Anthrax,FD
+-3,run14,Anthrax,FD
+23.66666667,run15,Anthrax,FD
+0.666666667,run16,Anthrax,FD
+-20.33333333,run17,Anthrax,FD
+75,run18,Anthrax,FD
+21.33333333,run19,Anthrax,FD
+-20.33333333,run20,Anthrax,FD
+95.66666667,run21,Anthrax,FD
+67.66666667,run22,Anthrax,FD
+34.33333333,run23,Anthrax,FD
+-64,run24,Anthrax,FD
+-17.66666667,run25,Anthrax,FD
+63.66666667,run26,Anthrax,FD
+119.3333333,run27,Anthrax,FD
+25.66666667,run28,Anthrax,FD
+57.66666667,run29,Anthrax,FD
+78,run30,Anthrax,FD
+88.33333333,run31,Anthrax,FD
+24.33333333,run32,Anthrax,FD
+108,run33,Anthrax,FD
+25.33333333,run34,Anthrax,FD
+75,run35,Anthrax,FD
+128.6666667,run36,Anthrax,FD
+98.66666667,run37,Anthrax,FD
+53,run38,Anthrax,FD
+31.66666667,run39,Anthrax,FD
+49,run40,Anthrax,FD
+119,run41,Anthrax,FD
+1.333333333,run42,Anthrax,FD
+12.33333333,run43,Anthrax,FD
+28.33333333,run44,Anthrax,FD
+84.33333333,run45,Anthrax,FD
+67,run46,Anthrax,FD
+101.6666667,run47,Anthrax,FD
+51.33333333,run48,Anthrax,FD
+98,run49,Anthrax,FD
+80.33333333,run50,Anthrax,FD
+63.66666667,run51,Anthrax,FD
+9.333333333,run52,Anthrax,FD
+117,run53,Anthrax,FD
+191.3333333,run54,Anthrax,FD
+10.66666667,run55,Anthrax,FD
+83.33333333,run56,Anthrax,FD
+98,run57,Anthrax,FD
+97.66666667,run58,Anthrax,FD
+40,run59,Anthrax,FD
+98.66666667,run60,Anthrax,FD
+30.33333333,run61,Anthrax,FD
+74.66666667,run62,Anthrax,FD
+96.66666667,run63,Anthrax,FD
+41.33333333,run64,Anthrax,FD
+10.33333333,run65,Anthrax,FD
+73.66666667,run66,Anthrax,FD
+22.66666667,run67,Anthrax,FD
+22,run68,Anthrax,FD
+22,run69,Anthrax,FD
+37.33333333,run70,Anthrax,FD
+101.3333333,run71,Anthrax,FD
+38,run72,Anthrax,FD
+62.33333333,run73,Anthrax,FD
+68.33333333,run74,Anthrax,FD
+100,run75,Anthrax,FD
+69.33333333,run76,Anthrax,FD
+75.66666667,run77,Anthrax,FD
+2.333333333,run78,Anthrax,FD
+2,run79,Anthrax,FD
+111,run80,Anthrax,FD
+-14.66666667,run81,Anthrax,FD
+-21.33333333,run82,Anthrax,FD
+98.33333333,run83,Anthrax,FD
+67.66666667,run84,Anthrax,FD
+39.66666667,run85,Anthrax,FD
+125.6666667,run86,Anthrax,FD
+98,run87,Anthrax,FD
+36.66666667,run88,Anthrax,FD
+94.66666667,run89,Anthrax,FD
+92.66666667,run90,Anthrax,FD
+80.33333333,run91,Anthrax,FD
+16.33333333,run92,Anthrax,FD
+29.66666667,run93,Anthrax,FD
+45.33333333,run94,Anthrax,FD
+54.66666667,run95,Anthrax,FD
+74.66666667,run96,Anthrax,FD
+14.33333333,run97,Anthrax,FD
+105.6666667,run98,Anthrax,FD
+95.66666667,run99,Anthrax,FD
+56,run100,Anthrax,FD
+-86,run1,bTB,FD
+-85.33333333,run2,bTB,FD
+-77,run3,bTB,FD
+-84.66666667,run4,bTB,FD
+-78,run5,bTB,FD
+-84,run6,bTB,FD
+-72.66666667,run7,bTB,FD
+-80.66666667,run8,bTB,FD
+-74.33333333,run9,bTB,FD
+-70.33333333,run10,bTB,FD
+-73.66666667,run11,bTB,FD
+-80.33333333,run12,bTB,FD
+-58.33333333,run13,bTB,FD
+-63,run14,bTB,FD
+-86.66666667,run15,bTB,FD
+-63.33333333,run16,bTB,FD
+-83,run17,bTB,FD
+-67.33333333,run18,bTB,FD
+-84.66666667,run19,bTB,FD
+-65.33333333,run20,bTB,FD
+-71.33333333,run21,bTB,FD
+-48.33333333,run22,bTB,FD
+-54,run23,bTB,FD
+-77.33333333,run24,bTB,FD
+-78.66666667,run25,bTB,FD
+-85,run26,bTB,FD
+-68,run27,bTB,FD
+-70,run28,bTB,FD
+-57.33333333,run29,bTB,FD
+-66.66666667,run30,bTB,FD
+-74.33333333,run31,bTB,FD
+-59,run32,bTB,FD
+-81.66666667,run33,bTB,FD
+-90,run34,bTB,FD
+-91.33333333,run35,bTB,FD
+-72.66666667,run36,bTB,FD
+-83,run37,bTB,FD
+-63.66666667,run38,bTB,FD
+-82,run39,bTB,FD
+-81,run40,bTB,FD
+-72,run41,bTB,FD
+-83.66666667,run42,bTB,FD
+-84.33333333,run43,bTB,FD
+-61.66666667,run44,bTB,FD
+-74,run45,bTB,FD
+-63,run46,bTB,FD
+-75,run47,bTB,FD
+-82.33333333,run48,bTB,FD
+-70.33333333,run49,bTB,FD
+-83,run50,bTB,FD
+-64.33333333,run51,bTB,FD
+-66.33333333,run52,bTB,FD
+-76.33333333,run53,bTB,FD
+-66.66666667,run54,bTB,FD
+-66.66666667,run55,bTB,FD
+-57.33333333,run56,bTB,FD
+-69,run57,bTB,FD
+-72.66666667,run58,bTB,FD
+-75,run59,bTB,FD
+-57.33333333,run60,bTB,FD
+-65.33333333,run61,bTB,FD
+-62.66666667,run62,bTB,FD
+-77,run63,bTB,FD
+-88.66666667,run64,bTB,FD
+-70,run65,bTB,FD
+-72.66666667,run66,bTB,FD
+-90.33333333,run67,bTB,FD
+-73,run68,bTB,FD
+-79.66666667,run69,bTB,FD
+-75.66666667,run70,bTB,FD
+-65,run71,bTB,FD
+-95.33333333,run72,bTB,FD
+-83.66666667,run73,bTB,FD
+-74.33333333,run74,bTB,FD
+-79.33333333,run75,bTB,FD
+-59,run76,bTB,FD
+-74.66666667,run77,bTB,FD
+-71.66666667,run78,bTB,FD
+-72.33333333,run79,bTB,FD
+-83.66666667,run80,bTB,FD
+-58.66666667,run81,bTB,FD
+-85,run82,bTB,FD
+-62,run83,bTB,FD
+-72.33333333,run84,bTB,FD
+-57.66666667,run85,bTB,FD
+-71.33333333,run86,bTB,FD
+-86,run87,bTB,FD
+-64,run88,bTB,FD
+-93.66666667,run89,bTB,FD
+-59.66666667,run90,bTB,FD
+-49,run91,bTB,FD
+-74.33333333,run92,bTB,FD
+-55.66666667,run93,bTB,FD
+-81.66666667,run94,bTB,FD
+-67.66666667,run95,bTB,FD
+-71,run96,bTB,FD
+-97,run97,bTB,FD
+-86.33333333,run98,bTB,FD
+-84,run99,bTB,FD
+-68.66666667,run100,bTB,FD
+118.6666667,run1,HS,FD
+151.3333333,run2,HS,FD
+89.33333333,run3,HS,FD
+95.33333333,run4,HS,FD
+220,run5,HS,FD
+69.33333333,run6,HS,FD
+30.66666667,run7,HS,FD
+135.3333333,run8,HS,FD
+73,run9,HS,FD
+133.6666667,run10,HS,FD
+97,run11,HS,FD
+143.3333333,run12,HS,FD
+65.33333333,run13,HS,FD
+228.6666667,run14,HS,FD
+130.3333333,run15,HS,FD
+106.6666667,run16,HS,FD
+175.6666667,run17,HS,FD
+85.66666667,run18,HS,FD
+108.3333333,run19,HS,FD
+47.33333333,run20,HS,FD
+141,run21,HS,FD
+116.6666667,run22,HS,FD
+164,run23,HS,FD
+102.6666667,run24,HS,FD
+274.6666667,run25,HS,FD
+129,run26,HS,FD
+233,run27,HS,FD
+95.33333333,run28,HS,FD
+139,run29,HS,FD
+266,run30,HS,FD
+33.66666667,run31,HS,FD
+191.6666667,run32,HS,FD
+130,run33,HS,FD
+221,run34,HS,FD
+144.6666667,run35,HS,FD
+114.3333333,run36,HS,FD
+77,run37,HS,FD
+244.3333333,run38,HS,FD
+87,run39,HS,FD
+158,run40,HS,FD
+250.6666667,run41,HS,FD
+175,run42,HS,FD
+37.33333333,run43,HS,FD
+221.3333333,run44,HS,FD
+155,run45,HS,FD
+122.3333333,run46,HS,FD
+152,run47,HS,FD
+46,run48,HS,FD
+220,run49,HS,FD
+134.6666667,run50,HS,FD
+152.6666667,run51,HS,FD
+104,run52,HS,FD
+153.3333333,run53,HS,FD
+130.3333333,run54,HS,FD
+150.3333333,run55,HS,FD
+62.33333333,run56,HS,FD
+131,run57,HS,FD
+277,run58,HS,FD
+165.3333333,run59,HS,FD
+220.3333333,run60,HS,FD
+203.6666667,run61,HS,FD
+220,run62,HS,FD
+182.3333333,run63,HS,FD
+104.3333333,run64,HS,FD
+83,run65,HS,FD
+165,run66,HS,FD
+199.3333333,run67,HS,FD
+-15,run68,HS,FD
+164.3333333,run69,HS,FD
+103.6666667,run70,HS,FD
+234.6666667,run71,HS,FD
+110.6666667,run72,HS,FD
+73.33333333,run73,HS,FD
+200,run74,HS,FD
+116,run75,HS,FD
+179.3333333,run76,HS,FD
+114.3333333,run77,HS,FD
+243,run78,HS,FD
+119.3333333,run79,HS,FD
+63.66666667,run80,HS,FD
+127.6666667,run81,HS,FD
+100.6666667,run82,HS,FD
+166,run83,HS,FD
+145.6666667,run84,HS,FD
+90.33333333,run85,HS,FD
+155.6666667,run86,HS,FD
+161,run87,HS,FD
+86,run88,HS,FD
+211.6666667,run89,HS,FD
+55.66666667,run90,HS,FD
+181.3333333,run91,HS,FD
+150.3333333,run92,HS,FD
+207.6666667,run93,HS,FD
+216,run94,HS,FD
+238.3333333,run95,HS,FD
+158.6666667,run96,HS,FD
+101,run97,HS,FD
+254.6666667,run98,HS,FD
+198,run99,HS,FD
+130.3333333,run100,HS,FD
+24,run1,LSD,FD
+139.3333333,run2,LSD,FD
+50.66666667,run3,LSD,FD
+126.6666667,run4,LSD,FD
+115,run5,LSD,FD
+51,run6,LSD,FD
+70.66666667,run7,LSD,FD
+55,run8,LSD,FD
+67,run9,LSD,FD
+66,run10,LSD,FD
+79.66666667,run11,LSD,FD
+103.3333333,run12,LSD,FD
+157.3333333,run13,LSD,FD
+39.66666667,run14,LSD,FD
+75,run15,LSD,FD
+97.66666667,run16,LSD,FD
+78,run17,LSD,FD
+100.3333333,run18,LSD,FD
+155.3333333,run19,LSD,FD
+14.33333333,run20,LSD,FD
+60,run21,LSD,FD
+18,run22,LSD,FD
+35.33333333,run23,LSD,FD
+82,run24,LSD,FD
+77.33333333,run25,LSD,FD
+-21.66666667,run26,LSD,FD
+-6.666666667,run27,LSD,FD
+32,run28,LSD,FD
+50.66666667,run29,LSD,FD
+63.33333333,run30,LSD,FD
+81.66666667,run31,LSD,FD
+30,run32,LSD,FD
+90.66666667,run33,LSD,FD
+46.33333333,run34,LSD,FD
+102.3333333,run35,LSD,FD
+121.3333333,run36,LSD,FD
+128.6666667,run37,LSD,FD
+80,run38,LSD,FD
+47,run39,LSD,FD
+13.66666667,run40,LSD,FD
+157.3333333,run41,LSD,FD
+86,run42,LSD,FD
+59.66666667,run43,LSD,FD
+153.6666667,run44,LSD,FD
+79,run45,LSD,FD
+55.66666667,run46,LSD,FD
+49.33333333,run47,LSD,FD
+40,run48,LSD,FD
+10.33333333,run49,LSD,FD
+59.33333333,run50,LSD,FD
+47.66666667,run51,LSD,FD
+109,run52,LSD,FD
+-10,run53,LSD,FD
+83.33333333,run54,LSD,FD
+-13.33333333,run55,LSD,FD
+65.66666667,run56,LSD,FD
+110.6666667,run57,LSD,FD
+42.66666667,run58,LSD,FD
+65.66666667,run59,LSD,FD
+50.33333333,run60,LSD,FD
+63,run61,LSD,FD
+41.66666667,run62,LSD,FD
+108.3333333,run63,LSD,FD
+84.33333333,run64,LSD,FD
+56.33333333,run65,LSD,FD
+77,run66,LSD,FD
+60.66666667,run67,LSD,FD
+69,run68,LSD,FD
+53,run69,LSD,FD
+101.3333333,run70,LSD,FD
+21,run71,LSD,FD
+55.33333333,run72,LSD,FD
+117,run73,LSD,FD
+72.66666667,run74,LSD,FD
+10.66666667,run75,LSD,FD
+54.66666667,run76,LSD,FD
+112,run77,LSD,FD
+45.66666667,run78,LSD,FD
+82,run79,LSD,FD
+58,run80,LSD,FD
+94,run81,LSD,FD
+69.66666667,run82,LSD,FD
+94.33333333,run83,LSD,FD
+147.6666667,run84,LSD,FD
+38.66666667,run85,LSD,FD
+95.33333333,run86,LSD,FD
+68.66666667,run87,LSD,FD
+109,run88,LSD,FD
+81.66666667,run89,LSD,FD
+81.33333333,run90,LSD,FD
+68.33333333,run91,LSD,FD
+116.6666667,run92,LSD,FD
+116,run93,LSD,FD
+84.33333333,run94,LSD,FD
+59,run95,LSD,FD
+66.33333333,run96,LSD,FD
+9,run97,LSD,FD
+145,run98,LSD,FD
+42.66666667,run99,LSD,FD
+65,run100,LSD,FD
+-93.66666667,run1,Brucellosis,FD
+-97.33333333,run2,Brucellosis,FD
+-98,run3,Brucellosis,FD
+-83.66666667,run5,Brucellosis,FD
+-96.66666667,run6,Brucellosis,FD
+-98.66666667,run7,Brucellosis,FD
+-98.33333333,run8,Brucellosis,FD
+-96.33333333,run9,Brucellosis,FD
+-97,run10,Brucellosis,FD
+-99.33333333,run11,Brucellosis,FD
+-97,run12,Brucellosis,FD
+-97.66666667,run13,Brucellosis,FD
+-96.66666667,run14,Brucellosis,FD
+-98,run15,Brucellosis,FD
+-97.33333333,run16,Brucellosis,FD
+-99.33333333,run17,Brucellosis,FD
+-98.66666667,run18,Brucellosis,FD
+-94.33333333,run19,Brucellosis,FD
+-95.33333333,run21,Brucellosis,FD
+-99.66666667,run22,Brucellosis,FD
+-97,run23,Brucellosis,FD
+-95.66666667,run24,Brucellosis,FD
+-94.66666667,run25,Brucellosis,FD
+-98.66666667,run26,Brucellosis,FD
+-96.66666667,run27,Brucellosis,FD
+-98,run28,Brucellosis,FD
+-99.66666667,run29,Brucellosis,FD
+-99.66666667,run30,Brucellosis,FD
+-96.66666667,run31,Brucellosis,FD
+-97,run32,Brucellosis,FD
+-95.33333333,run33,Brucellosis,FD
+-94.33333333,run34,Brucellosis,FD
+-92.66666667,run35,Brucellosis,FD
+-97.33333333,run36,Brucellosis,FD
+-99.66666667,run38,Brucellosis,FD
+-91.33333333,run39,Brucellosis,FD
+-97,run41,Brucellosis,FD
+-95.66666667,run42,Brucellosis,FD
+-93.66666667,run43,Brucellosis,FD
+-99,run44,Brucellosis,FD
+-95.66666667,run45,Brucellosis,FD
+-94,run46,Brucellosis,FD
+-97.66666667,run47,Brucellosis,FD
+-96,run48,Brucellosis,FD
+-99.66666667,run49,Brucellosis,FD
+-98,run50,Brucellosis,FD
+-96,run51,Brucellosis,FD
+-97.33333333,run52,Brucellosis,FD
+-92.66666667,run53,Brucellosis,FD
+-96.66666667,run54,Brucellosis,FD
+-97.33333333,run55,Brucellosis,FD
+-98,run56,Brucellosis,FD
+-93.66666667,run57,Brucellosis,FD
+-99,run58,Brucellosis,FD
+-99.33333333,run61,Brucellosis,FD
+-91.33333333,run62,Brucellosis,FD
+-97.33333333,run63,Brucellosis,FD
+-99.33333333,run64,Brucellosis,FD
+-97,run65,Brucellosis,FD
+-99.33333333,run66,Brucellosis,FD
+-97.33333333,run67,Brucellosis,FD
+-99,run68,Brucellosis,FD
+-98,run69,Brucellosis,FD
+-95,run70,Brucellosis,FD
+-99,run71,Brucellosis,FD
+-92.66666667,run72,Brucellosis,FD
+-91,run73,Brucellosis,FD
+-93.66666667,run74,Brucellosis,FD
+-96.66666667,run75,Brucellosis,FD
+-92.66666667,run76,Brucellosis,FD
+-98.33333333,run77,Brucellosis,FD
+-97.33333333,run78,Brucellosis,FD
+-97.66666667,run79,Brucellosis,FD
+-98.33333333,run80,Brucellosis,FD
+-99.33333333,run81,Brucellosis,FD
+-97,run82,Brucellosis,FD
+-96.66666667,run83,Brucellosis,FD
+-99.66666667,run84,Brucellosis,FD
+-98.33333333,run85,Brucellosis,FD
+-99.33333333,run86,Brucellosis,FD
+-94,run87,Brucellosis,FD
+-99.33333333,run88,Brucellosis,FD
+-99.33333333,run89,Brucellosis,FD
+-93,run90,Brucellosis,FD
+-97.66666667,run91,Brucellosis,FD
+-98.33333333,run93,Brucellosis,FD
+-98.33333333,run94,Brucellosis,FD
+-94.66666667,run95,Brucellosis,FD
+-95,run96,Brucellosis,FD
+-95.33333333,run97,Brucellosis,FD
+-95.66666667,run98,Brucellosis,FD
+-92,run99,Brucellosis,FD
+-92.66666667,run100,Brucellosis,FD
+0.996677741,run1,FMD,DD
+26.24584718,run2,FMD,DD
+-0.996677741,run3,FMD,DD
+43.52159468,run4,FMD,DD
+14.95016611,run5,FMD,DD
+8.305647841,run6,FMD,DD
+42.19269103,run7,FMD,DD
+15.28239203,run8,FMD,DD
+0.332225914,run9,FMD,DD
+44.18604651,run10,FMD,DD
+56.1461794,run11,FMD,DD
+24.25249169,run12,FMD,DD
+45.51495017,run13,FMD,DD
+33.22259136,run14,FMD,DD
+31.89368771,run15,FMD,DD
+30.23255814,run16,FMD,DD
+-15.28239203,run17,FMD,DD
+23.25581395,run18,FMD,DD
+11.96013289,run19,FMD,DD
+22.59136213,run20,FMD,DD
+17.94019934,run21,FMD,DD
+44.51827243,run22,FMD,DD
+36.5448505,run23,FMD,DD
+0.332225914,run24,FMD,DD
+37.20930233,run25,FMD,DD
+11.96013289,run26,FMD,DD
+0.664451827,run27,FMD,DD
+40.53156146,run28,FMD,DD
+15.28239203,run29,FMD,DD
+51.49501661,run30,FMD,DD
+37.54152824,run31,FMD,DD
+14.6179402,run32,FMD,DD
+19.6013289,run33,FMD,DD
+43.52159468,run34,FMD,DD
+-3.322259136,run35,FMD,DD
+13.28903654,run36,FMD,DD
+11.29568106,run37,FMD,DD
+57.14285714,run38,FMD,DD
+24.91694352,run39,FMD,DD
+1.328903654,run40,FMD,DD
+23.58803987,run41,FMD,DD
+38.87043189,run42,FMD,DD
+63.4551495,run43,FMD,DD
+22.25913621,run44,FMD,DD
+12.95681063,run45,FMD,DD
+29.90033223,run46,FMD,DD
+9.634551495,run47,FMD,DD
+41.5282392,run48,FMD,DD
+29.2358804,run49,FMD,DD
+28.57142857,run50,FMD,DD
+23.92026578,run51,FMD,DD
+33.88704319,run52,FMD,DD
+21.26245847,run53,FMD,DD
+25.91362126,run54,FMD,DD
+39.20265781,run55,FMD,DD
+43.8538206,run56,FMD,DD
+38.20598007,run57,FMD,DD
+65.44850498,run58,FMD,DD
+30.23255814,run59,FMD,DD
+36.21262458,run60,FMD,DD
+56.47840532,run61,FMD,DD
+18.27242525,run62,FMD,DD
+20.26578073,run63,FMD,DD
+46.84385382,run64,FMD,DD
+14.6179402,run65,FMD,DD
+56.1461794,run66,FMD,DD
+22.25913621,run67,FMD,DD
+30.56478405,run68,FMD,DD
+42.19269103,run69,FMD,DD
+46.84385382,run70,FMD,DD
+23.25581395,run71,FMD,DD
+32.89036545,run72,FMD,DD
+11.62790698,run73,FMD,DD
+29.56810631,run74,FMD,DD
+30.23255814,run75,FMD,DD
+5.315614618,run76,FMD,DD
+14.6179402,run77,FMD,DD
+24.91694352,run78,FMD,DD
+-15.28239203,run79,FMD,DD
+45.18272425,run80,FMD,DD
+39.20265781,run81,FMD,DD
+29.56810631,run82,FMD,DD
+24.25249169,run83,FMD,DD
+37.54152824,run84,FMD,DD
+14.6179402,run85,FMD,DD
+50.16611296,run86,FMD,DD
+26.24584718,run87,FMD,DD
+-18.93687708,run88,FMD,DD
+6.644518272,run89,FMD,DD
+12.95681063,run90,FMD,DD
+45.18272425,run91,FMD,DD
+-5.980066445,run92,FMD,DD
+30.56478405,run93,FMD,DD
+-12.62458472,run94,FMD,DD
+47.50830565,run95,FMD,DD
+33.88704319,run96,FMD,DD
+4.651162791,run97,FMD,DD
+15.28239203,run98,FMD,DD
+-6.976744186,run99,FMD,DD
+51.82724252,run100,FMD,DD

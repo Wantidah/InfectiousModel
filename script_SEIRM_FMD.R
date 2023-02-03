@@ -1,4 +1,3 @@
-
 ############## LOAD PACKAGES ##########
 library(EpiDynamics)
 library(dplyr)   
@@ -182,8 +181,6 @@ a = round((N/rat)*1.5,0)
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
               Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 
-end.time <- 100*365 #predict for ... years
-
 #SEIRM FMD parameter
 parameters <- c( 
   beta_c = 0.52/365,
@@ -216,6 +213,8 @@ parameters <- c(
 )
 
 # TEST
+end.time <- 2*365 #predict for ... years
+
 # single run
 res_model6 <- model6(pars = parameters, init = initials,
                              end.time = end.time)
@@ -223,9 +222,6 @@ res_model6 <- model6(pars = parameters, init = initials,
 #minimum N,I extinction
 min(subset(res_model6$results,I==0)$time)
 min(subset(res_model6$results,N==0)$time)
-
-#plot epi
-#PlotMods(res_model6)
 
 #convert to data.frame, change days -> years, and melt class into one column
 r6<-res_model6$results %>% 
@@ -238,9 +234,7 @@ table(r6$class)
 
 #check min,max,mean
 r6 |> group_by(class) |>
-  summarise(Median = median(value), 
-            Mean = mean(value),
-            Max=max(value),
+  summarise(Max=max(value),
             Min=min(value))
 
 rm6<-r6 |>
@@ -250,8 +244,7 @@ rm6<-r6 |>
 p6 <-ggplot(rm6) + 
   geom_line(aes(x = time_y, y = value, color = class))+
   labs(x="years", y= "population",
-       title= 'F) FMD infection') +
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'FMD infection') +
   #ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
@@ -272,5 +265,30 @@ p6 <-ggplot(rm6) +
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
 print(p6)
+#ggsave("gaur_fmd_1sim.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
 
-ggsave("gaur_m6_fmd_1run.png",p6, width = 22, height = 15, units = 'cm', dpi = 600)
+#scale
+p6s <-ggplot(rm6) + 
+  geom_line(aes(x = time_y, y = value, color = class))+
+  labs(x="years", y= "population",
+       title= 'FMD infection') +
+  ylim(0, 1000) +
+  scale_color_manual( name = "population",
+                      labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
+                      values = c('S'='seagreen4',
+                                 'E'='darkorange2',
+                                 'I'='firebrick',
+                                 "R"='dodgerblue3',
+                                 "M"='mediumorchid4',
+                                 "N"='#153030'))+ 
+  theme_bw() +
+  theme( plot.title = element_text(size = 13),
+         axis.title.x = element_text(size = 12),
+         axis.title.y = element_text(size = 12),
+         legend.title=element_text(size=11),
+         legend.text = element_text(size = 11),
+         axis.text=element_text(size=11))+
+  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
+
+print(p6s)
+#ggsave("gaur_fmd_1sim_scale.png",p6s, width = 22, height = 15, units = 'cm', dpi = 600)

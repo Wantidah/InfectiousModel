@@ -142,8 +142,6 @@ a = round((N/rat)*1.5,0)
 
 initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), Ia = 1, Ra = 0)
 
-end.time <- 100*365 #predict for ... years
-
 #SIRS parameter
 parameters <- c( 
   beta_c = 0.33/365,
@@ -170,6 +168,7 @@ parameters <- c(
 )
 
 # TEST
+end.time <- 2*365 #predict for ... years
 # single run
 res_model4 <- model4(pars = parameters, init = initials,
                        end.time = end.time)
@@ -179,9 +178,6 @@ str(res_model4)
 min(subset(res_model4$results,I==0)$time)
 min(subset(res_model4$results,N==0)$time)
 
-#plot epi
-#PlotMods(res_model4)
-
 #convert to data.frame, change days -> years, and melt class into one column
 r4<-res_model4$results %>%
   mutate(time_y = time/365) %>%
@@ -189,11 +185,9 @@ r4<-res_model4$results %>%
        value.name = 'value', variable.name = 'class')
 str(r4)
 
-#check min,max,mean
+#check min,max
 r4 |> group_by(class) |>
-  summarise(Median = median(value), 
-            Mean = mean(value),
-            Max=max(value),
+  summarise(Max=max(value),
             Min=min(value))
 rm4<-r4 |>
   filter(class %in% c("S","I","R", "N"))
@@ -201,11 +195,8 @@ rm4<-r4 |>
 # plot SIR HS ######
 p4 <-ggplot(rm4) + 
   geom_line(aes(x = time_y, y = value, color = class))+
-  
   labs(x="years", y= "population",
-       title= 'D) HS infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'HS infection') +
   scale_color_manual( name = "population",
                       labels = c('S','I','R','total' ),
                       values = c('S'='seagreen4',
@@ -220,19 +211,14 @@ p4 <-ggplot(rm4) +
          legend.text = element_text(size = 11),
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
-
 print(p4)
-
-ggsave("gaur_HS_1sim_100y_all.png",p4, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_HS_1sim.png",p4, width = 25, height = 15, units = 'cm', dpi = 600)
 
 #scale ylim(0, 1000)
 p4s <-ggplot(rm4) + 
   geom_line(aes(x = time_y, y = value, color = class))+
-  
   labs(x="years", y= "population",
-       title= 'D) HS infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'HS infection') +
   ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','I','R','total' ),
@@ -250,6 +236,5 @@ p4s <-ggplot(rm4) +
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
 print(p4s)
-
-ggsave("gaur_HS_1sim_100y_all_scale.png",p4s, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_HS_1sim_scale.png",p4s, width = 25, height = 15, units = 'cm', dpi = 600)
 

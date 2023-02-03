@@ -183,8 +183,6 @@ a = round((N/rat)*1.5,0)
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
               Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 
-end.time <- 100*365 #predict for ... years
-
 #SEIRM Brucellosis parameter
 parameters <- c( 
   beta_c = 2/365,
@@ -217,6 +215,8 @@ parameters <- c(
 )
 
 # TEST
+end.time <- 2*365 #predict for ... years
+
 # single run
 res_model7 <- model7(pars = parameters, init = initials,
                      end.time = end.time)
@@ -225,9 +225,6 @@ res_model7 <- model7(pars = parameters, init = initials,
 min(subset(res_model7$results,I==0)$time)
 min(subset(res_model7$results,N==0)$time)
 
-#plot epi
-#PlotMods(res_model7)
-
 #convert to data.frame, change days -> years, and melt class into one column
 r7<-res_model7$results %>% 
   relocate(M,.after = R) %>% #relocate M after R (for plotting)
@@ -235,28 +232,21 @@ r7<-res_model7$results %>%
   melt(id.vars = c('time','time_y'),
        value.name = 'value', variable.name = 'class')
 str(r7)
-table(r7$class)
 
-#check min,max,mean
+#check min,max
 r7 |> group_by(class) |>
-  summarise(Median = median(value), 
-            Mean = mean(value),
-            Max=max(value),
+  summarise(Max=max(value),
             Min=min(value))
 
 rm7<-r7 |>
   filter(class %in% c("S","E","I","R","M","N"))
-
 
 # plot SEIRM Burcellosis ######
 p7<-ggplot(rm7) + 
   geom_line(aes(x = time_y, y = value, color = class))+
   
   labs(x="years", y= "population",
-       title= 'G) Brucellosis infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  #ylim(0, 1000) +
+       title= 'Brucellosis infection') +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
                       values = c('S'='seagreen4',
@@ -276,17 +266,13 @@ p7<-ggplot(rm7) +
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
 print(p7)
-
-ggsave("gaur_bru_1sim_100y.png",p7, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_bru_1sim.png",p7, width = 25, height = 15, units = 'cm', dpi = 600)
 
 #scale
 p7s<-ggplot(rm7) + 
   geom_line(aes(x = time_y, y = value, color = class))+
-  
   labs(x="years", y= "population",
-       title= 'G) Brucellosis infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'Brucellosis infection') +
   ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'M','total' ),#'total change (%)'),
@@ -305,7 +291,5 @@ p7s<-ggplot(rm7) +
          legend.text = element_text(size = 11),
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
-
 print(p7s)
-
-ggsave("gaur_bru_1sim_100y_scale.png",p7s, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_bru_1sim_scale.png",p7s, width = 25, height = 15, units = 'cm', dpi = 600)

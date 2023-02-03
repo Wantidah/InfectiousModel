@@ -5,6 +5,7 @@ library(tidyverse)
 library(reshape2) 
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
+
 set.seed(111)
 ############## 2) SI model (Anthrax)  #####
 model2=
@@ -103,8 +104,6 @@ a = round((N/rat)*1.5,0)
 
 initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 
-end.time <- 100*365 #predict for ... years
-
 #SI parameters
 parameters <- c(
   beta_c = 0.0001,
@@ -128,6 +127,8 @@ parameters <- c(
 )
 
 # TEST
+end.time <- 2*365 #predict for ... years
+
 # single run
 res_model2 <-model2(pars = parameters, init = initials,
        end.time = end.time)
@@ -135,9 +136,6 @@ res_model2 <-model2(pars = parameters, init = initials,
 #minimum I,N extinction
 min(subset(res_model2$results,I==0)$time)
 min(subset(res_model2$results,N==0)$time)
-
-#plot epi
-#PlotMods(res_model2)
 
 #convert to data.frame, change days -> years, and melt class into one column
 r2<-res_model2$results %>%
@@ -148,22 +146,17 @@ r2<-res_model2$results %>%
 # the class order should be S,I,N 
 str(r2)
 
-#check min, max, mean 
+#check min, max
 r2 |> group_by(class) |>
-  summarise(Mean = mean(value),
-            Max=max(value),
+  summarise(Max=max(value),
             Min=min(value))
 rm2 <- r2 %>%  filter(class %in% c("S","I","N"))
-table(rm2$class)
-View(rm2)
+
 # plot SI Anthrax ######
 p2<-ggplot(rm2) + 
   geom_line(data = rm2,aes(x = time_y ,y = value,  color = class))  +
-  
   labs(x="years", y= "population",
-       title= 'B) Anthrax infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'Anthrax infection') +
   scale_color_manual( name = "population",
                       labels = c('S','I', 'total') , #this one label is manual
                       values = c('S'='seagreen4',
@@ -179,19 +172,14 @@ p2<-ggplot(rm2) +
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
 print(p2)
-
-ggsave("gaur_anthrax_1sim_100y.png",p2, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_anthrax_1sim.png",p2, width = 25, height = 15, units = 'cm', dpi = 600)
 
 #scale
 p2s<-ggplot(rm2) + 
   geom_line(data = rm2,aes(x = time_y ,y = value,  color = class))  +
-  
   labs(x="years", y= "population",
-       title= 'B) Anthrax infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
- 
-  ylim(0, 1000)+
+       title= 'Anthrax infection') +
+  ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','I', 'total') , #this one label is manual
                       values = c('S'='seagreen4',
@@ -207,5 +195,4 @@ p2s<-ggplot(rm2) +
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 
 print(p2s)
-
-ggsave("gaur_anthrax_1sim_100y_scale.png",p2s, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_anthrax_1sim_scale.png",p2s, width = 25, height = 15, units = 'cm', dpi = 600)

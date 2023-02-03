@@ -186,9 +186,9 @@ a = round((N/rat)*1.5,0)
 initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
               Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 
-end.time <- 100*365 #predict for ... years
-
 # TEST
+end.time <- 2*365 #predict for ... years
+
 # single run
 res_model5 <- model5(pars = parameters, init = initials,
                      end.time = end.time)
@@ -197,9 +197,6 @@ res_model5 <- model5(pars = parameters, init = initials,
 min(subset(res_model5$results,I==0)$time)
 min(subset(res_model5$results,N==0)$time)
 
-#plot epi
-#PlotMods(res_model5)
-
 #convert to data.frame, change days -> years, and melt class into one column
 r5<-res_model5$results %>%
   mutate(time_y = time/365) %>%
@@ -207,11 +204,9 @@ r5<-res_model5$results %>%
        value.name = 'value', variable.name = 'class')
 str(r5)
 
-#check min,max,mean
+#check min,max
 r5 |> group_by(class) |>
-  summarise(Median = median(value), 
-            Mean = mean(value),
-            Max=max(value),
+  summarise(Max=max(value),
             Min=min(value))
 rm5<-r5 |>
   filter(class %in% c("S","E","I","R","N"))
@@ -221,12 +216,8 @@ str(rm5)
 # plot SEIR LSD ######
 p5<-ggplot(rm5) + 
   geom_line(aes(x = time_y, y = value, color = class))+
-  
   labs(x="years", y= "population",
-       title= 'E) LSD infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-#  ylim(0, 1000) +
+       title= 'LSD infection') +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'total' ),
                       values = c('S'='seagreen4',
@@ -243,17 +234,13 @@ p5<-ggplot(rm5) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 print(p5)
-
-ggsave("gaur_LSD_1sim_100y_all.png",p5, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_LSD_1sim.png",p5, width = 25, height = 15, units = 'cm', dpi = 600)
 
 #scale
 p5s<-ggplot(rm5) + 
   geom_line(aes(x = time_y, y = value, color = class))+
-  
   labs(x="years", y= "population",
-       title= 'E) LSD infection') +
-  
-  scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
+       title= 'LSD infection') +
   ylim(0, 1000) +
   scale_color_manual( name = "population",
                       labels = c('S','E','I',"R",'total' ),
@@ -271,5 +258,4 @@ p5s<-ggplot(rm5) +
          axis.text=element_text(size=11))+
   guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
 print(p5s)
-
-ggsave("gaur_LSD_1sim_100y_all_scale.png",p5s, width = 25, height = 15, units = 'cm', dpi = 600)
+#ggsave("gaur_LSD_1sim_scale.png",p5s, width = 25, height = 15, units = 'cm', dpi = 600)
