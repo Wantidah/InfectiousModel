@@ -1778,7 +1778,44 @@ plt<-dft%>%ggbetweenstats(
 print(plt)
 
 ggsave("gaur_ndiff_boxviolin_100sim.png",plt,width = 20, height = 15, units = 'cm', dpi = 600)
+  
+# combine Brucellosis DD to the boxplot    
+dft$model <- recode_factor(dft$model, Brucellosis = "Brucellosis FD")
+dft_dd <- read.csv("df_ndiff_dd.csv")
+b<-dft_dd|>filter(model %in% c("Brucellosis"))
+b$model <- recode_factor(b$model, Brucellosis = "Brucellosis DD" )
+dft_b<-full_join(dft,b)    
 
+dft_b$model2 <- factor(dft$model, 
+                    levels = c("no infection", 
+                               "HS",
+                               "LSD",
+                               "Anthrax",
+                               "FMD",
+                               "Brucellosis DD",
+                               "bTB",
+                               "Brucellosis FD"))
+
+plt_b<-dft%>%ggbetweenstats(
+  x=model2,
+  y=Ndiff,
+  k=0,
+  plot.type = "boxviolin",
+  pairwise.comparisons=F,
+  bf.message = F,
+  results.subtitle = FALSE,
+  centrality.point.args = list(size = 2, color = "darkred"),
+  title= "The gaur population change by infectious disease models in 100 years",
+  xlab = "",
+  ylab = "Population change (%)",
+  package = "ggsci",
+  palette = "default_jco")+
+  ggplot2::scale_y_continuous(limits = c(-200, 500), 
+                              breaks = seq(from = -200, to = 500, by = 100))
+
+print(plt_b)
+ggsave("gaur_ndiff_boxviolin_100sim_bdd.png",plt_b,width = 20, height = 15, units = 'cm', dpi = 600)
+#plotting hist
 #plotting histogram N==0  for brucellosis of FD transmission#######
 mx7<-mx[[7]]
 
