@@ -1,8 +1,8 @@
 ############## NOTES ##################
-# Infectious disease modelling code for wild Bovidae population
+# Infectious disease modelling code for wild Bovidae populations
 # - 18 Nov 2022-
 
-# # Reference R Code: https://github.com/dtsh2/ebola_model; 
+# # Code adapted from: https://github.com/dtsh2/ebola_model; 
 # # Reference Article:https://doi.org/10.1098/rsif.2021.0638  (Transmission models indicate Ebola virus persistence in non-human primate populations is unlikely)
 
 # Working on:  R version 4.2.1 (2022-06-23) -- "Funny-Looking Kid"
@@ -11,7 +11,7 @@
 
 # All models have 3 age classes (c = calf, a = Subadult, a = adult)
 # unit == day (per day)
-# This code set up as:
+# This code is set up as:
 # 1) Set up the infectious disease model's function
 # 2) Input parameters
 # 3) Single run for all the models
@@ -20,6 +20,8 @@
 
 rm(list=ls())
 set.seed(111)
+options(digits = 3, scipen = 999)
+
 # set library path
 # path <- '...'
 
@@ -28,6 +30,9 @@ set.seed(111)
 #                 lib = path)
 
 ############## LOAD PACKAGES ##########
+
+if(!require(ggstatsplot)) install.packages('ggstatsplot', dep = TRUE, quiet = TRUE)
+
 library(EpiDynamics)
 library(dplyr)   
 library(tidyverse)
@@ -86,7 +91,7 @@ model1 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, a,  sa,  c)%>% 
+    results <- data.frame(time, a,  sa,  c)%>% 
       dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
     return(list(pars = pars, init = init2, time = time, results = results))
     
@@ -166,7 +171,7 @@ model2 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
+    results <- data.frame(time, 
                         Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
@@ -175,7 +180,7 @@ model2 =
     
   }
 ############## MODEL 3 SEI - Bovine tuberculosis FD #####
-model3=
+model3 =
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -183,7 +188,7 @@ model3=
         rate <- rep(0, 29)
         change <- matrix(0, nrow = 29, ncol = 9)
         
-        N <- Sc+Ec+Ic +Ssa+Esa+Isa +Sa+Ea+Ia 
+        N <- Sc + Ec + Ic + Ssa + Esa + Isa + Sa + Ea + Ia 
         tau <- 1
         
         #calf
@@ -210,20 +215,20 @@ model3=
         rate[11] <- epsilon * Sc
         change[11, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
         
-        # saubadult
+        # subadult
         rate[12] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[12, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[13] <- phi_sa * Esa 
         change[13, ] <- c(0, 0, 0, 0,-1, 1, 0, 0, 0)
-        rate[14] <-  rho_sa * gamma_sa * Isa
+        rate[14] <- rho_sa * gamma_sa * Isa
         change[14, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0)
-        rate[15] <-  delta_sa * Ssa
+        rate[15] <- delta_sa * Ssa
         change[15, ] <- c(0, 0, 0, -1, 0, 0, 1, 0, 0)  
-        rate[16] <-  delta_sa * Esa
+        rate[16] <- delta_sa * Esa
         change[16, ] <- c(0, 0, 0, 0, -1, 0, 0, 1, 0) 
         rate[17] <-  delta_sa *  Isa
         change[17, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 1) 
-        rate[18] <-  mu_sa * Ssa
+        rate[18] <- mu_sa * Ssa
         change[18, ] <- c(0, 0, 0, -1, 0, 0, 0, 0, 0)  
         rate[19] <- mu_sa * Esa
         change[19, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0)
@@ -403,18 +408,18 @@ model4 =
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
+    results <- data.frame(time, 
                         Sc,  Ic, Rc, Ssa, Isa, Rsa, Sa, Ia, Ra)%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
-      dplyr::mutate(N = rowSums(across(c (S,I,R), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,I,R), na.rm=TRUE)))
     
     return (list(pars = pars, init = init2, time = time, results = results))
   }
 
 ############## MODEL 5 SEIRS - Lumpy skin disease FD #####
-model5=
+model5 =
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -422,7 +427,7 @@ model5=
         rate <- rep(0, 40)
         change <- matrix(0, nrow = 40, ncol = 12)
         
-        N <- Sc+Ec+Ic+Rc +Ssa+Esa+Isa+Rsa +Sa+Ea+Ia+Ra
+        N <- Sc + Ec + Ic + Rc + Ssa + Esa + Isa + Rsa + Sa + Ea + Ia + Ra
         tau <- 1
         
         #calf
@@ -446,7 +451,7 @@ model5=
         change[9, ] <- c(0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0) 
         rate[10] <-  delta_c * Ic
         change[10, ] <- c(0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0) 
-        rate[11] <-  delta_c * Rc
+        rate[11] <- delta_c * Rc
         change[11, ] <- c(0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0) 
         rate[12] <-  mu_c * Sc
         change[12, ] <- c(-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
@@ -496,20 +501,20 @@ model5=
         change[32, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0)
         rate[33] <- phi_a * Ea 
         change[33, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0)
-        rate[34] <-   (1- rho_a) * gamma_a * Ia
+        rate[34] <- (1- rho_a) * gamma_a * Ia
         change[34, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1)
-        rate[35] <-   rho_a * gamma_a * Ia
+        rate[35] <- rho_a * gamma_a * Ia
         change[35, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
-        rate[36] <-  omega_a *  Ra
+        rate[36] <- omega_a *  Ra
         change[36, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -1)
         rate[37] <-  mu_a * Sa
         change[37, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0) 
         rate[38] <- mu_a * Ea
-        change[38, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
+        change[38, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
         rate[39] <- mu_a * Ia
-        change[39, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0) 
+        change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0) 
         rate[40] <- mu_a * Ra
-        change[40, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1) 
+        change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1) 
         
         init <- c(Sc = Sc, Ec = Ec, Ic = Ic, Rc = Rc, 
                   Ssa = Ssa, Esa = Esa, Isa = Isa, Rsa = Rsa,
@@ -546,7 +551,7 @@ model5=
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
+    results <- data.frame(time, 
                         Sc, Ec, Ic, Rc ,Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra )%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
@@ -558,7 +563,7 @@ model5=
   }
 
 ############## MODEL 6 SEIRMS/E - Foot and mouth disease DD #####
-model6=
+model6 =
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -566,7 +571,7 @@ model6=
         rate <- rep(0, 47)
         change <- matrix(0, nrow = 47, ncol = 14)
         
-        N <- Sc+Ec+Ic+Rc +Ssa+Esa+Isa+Rsa +Sa+Ea+Ia+Ra +M +Sm
+        N <- Sc + Ec + Ic + Rc + Ssa + Esa + Isa + Rsa + Sa + Ea + Ia + Ra + M + Sm
         tau <- 1
         
         #calf
@@ -612,7 +617,7 @@ model6=
         rate[20] <- (delta_c * Sc) + (omega_m * M)  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
-        rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
+        rate[21] <- beta_c * Sm * (Ic+Isa+Ia)
         change[21, ] <- c(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[22] <- mu_c * Sm
         change[22, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
@@ -638,7 +643,7 @@ model6=
         change[31, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0) 
         rate[32] <-  delta_sa *  Rsa
         change[32, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0) 
-        rate[33] <-  mu_sa * Ssa
+        rate[33] <- mu_sa * Ssa
         change[33, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
         rate[34] <- mu_sa * Esa
         change[34, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -656,7 +661,7 @@ model6=
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
         change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0)
-        rate[41] <-   (1- rho_a) * gamma_a * Ia
+        rate[41] <- (1- rho_a) * gamma_a * Ia
         change[41, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0)
         rate[42] <-   rho_a * gamma_a * Ia
         change[42, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0)
@@ -706,7 +711,7 @@ model6=
       init <- tmp
     }
     #sum population based on column name
-    results<-data.frame(time, 
+    results <- data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra, M, Sm)%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
@@ -739,21 +744,21 @@ model7=
         change[3, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[4] <- phi_c * Ec 
         change[4, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[5] <-  (1-rho_c) * gamma_c * Ic
+        rate[5] <- (1-rho_c) * gamma_c * Ic
         change[5, ] <- c(0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[6] <-  rho_c * gamma_c * Ic
+        rate[6] <- rho_c * gamma_c * Ic
         change[6, ] <- c(0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[7] <-  omega_c *  Rc
+        rate[7] <- omega_c *  Rc
         change[7, ] <- c(1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[8] <-  delta_c * Sc
         change[8, ] <- c(-1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
-        rate[9] <-  delta_c * Ec
+        rate[9] <- delta_c * Ec
         change[9, ] <- c(0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0) 
-        rate[10] <-  delta_c * Ic
+        rate[10] <- delta_c * Ic
         change[10, ] <- c(0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0) 
-        rate[11] <-  delta_c * Rc
+        rate[11] <- delta_c * Rc
         change[11, ] <- c(0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0) 
-        rate[12] <-  mu_c * Sc
+        rate[12] <- mu_c * Sc
         change[12, ] <- c(-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
         rate[13] <- mu_c * Ec
         change[13, ] <- c(0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -785,21 +790,21 @@ model7=
         change[24, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[25] <- phi_sa * Esa 
         change[25, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
-        rate[26] <-  (1-rho_sa) * gamma_sa * Isa
+        rate[26] <- (1-rho_sa) * gamma_sa * Isa
         change[26, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0)
         rate[27] <-  rho_sa * gamma_sa * Isa
         change[27, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0)
-        rate[28] <-  omega_sa *  Rsa
+        rate[28] <- omega_sa * Rsa
         change[28, ] <- c(0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0)
-        rate[29] <-  delta_sa * Ssa
+        rate[29] <- delta_sa * Ssa
         change[29, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0)  
-        rate[30] <-  delta_sa * Esa
+        rate[30] <- delta_sa * Esa
         change[30, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0) 
         rate[31] <-  delta_sa *  Isa
         change[31, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0) 
         rate[32] <-  delta_sa *  Rsa
         change[32, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0) 
-        rate[33] <-  mu_sa * Ssa
+        rate[33] <- mu_sa * Ssa
         change[33, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
         rate[34] <- mu_sa * Esa
         change[34, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -817,20 +822,20 @@ model7=
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
         change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0)
-        rate[41] <-   (1- rho_a) * gamma_a * Ia
+        rate[41] <- (1- rho_a) * gamma_a * Ia
         change[41, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0)
-        rate[42] <-   rho_a * gamma_a * Ia
+        rate[42] <- rho_a * gamma_a * Ia
         change[42, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0)
-        rate[43] <-  omega_a *  Ra
+        rate[43] <- omega_a *  Ra
         change[43, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0)
         rate[44] <-  mu_a * Sa
         change[44, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0) 
         rate[45] <- mu_a * Ea
-        change[45, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0) 
+        change[45, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0) 
         rate[46] <- mu_a * Ia
         change[46, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0) 
         rate[47] <- mu_a * Ra
-        change[47, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
+        change[47, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
         
         init <- c(Sc = Sc, Ec = Ec, Ic = Ic, Rc = Rc, 
                   Ssa = Ssa, Esa = Esa, Isa = Isa, Rsa = Rsa,
@@ -868,7 +873,7 @@ model7=
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
+    results <- data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
@@ -880,7 +885,7 @@ model7=
     
   }
 
-#############  2) Set up parameters before running #############  
+#############  2) Set up parameters before running ##################  
 #> setting end time and number of replications (n_rep)  #############
 end.time <- 100 * 365
 n_rep <- 100
@@ -909,6 +914,8 @@ parameters_m1 <- c(mu_b = 0.34/365,
                 N = sum(initials_m1), 
                 tau = 1)
 
+t(t(parameters_m1))
+
 #> MODEL 2 SI - Anthrax ####
 initials_m2 <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 parameters_m2 <- c(
@@ -920,7 +927,9 @@ parameters_m2 <- c(
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials_m2),
-  tau=1)
+  tau = 1)
+
+t(t(parameters_m2))
 
 #> MODEL 3 SEI - Bovine tuberculosis #####
 initials_m3 <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = (a-1), Ea = 0, Ia = 1)
@@ -933,7 +942,9 @@ parameters_m3 <- c(
   mu_b = 0.34/365,  mu_bI = (0.34/365)*(1-0.27), #Ia birth rate reduce by = 27%    
   mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
-  N = sum(initials_m3), tau=1)
+  N = sum(initials_m3), tau = 1)
+
+t(t(parameters_m3))
 
 #>  MODEL 4 SIRS - Hemorrhagic septicemia #####
 initials_m4 <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), Ia = 1, Ra = 0)
@@ -952,6 +963,8 @@ parameters_m4 <- c(
   N = sum(initials_m4),
   tau=1)
 
+t(t(parameters_m4))
+
 #>  MODEL 5 SEIRS - Lumpy skin disease #####
 initials_m5 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m5 <- c( 
@@ -967,6 +980,7 @@ parameters_m5 <- c(
   N = sum(initials_m5),
   tau=1)
 
+t(t(parameters_m5))
 #> MODEL 6 SEIRMS/E - Foot and mouth disease  #####
 initials_m6 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
                  Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
@@ -982,8 +996,9 @@ parameters_m6 <- c(
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials_m6),
-  tau=1)
+  tau= 1 )
 
+t(t(parameters_m6))
 #> MODEL 7 SEIRMS/E - Brucellosis  #####
 initials_m7 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
                  Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
@@ -1005,45 +1020,48 @@ parameters_m7 <- c(
   N = sum(initials_m7),
   tau=1)
 
+t(t(parameters_m7))
 ############## 3) SINGLE RUNS - ALL MODELS  ###############################
 # run model 1 - 7
 res_model1 <- model1(pars = parameters_m1, init = initials_m1,
                 end.time = end.time)
 #PlotMods(res_model1)
 
-res_model2<-model2(pars = parameters_m2, init = initials_m2,
+res_model2 <- model2(pars = parameters_m2, init = initials_m2,
        end.time = end.time)
 #PlotMods(res_model2)
 
-res_model3<-model3(pars = parameters_m3, init = initials_m3,
+res_model3 <- model3(pars = parameters_m3, init = initials_m3,
                    end.time = end.time)
 #PlotMods(res_model3)
 
-res_model4<-model4(pars = parameters_m4, init = initials_m4,
+res_model4 <- model4(pars = parameters_m4, init = initials_m4,
                    end.time = end.time)
 #PlotMods(res_model4)
 
-res_model5<-model5(pars = parameters_m5, init = initials_m5,
+res_model5 <- model5(pars = parameters_m5, init = initials_m5,
                    end.time = end.time)
 #PlotMods(res_model5)
 
-res_model6<-model6(pars = parameters_m6, init = initials_m6,
+res_model6 <- model6(pars = parameters_m6, init = initials_m6,
                    end.time = end.time)
-res_model6$results<-res_model6$results %>% 
+res_model6$results <- res_model6$results %>% 
                     relocate(M,.after = R) 
 #PlotMods(res_model6)
 
-res_model7<-model7(pars = parameters_m7, init = initials_m7,
+res_model7 <- model7(pars = parameters_m7, init = initials_m7,
                    end.time = end.time)
-res_model7$results<-res_model7$results %>% 
+res_model7$results <- res_model7$results %>% 
                     relocate(M,.after = R) 
 #PlotMods(res_model7)
 
 ############## 4) MULTIPLE RUNS - ALL MODELS ################################
-# use the same parameters as the single run
+# use the same parameters as the single run and n_rep simulations 
+
+start <- print(Sys.time())
 
 #> MX RUNS MODEL 1 - NO infection #####
-sim_rep_m1<-replicate(n_rep,(model1(pars = parameters_m1, init = initials_m1,
+sim_rep_m1 <- replicate(n_rep,(model1(pars = parameters_m1, init = initials_m1,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 2 SI - Anthrax #####
@@ -1051,35 +1069,40 @@ sim_rep_m2<-replicate(n_rep,(model2(pars = parameters_m2, init = initials_m2,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 3 SEI - Bovine tuberculosis #####
-sim_rep_m3<-replicate(n_rep,(model3(pars = parameters_m3, init = initials_m3,
+sim_rep_m3 <- replicate(n_rep,(model3(pars = parameters_m3, init = initials_m3,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 4 SIRS - Hemorrhagic septicemia #####
-sim_rep_m4<-replicate(n_rep,(model4(pars = parameters_m4, init = initials_m4,
+sim_rep_m4 <- replicate(n_rep,(model4(pars = parameters_m4, init = initials_m4,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 5 SEIRS - Lumpy skin disease #####
-sim_rep_m5<-replicate(n_rep,(model5(pars = parameters_m5, init = initials_m5,
+sim_rep_m5 <- replicate(n_rep,(model5(pars = parameters_m5, init = initials_m5,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 6 SEIRMS/E - Foot and mouth disease #####
-sim_rep_m6<-replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
+sim_rep_m6 <- replicate(n_rep,(model6(pars = parameters_m6, init = initials_m6,
                                     end.time = end.time)))
 
 #> MX RUNS MODEL 7 SEIRMS/E - Brucellosis #####
-sim_rep_m7<-replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
+sim_rep_m7 <- replicate(n_rep,(model7(pars = parameters_m7, init = initials_m7,
                                     end.time = end.time)))
+
+
+end <- print(Sys.time())
+time_to_simulate <- end - start
+time_to_simulate
 
 ######## 5) PLOTTING Single and Multiple runs ######## 
 # SET UP single run df&plots ########
-s<-list(res_model1,
+s <- list(res_model1,
                 res_model2,
                 res_model3,
                 res_model4,
                 res_model5,
                 res_model6,
                 res_model7)
-nam<-c('no_infection',
+nam <- c('no_infection',
        'Anthrax',
        'bTB',
        'HS',
@@ -1096,7 +1119,7 @@ for(i in 1:length(s)){
   s[[i]]$model <- paste0(nam[[i]]) # adding the model name
 }
 
-# this can skip
+#  skip the saving part
 # save the data frame  (.rds) for working next time
 # for (i in 1:length(s)) {saveRDS(s[[i]], file = paste0("df_m",i,"_",nam[[i]],"_1run.rds")) }
 
@@ -1107,12 +1130,12 @@ pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e
   for (i in 1:n_rep){
     run <- paste("run", seq(n_rep), sep="")
     names(df)[i]
-    df[[i]]<- x[,i]$results[,-c(1)]
+    df[[i]] <- x[,i]$results[,-c(1)]
     df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
   }
   
-  df<-map2(df,run, ~cbind(.x, run = .y))   # adding number of replications to the column
-  df2<- data.table::rbindlist(df)          # binding row
+  df <- map2(df,run, ~cbind(.x, run = .y))   # adding number of replications to the column
+  df2 <- data.table::rbindlist(df)          # binding row
   
   if (melt == T) {  #option for melting the data in case we need...
     
@@ -1127,7 +1150,7 @@ pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e
 }
 
 # creating the model simulation list 
-sim_rep_m<-list(sim_rep_m1,
+sim_rep_m <- list(sim_rep_m1,
                 sim_rep_m2,
                 sim_rep_m3,
                 sim_rep_m4,
@@ -1135,11 +1158,11 @@ sim_rep_m<-list(sim_rep_m1,
                 sim_rep_m6,
                 sim_rep_m7)
 
-# > rearrange df and calculate total population change (%) loop--------
-m<-list()
+# > rearrange df and calculate total population change (%)--------
+m <- list()
 for (i in 1:length(sim_rep_m)) {
-  m[[i]]<- pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
-  m[[i]]<- m[[i]]%>%
+  m[[i]] <- pop_sim_prep(x = sim_rep_m[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  m[[i]] <- m[[i]]%>%
     group_by(run) %>%
     mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
     mutate(time_y = time_d/365) %>% #convert day to year for plotting
@@ -1147,10 +1170,10 @@ for (i in 1:length(sim_rep_m)) {
   m[[i]]$model <- paste0(nam[[i]])
 }
 
-# just relocate the columns of FMD and Brucellosis model's compartments as it easier for plotting-labeling
-m[[6]]<-m[[6]]%>% 
+# relocate the columns of FMD and Brucellosis model's compartments as it easier for plotting-labeling
+m[[6]] <- m[[6]]%>% 
   relocate(M,.after = R) 
-m[[7]]<-m[[7]]%>% 
+m[[7]] <- m[[7]]%>% 
   relocate(M,.after = R) 
 # check columns before plotting: the population class should be in an order like SIRN, SIN, SIERN, if not back to the relocate
 for (i in 1:length(m)){
@@ -1158,7 +1181,7 @@ for (i in 1:length(m)){
   print(head(m[[i]]))
 }
 
-# this can skip
+# skip this
 # save the data frame  (.rds) for working next time
 # for (i in 1:length(m)) {saveRDS(m[[i]], file = paste0("df_m",i,"_",nam[[i]],"_100runs.rds")) }
 
@@ -1172,7 +1195,7 @@ s = lapply(sl, readRDS)
 
 # > plot signle run ######
 # name for plotting
-nam2<-list('No',
+nam2 <- list('No',
            'Anthrax',
            'bTB',
            'HS',
@@ -1180,14 +1203,14 @@ nam2<-list('No',
            'FMD',
            'Brucellosis')
 
-p<-list()
+p <- list()
 
 for (i in 1:length(s)) {
   # Condition
   model <- s[[i]]$model
   #> p1 - plot 1 run no infection ########
   if (any(model == "no_infection")){
-    p[[i]]<-ggplot(s[[i]]) + 
+    p[[i]]<- ggplot(s[[i]]) + 
       geom_line(aes(x = time_y ,y = value,  color = class))  +
       labs(x="years", y= "population",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
@@ -1214,7 +1237,7 @@ for (i in 1:length(s)) {
     p[[i]]<-s[[i]] %>%  filter(class %in% c("S","I","N")) %>%
       ggplot() + 
       geom_line(aes(x = time_y ,y = value,  color = class))  +
-      labs(x="years", y= "population",
+      labs(x="years", y= "Compartment",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       #  ylim(0, 1000) +
@@ -1263,7 +1286,7 @@ for (i in 1:length(s)) {
     p[[i]] <- s[[i]] %>% filter(class %in% c("S","I","R","N")) %>%
       ggplot() + 
       geom_line(aes(x = time_y, y = value, color = class))+
-      labs(x="years", y= "population",
+      labs(x="years", y= "Compartment",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       #  ylim(0, 1000) +
@@ -1288,7 +1311,7 @@ for (i in 1:length(s)) {
     p[[i]]<- s[[i]] %>% filter(class %in% c("S","E","I","R","N")) %>%
       ggplot() + 
       geom_line(aes(x = time_y, y = value, color = class))+
-      labs(x="years", y= "population",
+      labs(x="years", y= "Compartment",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       #  ylim(0, 1000) +
@@ -1314,7 +1337,7 @@ for (i in 1:length(s)) {
     p[[i]]<-s[[i]] |>filter(class %in% c("S","E","I","R","M","N")) %>%
       ggplot() + 
       geom_line(aes(x = time_y, y = value, color = class))+
-      labs(x="years", y= "population",
+      labs(x="years", y= "Compartment",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       #ylim(0, 1000) +
@@ -1340,7 +1363,7 @@ for (i in 1:length(s)) {
     p[[i]]<-s[[i]]%>% filter(class %in% c("S","E","I","R","M","N")) %>%
       ggplot() + 
       geom_line(aes(x = time_y, y = value, color = class))+
-      labs(x="years", y= "population",
+      labs(x = "years", y = "Compartment",
            title= paste0(LETTERS[[i]],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       #ylim(0, 1000) +
@@ -1373,7 +1396,7 @@ print(p)
 #m = lapply(ml, readRDS)
 # # # # #
 
-pl<-list()
+pl <- list()
 
 for (i in 1:length(m)) {
   # Condition
@@ -1386,7 +1409,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y, y = sa, group = run, color = 'subadult'),linewidth = 0.1, alpha = 0.12) +
       geom_line(aes(x = time_y, y = c,  group = run, color = 'calf' ), linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = N,  group = run, color = 'total'), linewidth = 0.1, alpha = 0.12) +
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c( 'adult','subadult','calf','total'),
@@ -1418,7 +1441,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y, y = N, group = run, color = 'total'), linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y ,y = S, group = run, color = 'S'), linewidth = 0.1, alpha = 0.12) + 
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ), linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','I', 'total') , #this one label is manual
@@ -1446,7 +1469,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
       geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','E','I','total'),
@@ -1477,7 +1500,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y ,y = S, group = run, color = 'S'),linewidth = 0.1, alpha = 0.12) + 
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','I','R','total'),
@@ -1509,7 +1532,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y, y = E, group = run, color = 'E' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','E','I','R','total'),
@@ -1544,7 +1567,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = M, group = run, color = 'M' ),linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','E','I','R','M','total'),
@@ -1581,7 +1604,7 @@ for (i in 1:length(m)) {
       geom_line(aes(x = time_y, y = I, group = run, color = 'I' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = R, group = run, color = 'R' ),linewidth = 0.1, alpha = 0.12)+
       geom_line(aes(x = time_y, y = M, group = run, color = 'M' ),linewidth = 0.1, alpha = 0.12)+
-      labs(x="years", y= "population", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
+      labs(x="years", y= "Compartment", title= paste0(LETTERS[8:14][i],") ", nam2[[i]], " infection")) +
       scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
       scale_color_manual( name = "population",
                           labels = c('S','E','I','R','M','total'),
@@ -1624,13 +1647,13 @@ pp3 <- wrap_elements(pp1) | wrap_elements(pp2)
 ggsave("patchwork.png",pp3,width = 40, height = 50, units = 'cm', dpi = 600)
 
 # zoom in FMD in 10 years #####
-z<-s[[6]] |>
+z <- s[[6]] |>
   filter(class %in% c("S","E","I","R","M","N")) |>
   filter(between(time_y,10,20))|>
   mutate(year=c("10 - 20 years"))
 head(z)
 
-z2<-s[[6]] |> filter(between(time_y,90,100))|>
+z2 <- s[[6]] |> filter(between(time_y,90,100))|>
   filter(class %in% c("S","E","I","R","M","N")) |>
   mutate(year=c("90 - 100 years"))
 head(z2)
@@ -1638,13 +1661,13 @@ head(z2)
 z3<-rbind(z,z2)
 head(z3)
 
-p6z<-ggplot(z3) + 
+p6z <- ggplot(z3) + 
   geom_line(aes(x = time_y, y = value, color = class), linewidth = 1)+
-  labs(x="years", y= "population",
+  labs(x = "years", y = "Compartment",
        title= 'Gaur population with FMD infection') +
   facet_wrap(year~., scale = "free_x") +
   scale_x_continuous(breaks=seq(0, (365*10), by = 2))+
-  scale_color_manual( name = "population",
+  scale_color_manual( name = "Compartment",
                       labels = c('S','E','I',"R",'M','total' ),
                       values = c('S'='seagreen4',
                                  'E'='darkorange2',
@@ -1656,11 +1679,11 @@ p6z<-ggplot(z3) +
   theme( plot.title = element_text(size = 13),
          axis.title.x = element_text(size = 12),
          axis.title.y = element_text(size = 12),
-         legend.title=element_text(size=11),
+         legend.title = element_text(size=11),
          legend.text = element_text(size = 11),
-         axis.text=element_text(size=11))+
-  guides(color = guide_legend(override.aes = list(alpha = 1,size=1)))
-  
+         axis.text = element_text(size = 11))+
+     guides(color = guide_legend(override.aes = list(alpha = 1,size = 1)))
+
 #Adding label A), B); ref: https://stackoverflow.com/questions/56064042/using-facet-tags-and-strip-labels-together-in-ggplot2
  tag_facet2 <- function(p, close = ")", tag_pool = LETTERS, x = -Inf, y = Inf, 
                        hjust = -0.5, vjust = 1.5, fontface = 1, size = 3.5, family = "", ...) {
@@ -1672,9 +1695,9 @@ p6z<-ggplot(z3) +
                 vjust = vjust, fontface = fontface, size = size, family = family, inherit.aes = FALSE)
 }
 
-p6z2<-tag_facet2(p6z)
+p6z2 <- tag_facet2(p6z)
 print(p6z2)
-ggsave("gaur_fmd_1run_zoom10y.png",p6z2, width = 25, height = 15, units = 'cm', dpi = 600)
+ggsave("gaur_fmd_1run_zoom10y.png", p6z2 , width = 25, height = 15, units = 'cm', dpi = 600)
 
 # Plot the average % of the population change in 100 years ##########
 # Prepare the dataframe for boxplot using melt
@@ -1685,7 +1708,7 @@ for (i in 1:length(m)){
                   value.name = 'value', variable.name = 'class')
 }
 
-#> summerize basic stat ####### 
+#> summarise basic stats ####### 
 # single run
 for(i in 1:length(s)){
   print(s[[i]] |> group_by(class,model) |>
@@ -1704,7 +1727,7 @@ mx2 <-data.table::rbindlist(mx)
 head(mx2)
 
 #select some columns: Ndiff,run,model
-dft<-mx2 %>% 
+dft <- mx2 %>% 
   dplyr::select(Ndiff,run,model) %>% 
   drop_na() %>%
   distinct()
@@ -1720,22 +1743,28 @@ dft$transmit <- ifelse(
 table(dft$transmit)
 View(dft)
 
-#save .csv file (this can skip) #
+
+#save .csv file (skip) #
 #write_csv(dft,"df_ndiff_2.csv")
-## load df (this can skip)
-dft<- read.csv("./df_ndiff_2.csv")
+
+## load df ----------------------------------------------------------------------
+dft <- read.csv("./df_ndiff_2.csv")
 #str(dft)
 
 #recode for plotting from no_infection to "no infection"
 dft$model <- recode_factor(dft$model, no_infection = "no infection")
 
 # Boxplot #####
-box<-dft%>%
-  ggplot(aes(x= reorder(model,-Ndiff), y = Ndiff,fill=model)) +
+
+table(dft$run) # check this
+
+box <- dft %>%
+  ggplot(aes(x= reorder(model,-Ndiff), y = Ndiff, fill = model)) +
   geom_boxplot() +
-  scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+  viridis::scale_fill_viridis(discrete = TRUE, alpha=0.6) +
   geom_jitter(color="black", size=0.6, alpha=0.4) +
-  theme_ipsum() +
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
+  hrbrthemes::theme_ipsum() +
   theme(
     legend.position="none",
     plot.title = element_text(size=11)) +
@@ -1758,7 +1787,7 @@ dft$model2 <- factor(dft$model,
                                "FMD",
                                "bTB",
                                "Brucellosis"))
-plt<-dft%>%ggbetweenstats(
+plt <- dft%>%ggbetweenstats(
   x=model2,
   y=Ndiff,
   k=0,
@@ -1772,6 +1801,7 @@ plt<-dft%>%ggbetweenstats(
   ylab = "Population change (%)",
   package = "ggsci",
   palette = "default_jco")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   ggplot2::scale_y_continuous(limits = c(-200, 500), 
                               breaks = seq(from = -200, to = 500, by = 100))
 
@@ -1796,7 +1826,7 @@ dft_b$model2 <- factor(dft$model,
                                "bTB",
                                "Brucellosis FD"))
 
-plt_b<-dft%>%ggbetweenstats(
+plt_b <-  dft %>% ggbetweenstats(
   x=model2,
   y=Ndiff,
   k=0,
@@ -1810,32 +1840,36 @@ plt_b<-dft%>%ggbetweenstats(
   ylab = "Population change (%)",
   package = "ggsci",
   palette = "default_jco")+
+  geom_hline(yintercept=0, linetype="dashed", color = "black")+
   ggplot2::scale_y_continuous(limits = c(-200, 500), 
                               breaks = seq(from = -200, to = 500, by = 100))
 
 print(plt_b)
+
 ggsave("gaur_ndiff_boxviolin_100sim_bdd.png",plt_b,width = 20, height = 15, units = 'cm', dpi = 600)
 #plotting hist
 #plotting histogram N==0  for brucellosis of FD transmission#######
-mx7<-mx[[7]]
+mx7 <- mx[[7]]
 
 # OR load .rds file of Brucellosis model
-# m7<-readRDS("./df_m7_Brucellosis_100runs.rds")
+# m7 <- readRDS("./df_m7_Brucellosis_100runs.rds")
 # Run this melt script, if load .rds file back. 
 #mx7 <- m7 %>% melt(id.vars = c('time_y','time_d','run','model',"Ndiff"), 
 #                   value.name = 'value', variable.name = 'class')
 
 head(mx7)
+table(m7$run)
+table(mx7$run)
 
-df.agg <- aggregate(time_y ~ run + value +class, mx7, min)
+df.agg <- aggregate(time_y ~ run + value + class, mx7, min)
 df.ag <- (df.agg[df.agg$value==0,c('class','time_y','value','run')])
 
 df.ag2 <- df.ag|>filter(class %in% c("N","I"))
 str(df.ag2)
 
-# plotting N extinction 
-pn<- df.ag|>filter(class %in% c("N"))|>
-  ggplot(aes(x=time_y,fill=run)) + 
+# plotting N extinction events
+pn <- df.ag|>filter(class %in% c("N"))|>
+  ggplot(aes(x=time_y)) + #, fill=run
   geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
   scale_y_continuous(limits = c(0,3), breaks=seq(0, 3, by = 2)) +
   scale_x_continuous(limits = c(0,105),breaks=seq(0, 105, by = 20))+
@@ -1848,7 +1882,8 @@ pn<- df.ag|>filter(class %in% c("N"))|>
          legend.text = element_text(size = 7),
          axis.text=element_text(size=7))+
   scale_fill_viridis_d(option="mako",direction = -1)+
-  theme(legend.position = "none")
+  theme_bw() + theme(legend.position = "none")
+
 print(pn)  
 
 #png("extinction_bru_n.png",width = 12, height = 10, units = 'cm', res = 600)
@@ -1856,7 +1891,7 @@ print(pn)
 #dev.off()
 
 # plotting I&N not separate 
-p<-ggplot(df.ag2,aes(x=time_y,fill=class)) + 
+p <- ggplot(df.ag2,aes(x=time_y,fill=class)) + 
   geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
   #facet_wrap(class~., ncol = 2)+ # for separate I and N
   scale_y_continuous(limits = c(0,8), breaks=seq(0, 8, by = 2)) +
@@ -1872,8 +1907,10 @@ p<-ggplot(df.ag2,aes(x=time_y,fill=class)) +
   #theme(legend.position = "none")+
   #scale_fill_brewer(palette = "BrBG")
   scale_fill_viridis_d(option="mako",direction = -1,
-                       name = "population", labels = c("I","total"))+
+                       name = "Compartment", 
+                       labels = c("I","Total \npopulation"))+
   theme(legend.key.size = unit(0.3, 'cm'))+
+  theme_bw() +
   #scale_fill_discrete(name = "population", labels = c("I","total"))
   theme(legend.position=c(.91, .9),legend.box.background = element_rect(colour = "black"))
 print(p)  
@@ -1885,9 +1922,9 @@ print(p)
 # plotting I&N separately using facet
 # classified by the number of iterations
 df.ag2$class <- factor(df.ag2$class, levels = c("I", "N"), 
-                       labels = c("I", "total"))
+                       labels = c("I", "Total \npopulation"))
 
-p2<-ggplot(df.ag2,aes(x=time_y,fill=run)) + 
+p2 <- ggplot(df.ag2,aes(x=time_y)) +  #,fill=run
   geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
   facet_wrap(class~., ncol = 2)+
   scale_y_continuous(limits = c(0,8), breaks=seq(0, 8, by = 2)) +
@@ -1900,8 +1937,9 @@ p2<-ggplot(df.ag2,aes(x=time_y,fill=run)) +
          legend.title=element_text(size=7),
          legend.text = element_text(size = 7),
          axis.text=element_text(size=7))+
-  theme(legend.position = "none")+
-  scale_fill_viridis_d(option="mako",direction = -1)
+  theme_bw() +
+  scale_fill_viridis_d(option="mako",direction = -1)+
+  theme(legend.position = "none")
 
 print(p2)  
 
