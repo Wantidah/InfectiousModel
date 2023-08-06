@@ -92,7 +92,7 @@ model1 =
     
     #sum population based on column name
     results <- data.frame(time, a,  sa,  c)%>% 
-      dplyr::mutate(N = rowSums(across(-c(time), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(-c(time)), na.rm=TRUE))
     return(list(pars = pars, init = init2, time = time, results = results))
     
   }
@@ -175,7 +175,7 @@ model2 =
                         Sc,  Ic,  Ssa, Isa, Sa, Ia)%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(-c(time,S,I), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(-c(time,S,I)), na.rm=TRUE))
     return(list(pars = pars, init = init2, time = time, results = results))
     
   }
@@ -291,7 +291,7 @@ model3 =
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(c(S,E,I), na.rm=TRUE))) 
+      dplyr::mutate(N = rowSums(across(c(S,E,I)), na.rm=TRUE)) 
     
     return(list(pars = pars, init = init2, time = time, results = results))
   }
@@ -413,7 +413,7 @@ model4 =
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
-      dplyr::mutate(N = rowSums(across(c(S,I,R), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,I,R))), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
   }
@@ -557,7 +557,7 @@ model5 =
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(c(S,E,I,R), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
   }
@@ -717,7 +717,7 @@ model6 =
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
-      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
     
