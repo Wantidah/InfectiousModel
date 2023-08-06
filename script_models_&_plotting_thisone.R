@@ -919,7 +919,7 @@ t(t(parameters_m1))
 #> MODEL 2 SI - Anthrax ####
 initials_m2 <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 parameters_m2 <- c(
-  beta_c = 0.0001, beta_sa = 0.0001, beta_a = 0.0001,
+  beta_c = 0.01, beta_sa = 0.01, beta_a = 0.01,
   gamma_c = 1, gamma_sa = 1, gamma_a = 1, #assume that animal die in 1 day
   rho_c = 1, rho_sa = 1,  rho_a = 1,
   epsilon = 2e-5,
@@ -934,7 +934,7 @@ t(t(parameters_m2))
 #> MODEL 3 SEI - Bovine tuberculosis #####
 initials_m3 <- c(Sc = c, Ec = 0, Ic = 0, Ssa = sa, Esa = 0, Isa = 0, Sa = (a-1), Ea = 0, Ia = 1)
 parameters_m3 <- c( 
-  beta_c = 0.043/30, beta_sa = 0.043/30, beta_a = 0.043/30,
+  beta_c = 0.00143, beta_sa = 0.00143, beta_a = 0.00143,
   phi_c = 0.21/30, phi_sa = 0.21/30, phi_a = 0.21/30,
   gamma_c = 0, gamma_sa = 0, gamma_a = 0,
   rho_c = 0, rho_sa = 0, rho_a = 0.1, 
@@ -948,10 +948,11 @@ t(t(parameters_m3))
 
 #>  MODEL 4 SIRS - Hemorrhagic septicemia #####
 initials_m4 <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), Ia = 1, Ra = 0)
+#case fatality (rho) can be changed from  = 5.8% -> 0.53%
 parameters_m4 <- c( 
-  beta_c = 0.33/365,beta_sa = 0.33/365,beta_a = 0.33/365,
+  beta_c = 0.335,beta_sa = 0.335,beta_a = 0.335,
   gamma_c  =1/3, gamma_sa =1/3, gamma_a =1/3,
-  rho_c = 0.9,rho_sa = 0.43,rho_a = 0.43,
+  rho_c = 0.058,rho_sa = 0.058,rho_a = 0.058,
   omega_c = 1/180,omega_sa = 1/180, omega_a = 1/180,
   epsilon = 2e-5,
   mu_b = 0.34/365, 
@@ -968,7 +969,7 @@ t(t(parameters_m4))
 #>  MODEL 5 SEIRS - Lumpy skin disease #####
 initials_m5 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m5 <- c( 
-  beta_c = 0.038, beta_sa = 0.038, beta_a = 0.038, 
+  beta_c = 0.032, beta_sa = 0.032, beta_a = 0.032, #FD
   phi_c = 1/7,phi_sa = 1/7,phi_a = 1/7,
   gamma_c = 1/35, gamma_sa = 1/35,gamma_a = 1/35,
   rho_c = 0.05,rho_sa = 0.03, rho_a = 0.01, 
@@ -981,11 +982,12 @@ parameters_m5 <- c(
   tau=1)
 
 t(t(parameters_m5))
+
 #> MODEL 6 SEIRMS/E - Foot and mouth disease  #####
 initials_m6 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
                  Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
 parameters_m6 <- c( 
-  beta_c = 0.52/365, beta_sa = 0.52/365, beta_a = 0.52/365,
+  beta_c = 0.115, beta_sa = 0.115, beta_a = 0.115, #FD
   phi_c = 1/8, phi_sa = 1/6, phi_a = 1/6,
   gamma_c = 1/5, gamma_sa = 1/5, gamma_a = 1/5,
   rho_c = 0.1, rho_sa = 0.05, rho_a = 0.03, 
@@ -996,9 +998,10 @@ parameters_m6 <- c(
   mu_c = 0.27/365, mu_sa = 0.15/365, mu_a = 0.165/365,
   delta_c = 1/365, delta_sa = 1/(3*365),
   N = sum(initials_m6),
-  tau= 1 )
+  tau=1)
 
 t(t(parameters_m6))
+
 #> MODEL 7 SEIRMS/E - Brucellosis  #####
 initials_m7 <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, Isa = 0, Rsa = 0, 
                  Sa = (a-1), Ea = 0, Ia = 1, Ra = 0)
@@ -1109,6 +1112,7 @@ nam <- c('no_infection',
        'LSD',
        'FMD',
        'Brucellosis')
+
 # convert res_model to data.frame
 for(i in 1:length(s)){
  s[[i]]<-s[[i]]$results %>%
