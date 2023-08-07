@@ -67,7 +67,7 @@ model6=
         rate[22] <- mu_c * Sm
         change[22, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[23] <- epsilon * Sc  
-        change[23, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
+        change[23, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
         rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)
