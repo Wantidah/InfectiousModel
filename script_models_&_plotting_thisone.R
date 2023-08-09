@@ -221,7 +221,7 @@ model3 =
         rate[13] <- phi_sa * Esa 
         change[13, ] <- c(0, 0, 0, 0,-1, 1, 0, 0, 0)
         rate[14] <- rho_sa * gamma_sa * Isa
-        change[14, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0)
+        change[14, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0)
         rate[15] <- delta_sa * Ssa
         change[15, ] <- c(0, 0, 0, -1, 0, 0, 1, 0, 0)  
         rate[16] <- delta_sa * Esa
@@ -363,7 +363,7 @@ model4 =
         rate[25] <- (1-rho_a) * gamma_a * Ia
         change[25, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 1)
         rate[26] <-  rho_a * gamma_a * Ia
-        change[26, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1)
+        change[26, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 0)
         rate[27] <-  omega_a *  Ra
         change[27, ] <- c(0, 0, 0, 0, 0, 0, 1, 0, -1)
         rate[28] <-  mu_a * Sa
