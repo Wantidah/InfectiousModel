@@ -7,7 +7,7 @@ library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
-############## 4) SIRS model  (Hemorrhagic septicemia)  #####
+############## 4) SIRS model  (Hemorrhagic septicemia) DD #####
 model4 =
   function (pars, init, end.time)  {
     init2 <- init
@@ -21,7 +21,7 @@ model4 =
         #calf
         rate[1] <- mu_b * (Sa + Ia + Ra)
         change[1, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)/N
+        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)
         change[2, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
         rate[3] <- (1-rho_c) * gamma_c * Ic
         change[3, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0)
@@ -45,7 +45,7 @@ model4 =
         change[12, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
         
         #subadult
-        rate[13] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
+        rate[13] <- beta_sa * Ssa * (Ic+Isa+Ia)
         change[13, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[14]<- (1-rho_sa) * gamma_sa * Isa
         change[14, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0)
@@ -69,12 +69,12 @@ model4 =
         change[23, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         
         #adult
-        rate[24] <- beta_a * Sa * (Ic+Isa+Ia)/N
+        rate[24] <- beta_a * Sa * (Ic+Isa+Ia)
         change[24, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0)
         rate[25] <- (1-rho_a) * gamma_a * Ia
         change[25, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 1)
         rate[26] <-  rho_a * gamma_a * Ia
-        change[26, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1)
+        change[26, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 0)
         rate[27] <-  omega_a *  Ra
         change[27, ] <- c(0, 0, 0, 0, 0, 0, 1, 0, -1)
         rate[28] <-  mu_a * Sa
@@ -124,7 +124,7 @@ model4 =
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
-      dplyr::mutate(N = rowSums(across(c (S,I,R), na.rm=TRUE))) 
+      dplyr::mutate(N = rowSums(across(c (S,I,R)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
     
@@ -144,9 +144,9 @@ initials <- c(Sc = c,  Ic = 0, Rc = 0, Ssa = sa, Isa = 0, Rsa = 0, Sa = (a-1), I
 
 #SIRS parameter
 parameters <- c( 
-  beta_c = 0.33/365,
-  beta_sa = 0.33/365,
-  beta_a = 0.33/365,
+  beta_c = 0.33,
+  beta_sa = 0.33,
+  beta_a = 0.33,
   gamma_c  =1/3,
   gamma_sa =1/3,
   gamma_a =1/3,

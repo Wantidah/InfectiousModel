@@ -7,8 +7,8 @@ library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
-############## 6) SEIRMS/E MODEL Foot and mouth disease ######
-model6=
+############## MODEL 6 SEIRMS/E - Foot and mouth disease FD #####
+model6 =
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -24,7 +24,7 @@ model6=
         change[1, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[2] <- (1-alpha) * mu_bI * Ia 
         change[2, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)
+        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)/N
         change[3, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[4] <- phi_c * Ec 
         change[4, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -50,8 +50,10 @@ model6=
         change[14, ] <- c(0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[15] <- mu_c * Rc
         change[15, ] <- c(0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        #Ia produce Ic
         rate[16] <- alpha * mu_bI * Ia
         change[16, ] <- c(0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        #Ra produce M (maternal derived immunity calf)
         rate[17] <- mu_b * Ra
         change[17, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0)
         rate[18] <- omega_m * M
@@ -62,15 +64,15 @@ model6=
         rate[20] <- (delta_c * Sc) + (omega_m * M)  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
-        rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
+        rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
         change[21, ] <- c(0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[22] <- mu_c * Sm
         change[22, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[23] <- epsilon * Sc  
-        change[23, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
+        change[23, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
-        rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)
+        rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[24, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[25] <- phi_sa * Esa 
         change[25, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
@@ -102,7 +104,7 @@ model6=
         # adult
         rate[38] <- epsilon * Sa
         change[38, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0) 
-        rate[39] <- beta_a * Sa * (Ic+Isa+Ia)
+        rate[39] <- beta_a * Sa * (Ic+Isa+Ia)/N
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
         change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0)
@@ -155,7 +157,6 @@ model6=
       Sm <- c(Sm, init["Sm"])
       init <- tmp
     }
-    
     #sum population based on column name
     results<-data.frame(time, 
                         Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra, M, Sm)%>% 
@@ -163,11 +164,11 @@ model6=
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>%
-      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R,M)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
- 
-    }
+    
+  }
 
 #gaur population
 N=300
@@ -183,35 +184,33 @@ initials <- c(Sc = c, Ec = 0, Ic = 0, Rc = 0, M = 0, Sm = 0, Ssa = sa, Esa = 0, 
 
 #SEIRM FMD parameter
 parameters <- c( 
-  beta_c = 0.52/365,
-  beta_sa = 0.52/365,
-  beta_a = 0.52/365,
-  phi_c = 1/8,
-  phi_sa = 1/6,
-  phi_a = 1/6,
-  gamma_c = 1/5,
-  gamma_sa = 1/5,
-  gamma_a = 1/5,
-  rho_c = 0.1,
-  rho_sa = 0.05,
-  rho_a = 0.03, 
-  alpha = 0.5,
-  omega_c = (1/120),
+  beta_c   = 0.115, 
+  beta_sa  = 0.115, 
+  beta_a   = 0.115,
+  phi_c    = 1/8, 
+  phi_sa   = 1/6, 
+  phi_a    = 1/6,
+  gamma_c  = 1/5, 
+  gamma_sa = 1/5, 
+  gamma_a  = 1/5,
+  rho_c    = 0.1, 
+  rho_sa   = 0.05, 
+  rho_a    = 0.03, 
+  alpha    = 0.5,
+  omega_c  = (1/120), 
   omega_sa =  (1/120), 
-  omega_a = (1/565),
-  omega_m = (1/144),
-  epsilon = 2e-5,
-  mu_b = 0.34/365, 
-  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10%  (assume)
-  mu_c = 0.27/365, 
-  mu_sa = 0.15/365,
-  mu_a = 0.165/365,
-  delta_c = 1/365,
+  omega_a  = (1/565), 
+  omega_m  = (1/144),
+  epsilon  = 2e-5,
+  mu_b     = 0.34/365, 
+  mu_bI    = (0.34/365)*(0.9),
+  mu_c     = 0.27/365, 
+  mu_sa    = 0.15/365, 
+  mu_a     = 0.165/365,
+  delta_c  = 1/365, 
   delta_sa = 1/(3*365),
   N = sum(initials),
-  tau=1
-)
-
+  tau=1)
 # TEST
 end.time <- 2*365 #predict for ... years
 

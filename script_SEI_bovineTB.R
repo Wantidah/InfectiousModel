@@ -22,7 +22,7 @@ model3=
         #calf
         rate[1] <- mu_b * (Sa + Ea) 
         change[1, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)/N
+        rate[2] <- beta_c * Sc * (Ic+Isa+Ia)
         change[2, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
         rate[3] <- phi_c * Ec 
         change[3, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0)
@@ -44,12 +44,12 @@ model3=
         change[11, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
-        rate[12] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
+        rate[12] <- beta_sa * Ssa * (Ic+Isa+Ia)
         change[12, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[13] <- phi_sa * Esa 
         change[13, ] <- c(0, 0, 0, 0,-1, 1, 0, 0, 0)
         rate[14] <-  rho_sa * gamma_sa * Isa
-        change[14, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0)
+        change[14, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0)
         rate[15] <-  delta_sa * Ssa
         change[15, ] <- c(0, 0, 0, -1, 0, 0, 1, 0, 0)  
         rate[16] <-  delta_sa * Esa
@@ -66,7 +66,7 @@ model3=
         change[21, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         
         # adult
-        rate[22] <- beta_a * Sa * (Ic+Isa+Ia)/N
+        rate[22] <- beta_a * Sa * (Ic+Isa+Ia)
         change[22, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0)
         rate[23] <- phi_a * Ea 
         change[23, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 1)
@@ -80,6 +80,7 @@ model3=
         change[27, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[28] <- epsilon * Sa
         change[28, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0)
+        
         # birth rate from infected mother 
         rate[29] <- mu_bI * Ia
         change[29, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -120,7 +121,7 @@ model3=
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(c(S,E,I), na.rm=TRUE))) 
+      dplyr::mutate(N = rowSums(across(c(S,E,I)), na.rm=TRUE)) 
      
      return(list(pars = pars, init = init2, time = time, results = results))
 }
@@ -172,12 +173,13 @@ min(subset(res_model3$results,I==0)$time)
 min(subset(res_model3$results, N==0)$time)
 
 #convert to data.frame, change days -> years, and melt class into one column
-r3<-res_model3$results %>%
+r3<-res_model3fd$results %>%
   mutate(time_y = time/365) %>%
   melt(id.vars = c('time','time_y'),
        value.name = 'value', variable.name = 'class')
 str(r3)
 
+r3<-s[[2]]
 #check min,max,mean
 r3 |> group_by(class) |>
   summarise(Max=max(value),

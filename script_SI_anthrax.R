@@ -7,7 +7,7 @@ library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
-############## 2) SI model (Anthrax)  #####
+############## 2) SI model (Anthrax)  FD #####
 model2=
   function (pars, init, end.time)  {
     init2 <- init
@@ -87,7 +87,7 @@ model2=
       
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(-c(time,S,I), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(-c(time,S,I)), na.rm=TRUE))
     
     return(list(pars = pars, init = init2, time = time, results = results))
   }
@@ -106,13 +106,13 @@ initials <- c(Sc = c, Ic = 0, Ssa = sa, Isa = 0, Sa = (a-1), Ia = 1 )
 
 #SI parameters
 parameters <- c(
-  beta_c = 0.0001,
+  beta_c = 0.01,
   gamma_c = 1,
   rho_c = 1,
-  beta_sa = 0.0001,
+  beta_sa = 0.01,
   gamma_sa = 1,
   rho_sa = 1,
-  beta_a = 0.0001,
+  beta_a = 0.01,
   gamma_a = 1,
   rho_a = 1,
   epsilon = 2e-5,

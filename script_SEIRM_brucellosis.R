@@ -7,7 +7,7 @@ library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
-############## 7) SEIRMS/E MODEL Brucellosis ######
+############## MODEL 7 SEIRMS/E - Bovine brucellosis FD #####
 model7=
   function (pars, init, end.time)  {
     init2 <- init
@@ -28,21 +28,21 @@ model7=
         change[3, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[4] <- phi_c * Ec 
         change[4, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[5] <-  (1-rho_c) * gamma_c * Ic
+        rate[5] <- (1-rho_c) * gamma_c * Ic
         change[5, ] <- c(0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[6] <-  rho_c * gamma_c * Ic
+        rate[6] <- rho_c * gamma_c * Ic
         change[6, ] <- c(0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[7] <-  omega_c *  Rc
+        rate[7] <- omega_c *  Rc
         change[7, ] <- c(1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[8] <-  delta_c * Sc
         change[8, ] <- c(-1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
-        rate[9] <-  delta_c * Ec
+        rate[9] <- delta_c * Ec
         change[9, ] <- c(0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0) 
-        rate[10] <-  delta_c * Ic
+        rate[10] <- delta_c * Ic
         change[10, ] <- c(0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0) 
-        rate[11] <-  delta_c * Rc
+        rate[11] <- delta_c * Rc
         change[11, ] <- c(0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0) 
-        rate[12] <-  mu_c * Sc
+        rate[12] <- mu_c * Sc
         change[12, ] <- c(-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
         rate[13] <- mu_c * Ec
         change[13, ] <- c(0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -67,28 +67,28 @@ model7=
         rate[22] <- mu_c * Sm
         change[22, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         rate[23] <- epsilon * Sc  
-        change[23, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
+        change[23, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
         rate[24] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[24, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[25] <- phi_sa * Esa 
         change[25, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0)
-        rate[26] <-  (1-rho_sa) * gamma_sa * Isa
+        rate[26] <- (1-rho_sa) * gamma_sa * Isa
         change[26, ] <- c(0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0)
         rate[27] <-  rho_sa * gamma_sa * Isa
         change[27, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0)
-        rate[28] <-  omega_sa *  Rsa
+        rate[28] <- omega_sa * Rsa
         change[28, ] <- c(0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0)
-        rate[29] <-  delta_sa * Ssa
+        rate[29] <- delta_sa * Ssa
         change[29, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0, 0)  
-        rate[30] <-  delta_sa * Esa
+        rate[30] <- delta_sa * Esa
         change[30, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0, 0) 
         rate[31] <-  delta_sa *  Isa
         change[31, ] <- c(0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0) 
         rate[32] <-  delta_sa *  Rsa
         change[32, ] <- c(0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0) 
-        rate[33] <-  mu_sa * Ssa
+        rate[33] <- mu_sa * Ssa
         change[33, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0)  
         rate[34] <- mu_sa * Esa
         change[34, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -106,20 +106,20 @@ model7=
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
         change[40, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0)
-        rate[41] <-   (1- rho_a) * gamma_a * Ia
+        rate[41] <- (1- rho_a) * gamma_a * Ia
         change[41, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0)
-        rate[42] <-   rho_a * gamma_a * Ia
+        rate[42] <- rho_a * gamma_a * Ia
         change[42, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0)
-        rate[43] <-  omega_a *  Ra
+        rate[43] <- omega_a *  Ra
         change[43, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0)
         rate[44] <-  mu_a * Sa
         change[44, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0) 
         rate[45] <- mu_a * Ea
-        change[45, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0) 
+        change[45, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0) 
         rate[46] <- mu_a * Ia
         change[46, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0) 
         rate[47] <- mu_a * Ra
-        change[47, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
+        change[47, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0) 
         
         init <- c(Sc = Sc, Ec = Ec, Ic = Ic, Rc = Rc, 
                   Ssa = Ssa, Esa = Esa, Isa = Isa, Rsa = Rsa,
@@ -157,8 +157,8 @@ model7=
     }
     
     #sum population based on column name
-    results<-data.frame(time, 
-                        Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
+    results <- data.frame(time, 
+                          Sc, Ec, Ic, Rc, Ssa, Esa, Isa, Rsa, Sa, Ea, Ia, Ra,  M, Sm )%>% 
       dplyr::mutate(S = rowSums(across(c(Sa,Ssa,Sc,Sm)), na.rm=TRUE))%>% 
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
@@ -168,8 +168,6 @@ model7=
     return (list(pars = pars, init = init2, time = time, results = results))
     
   }
-
-
 # gaur population
 N=300
 

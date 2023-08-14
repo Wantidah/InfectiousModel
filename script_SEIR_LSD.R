@@ -7,8 +7,8 @@ library(stringr)
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
-############## 5) SEIR MODEL  Lumpy skin disease ######
-model5=
+############## MODEL 5 SEIRS - Lumpy skin disease DD #####
+model5 =
   function (pars, init, end.time)  {
     init2 <- init
     Equations <- function(pars, init, end.time) {
@@ -24,7 +24,7 @@ model5=
         change[1, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[2] <- mu_bI * Ia 
         change[2, ] <- c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)/N
+        rate[3] <- beta_c * Sc * (Ic+Isa+Ia)
         change[3, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         rate[4] <- phi_c * Ec 
         change[4, ] <- c(0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
@@ -54,7 +54,7 @@ model5=
         change[16, ] <- c(-1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         
         # saubadult
-        rate[17] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
+        rate[17] <- beta_sa * Ssa * (Ic+Isa+Ia)
         change[17, ] <- c(0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0)
         rate[18] <- phi_sa * Esa 
         change[18, ] <- c(0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0)
@@ -86,7 +86,7 @@ model5=
         # adult
         rate[31] <- epsilon * Sa
         change[31, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0) 
-        rate[32] <- beta_a * Sa * (Ic+Isa+Ia)/N
+        rate[32] <- beta_a * Sa * (Ic+Isa+Ia)
         change[32, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0)
         rate[33] <- phi_a * Ea 
         change[33, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0)
@@ -104,7 +104,7 @@ model5=
         change[39, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0) 
         rate[40] <- mu_a * Ra
         change[40, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1) 
-  
+        
         init <- c(Sc = Sc, Ec = Ec, Ic = Ic, Rc = Rc, 
                   Ssa = Ssa, Esa = Esa, Isa = Isa, Rsa = Rsa,
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra)
@@ -146,34 +146,39 @@ model5=
       dplyr::mutate(E = rowSums(across(c(Ea,Esa,Ec)), na.rm=TRUE))%>% 
       dplyr::mutate(I = rowSums(across(c(Ia,Isa,Ic)), na.rm=TRUE))%>% 
       dplyr::mutate(R = rowSums(across(c(Ra,Rsa,Rc)), na.rm=TRUE))%>% 
-      dplyr::mutate(N = rowSums(across(c(S,E,I,R), na.rm=TRUE)))
+      dplyr::mutate(N = rowSums(across(c(S,E,I,R)), na.rm=TRUE))
     
     return (list(pars = pars, init = init2, time = time, results = results))
-   
   }
 
 #SEIR parameter
+## m5dd: beta 0.008 ####
 parameters <- c( 
-  beta_c = 0.038, 
-  beta_sa = 0.038, 
-  beta_a = 0.038, 
-  phi_c = 1/7,
-  phi_sa = 1/7,
-  phi_a = 1/7,
-  gamma_c = 1/35, 
+  beta_c   = 0.008, 
+  beta_sa  = 0.008, 
+  beta_a   = 0.008, 
+  phi_c    = 1/7,
+  phi_sa   = 1/7,
+  phi_a    = 1/7,
+  gamma_c  = 1/35, 
   gamma_sa = 1/35,
-  gamma_a = 1/35,
-  rho_c = 0.05,
-  rho_sa = 0.03, 
-  rho_a = 0.01, 
-  omega_c = 1/180, omega_sa =  1/180, omega_a = 1/180,
-  epsilon = 2e-5,
-  mu_b = 0.34/365,  mu_bI = (0.34/365)*(0.9), #Ia birth rate reduce by = 10% (assume)   
-  mu_c = 0.27/365,  mu_sa = 0.15/365, mu_a = 0.165/365,
-  delta_c = 1/365, delta_sa = 1/(3*365),
+  gamma_a  = 1/35,
+  rho_c    = 0.05,
+  rho_sa   = 0.03, 
+  rho_a    = 0.01, 
+  omega_c  = 1/180, 
+  omega_sa = 1/180, 
+  omega_a  = 1/180,
+  epsilon  = 2e-5,
+  mu_b     = 0.34/365,  
+  mu_bI    = (0.34/365)*(0.9), 
+  mu_c     = 0.27/365,  
+  mu_sa    = 0.15/365, 
+  mu_a     = 0.165/365,
+  delta_c  = 1/365, 
+  delta_sa = 1/(3*365),
   N = sum(initials),
   tau=1)
-
 # gaur population
 N=300
 #calf:subadult:adult ratio
