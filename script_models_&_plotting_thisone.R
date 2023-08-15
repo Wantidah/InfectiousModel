@@ -18,6 +18,8 @@
 
 # Script Outline:
 # 1) Set up the infectious disease model's function
+    # - FD = Frequency-dependent model
+    # - DD = Density-dependent model
 # 2) Input parameters
 # 3) Single run for all the models
 # 4) Multiple run for all the models 
@@ -89,8 +91,7 @@ model1 =
         init <- c(c = c, sa = sa, a = a)
         for (i in 1:6) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -130,7 +131,7 @@ model2dd =
         change[1, ] <- c(1, 0, 0, 0, 0, 0)
         rate[2] <- beta_c * Sc * (Ic+Isa+Ia)
         change[2, ] <- c(-1, 1, 0, 0, 0, 0)
-        rate[3] <- gamma_c * Ic * rho_c
+        rate[3] <- Ic * rho_c
         change[3, ] <- c(0, -1, 0, 0, 0, 0)
         rate[4] <- mu_c * Sc
         change[4, ] <- c(-1, 0, 0, 0, 0, 0)
@@ -142,7 +143,7 @@ model2dd =
         #saubadult
         rate[7] <- beta_sa * Ssa * (Ic+Isa+Ia)
         change[7, ] <- c(0, 0, -1, 1, 0, 0)    
-        rate[8] <-  gamma_sa * Isa * rho_sa
+        rate[8] <- Isa * rho_sa
         change[8, ] <- c(0, 0, 0, -1, 0, 0)    
         rate[9] <- mu_sa * Ssa
         change[9, ] <- c(0, 0, -1, 0, 0, 0)
@@ -154,7 +155,7 @@ model2dd =
         #adult
         rate[12] <- beta_a * Sa * (Ic+Isa+Ia)
         change[12, ] <- c(0, 0, 0, 0, -1, 1)    
-        rate[13] <-  gamma_a * Ia *rho_a
+        rate[13] <- Ia *rho_a
         change[13, ] <- c(0, 0, 0, 0, 0, -1)    
         rate[14] <- mu_a * Sa
         change[14, ] <- c(0, 0, 0, 0, -1, 0)
@@ -213,7 +214,7 @@ model2fd =
         change[1, ] <- c(1, 0, 0, 0, 0, 0)
         rate[2] <- beta_c * Sc * (Ic+Isa+Ia)/N
         change[2, ] <- c(-1, 1, 0, 0, 0, 0)
-        rate[3] <- gamma_c * Ic * rho_c
+        rate[3] <- Ic * rho_c
         change[3, ] <- c(0, -1, 0, 0, 0, 0)
         rate[4] <- mu_c * Sc
         change[4, ] <- c(-1, 0, 0, 0, 0, 0)
@@ -225,7 +226,7 @@ model2fd =
         #saubadult
         rate[7] <- beta_sa * Ssa * (Ic+Isa+Ia)/N
         change[7, ] <- c(0, 0, -1, 1, 0, 0)    
-        rate[8] <-  gamma_sa * Isa * rho_sa
+        rate[8] <- Isa * rho_sa
         change[8, ] <- c(0, 0, 0, -1, 0, 0)    
         rate[9] <- mu_sa * Ssa
         change[9, ] <- c(0, 0, -1, 0, 0, 0)
@@ -237,7 +238,7 @@ model2fd =
         #adult
         rate[12] <- beta_a * Sa * (Ic+Isa+Ia)/N
         change[12, ] <- c(0, 0, 0, 0, -1, 1)    
-        rate[13] <-  gamma_a * Ia *rho_a
+        rate[13] <-  Ia *rho_a
         change[13, ] <- c(0, 0, 0, 0, 0, -1)    
         rate[14] <- mu_a * Sa
         change[14, ] <- c(0, 0, 0, 0, -1, 0)
@@ -570,11 +571,11 @@ model4dd =
         change[19, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 1) 
         rate[20] <-  mu_sa * Ssa
         change[20, ] <- c(0, 0, 0, -1, 0, 0, 0, 0, 0)  
-        rate[21] <- mu_sa * Isa
+        rate[21] <-  mu_sa * Isa
         change[21, ] <- c(0, 0, 0, 0, -1, 0, 0, 0, 0)
-        rate[22] <- mu_sa * Rsa
+        rate[22] <-  mu_sa * Rsa
         change[22, ] <- c(0, 0, 0, 0, 0, -1, 0, 0, 0)
-        rate[23] <- epsilon * Ssa
+        rate[23] <-  epsilon * Ssa
         change[23, ] <- c(0, 0, 0, -1, 1, 0, 0, 0, 0)
         
         #adult
@@ -598,10 +599,10 @@ model4dd =
         init <- c(Sc = Sc, Ic = Ic, Rc = Rc, 
                   Ssa = Ssa, Isa = Isa,  Rsa = Rsa, 
                   Sa = Sa, Ia = Ia, Ra = Ra)
+        
         for (i in 1:31) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -722,8 +723,7 @@ model4fd =
                   Sa = Sa, Ia = Ia, Ra = Ra)
         for (i in 1:31) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -864,8 +864,7 @@ model5dd =
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra)
         for (i in 1:40) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -1009,8 +1008,7 @@ model5fd =
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra)
         for (i in 1:40) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -1146,7 +1144,7 @@ model6dd =
         
         # adult
         rate[38] <- epsilon * Sa
-        change[38, ] <-  c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0) 
+        change[38, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0) 
         rate[39] <- beta_a * Sa * (Ic+Isa+Ia)
         change[39, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0)
         rate[40] <- phi_a * Ea 
@@ -1171,8 +1169,7 @@ model6dd =
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra, M = M, Sm = Sm)
         for (i in 1:47) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -1333,8 +1330,7 @@ model6fd =
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra, M = M, Sm = Sm)
         for (i in 1:47) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -1496,8 +1492,7 @@ model7dd=
                   Sa = Sa, Ea = Ea, Ia = Ia, Ra = Ra, M = M, Sm = Sm)
         for (i in 1:47) {
           num <- rpois(1, rate[i] * tau)
-          num.min <- min(num, init[which(change[i, ] < 
-                                           0)])
+          num.min <- min(num, init[which(change[i, ] < 0)])
           init <- init + change[i, ] * num.min
         }
         return(init)
@@ -1702,7 +1697,8 @@ model7fd=
   }
 
 #############  2) Set up parameters before running ##################  
-# setting end time and number of replications (n_rep)  #############
+# setting end time and number of replications (n_rep)  
+# in the main text we used end_time = 100 * 365, n_rep = 100
 end.time <- 2 * 365
 n_rep <- 2
 
@@ -3242,7 +3238,7 @@ nam<-c('no_infection',
        'FMD_FD_beta0115', 'FMD_DD_beta4e-4',
        'FMD_FD_beta21',   'FMD_DD_beta007',
          
-       'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta0016',
+       'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta00016',
        'Brucellosis_FD_beta0005', 'Brucellosis_DD_beta1-e5')
 
 # Single: convert res_model to data.frame
@@ -3298,11 +3294,11 @@ for (i in 1:length(sim_rep_m)) {
 m67<-m[32:43] 
 
 head(m67[[1]])
+
 for (i in 1:length(m67)) {
   m67[[i]]<-m67[[i]]%>% 
     relocate(M,.after = R) 
 } 
-
 
 # check columns before plotting: the population class should be in an order like SIRN, SIN, SIERN, if not back to the relocate
 for (i in 1:length(m67)){
@@ -3528,7 +3524,6 @@ for (i in 1:length(s1)) {
 print(p)
 
 # plot multiple runs ###### 
-
 # Load multiple runs .rds files and create a list 
 # this can skip #######
 ml<-list("df_m1_no_infection_100runs.rds",
@@ -3541,6 +3536,7 @@ ml<-list("df_m1_no_infection_100runs.rds",
          "df_m7_Brucellosis_FD_beta5e-6_100runs.rds")
 
 m = lapply(ml, readRDS)
+#-----------------------------------------------
 str(m)
 
 # select 100 simulations  ---------
@@ -3559,7 +3555,6 @@ for (i in 1:length(m1)){
 }
 
 pl <- list()
-
 for (i in 1:length(m1)) {
   # Condition
   model <- m1[[i]]$model
@@ -3829,8 +3824,8 @@ pp2 <- wrap_plots(pl, ncol=1) & plot_annotation(title = '100 simulations') & the
 pp3<-(wrap_elements(pp1)|wrap_elements(pp2))
 pp4<-wrap_elements(pp3 + plot_layout(widths = c(0.75,0.98)))
 pp4
-#ggsave("patchwork_allmodels8.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
 
+#ggsave("patchwork_allmodels8.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
 
 # Fig. 2 : compare LSD & FMD & Brucellosis ######
 # separate small panel: LSD, FMD & Brucellosis DD, FD & DD* (rescale) 
@@ -3841,16 +3836,16 @@ m2<-list(m[[28]],m[[30]],m[[31]], #LSD: DD beta = 0.008, FD beta = 0.032, DD res
          m[[40]],m[[42]],m[[43]]) #Brucellosis: DD beta = 5e-6, FD beta = 5e-3, DD rescale 5e-3/N
 
 # > OR Need to import the files (see GitHub for more details) 
-m2<-lapply(c("df_m5_LSD_DD_beta008_100runs.rds", #beta = 0.008
+m2<-lapply(c("df_m5_LSD_DD_beta0008_100runs.rds", #beta = 0.008
              "df_m5_LSD_FD_beta0032_100runs.rds", #beta = 0.032
              "df_m5_LSD_DD_beta1e-4_100runs.rds", #LSD FD rescale 0.032/N = 0.0001
              
              "df_m6_FMD_DD_beta026_100runs.rds",  #beta = 0.026
              "df_m6_FMD_FD_beta0115_100runs.rds", #beta = 0.115
-             "df_m6_FMD_DD_beta3e-4_100runs.rds", #FMD FD rescale 0.115/N = 0.00038
+             "df_m6_FMD_DD_beta4e-4_100runs.rds", #FMD FD rescale 0.115/N = 0.00038
              
              "df_m7_Brucellosis_DD_beta5e-6_100runs.rds", # beta = 5e-6
-             "df_m7_Brucellosis_FD_beta5e-3_100runs.rds", # beta = 5e-3
+             "df_m7_Brucellosis_FD_beta0005_100runs.rds", # beta = 5e-3
              "df_m7_Brucellosis_DD_beta1-e5_100runs.rds"), #Brucellosis FD rescale 5.5e-3/N = 1-e5
            readRDS)  
 
@@ -4133,13 +4128,15 @@ for (i in 1:length(s)) {
 
 # multiple runs
 # add disease name
-nam_dis<-c("no infection", 
+nam_dis<-c("No infection", 
            "Anthrax","Anthrax",
-           "bTB","bTB","bTB","bTB","bTB","bTB","bTB","bTB",
+           "bTB","bTB","bTB","bTB",
+           "bTB","bTB","bTB","bTB",
            "HS","HS","HS","HS", "HS","HS","HS","HS",
            "HS","HS","HS","HS", "HS","HS","HS","HS",
            "LSD","LSD","LSD","LSD",
-           "FMD","FMD","FMD","FMD","FMD","FMD","FMD","FMD",
+           "FMD","FMD","FMD","FMD",
+           "FMD","FMD","FMD","FMD",
            "Brucellosis","Brucellosis","Brucellosis","Brucellosis")
 
 mx<-list()
@@ -4167,61 +4164,6 @@ dft <- mx2 %>%
 
 View(dft)
 
-dft$model3 <- recode_factor(dft$model, 
-                                no_infection = "No infection",
-                                
-                                'Anthrax_DD_beta3e-5' = 'Anthrax DD',
-                                'Anthrax_FD_beta001' = 'Anthrax FD',
-                                
-                                'Brucellosis_DD_beta1-e5' = 'Brucellosis DD',
-                                'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
-                                'Brucellosis_FD_beta0016' = 'Brucellosis FD',
-                                'Brucellosis_FD_beta0005' = 'Brucellosis FD',
-                                
-                                'bTB_DD_beta00014' = 'bTB DD',
-                                'bTB_DD_beta27e-5' = 'bTB DD',                           
-                                'bTB_DD_beta2e-5'  = 'bTB DD',
-                                'bTB_DD_beta4e-6'  = 'bTB DD',
-                                'bTB_FD_beta00014' = 'bTB FD',
-                                'bTB_FD_beta0008'  = 'bTB FD',
-                                'bTB_FD_beta04'    = 'bTB FD',
-                                'bTB_FD_beta00063'  = 'bTB FD',
-                                
-                                'FMD_DD_beta0026'   = 'FMD DD',
-                                'FMD_DD_beta21'     = 'FMD DD',
-                                'FMD_DD_beta4e-4'   = 'FMD DD',
-                                'FMD_DD_beta007'   = 'FMD DD',
-                                'FMD_FD_beta0115'   = 'FMD FD',
-                                'FMD_FD_beta21'     = 'FMD FD',
-                                'FMD_FD_beta7'     = 'FMD DD',
-                                'FMD_FD_beta6552'   = 'FMD FD',
-                                
-                                'HS_DD_beta03death005' = 'HS DD',
-                                'HS_DD_beta03death05'  = 'HS DD',
-                                'HS_DD_beta05death005' = 'HS DD',
-                                'HS_DD_beta05death05'  = 'HS DD',
-                                'HS_DD_beta0002death005' = 'HS DD',
-                                'HS_DD_beta0001death005' = 'HS DD',
-                                'HS_DD_beta0002death05' =  'HS DD',
-                                'HS_DD_beta0001death05' = 'HS DD',
-                                'HS_FD_beta03death005' = 'HS FD',
-                                'HS_FD_beta03death05'  = 'HS FD',
-                                'HS_FD_beta05death005' = 'HS FD',
-                                'HS_FD_beta05death05' = 'HS FD',
-                                'HS_FD_beta100death005' = 'HS FD',
-                                'HS_FD_beta100death05'  = 'HS FD',
-                                'HS_FD_beta165death005' = 'HS FD',
-                                'HS_FD_beta165death05' = 'HS FD',
-                                'LSD_DD_beta0008' = 'LSD DD', 
-                                'LSD_DD_beta1e-4' = 'LSD DD',
-                                'LSD_FD_beta0032'    = 'LSD FD',
-                                'LSD_FD_beta2'      = 'LSD FD' )
-
-table(dft$model3)
-dft$model<-as.factor(dft$model)
-dft$model2<-as.factor(dft$model2)
-dft$model3<-as.factor(dft$model3)
-str(dft)
 #calculating mean,median by models
 dft2<-dft|>
   group_by(model)|>
@@ -4231,10 +4173,10 @@ dft2<-dft|>
 print(dft2,n=43) #n = 43, number of models
 
 
-write.csv(dft2, "df_ndiff_allmodel.csv")
+#write.csv(dft2, "df_ndiff_allmodel.csv")
 
 ## load df (in case we import the files) ----------------------------------------------------------------------
-dft <- read.csv("./df_ndiff_allmodel.csv")
+#dft <- read.csv("./df_ndiff_allmodel.csv")
 #str(dft)
 
 table(dft$run) # check this
@@ -4250,46 +4192,48 @@ want <- c('Anthrax_DD_beta3e-5','Anthrax_FD_beta001',
           )
 
 dft_dis<-dft|>filter(model %in% want)
-dft_dis$model3<- recode_factor(dft_dis$model,
+table(dft$model3)
+dft$model<-as.factor(dft$model)
+dft$model2<-as.factor(dft$model2)
+dft$model3<-as.factor(dft$model3)
+str(dft)
+dft_dis$model4<- recode_factor(dft_dis$model,
+                               'LSD_FD_beta0032' = 'LSD FD',
+                               'LSD_DD_beta1e-4' = 'LSD DD*',
+                               'FMD_DD_beta0026' = 'FMD DD',
+                               'FMD_FD_beta0115' = 'FMD FD',
+                               'FMD_DD_beta4e-4' =  'FMD DD*',
+                               'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
+                               'Brucellosis_FD_beta0005' = 'Brucellosis FD',
+                               'Brucellosis_DD_beta1-e5' = 'Brucellosis DD*',
                                    'Anthrax_FD_beta001'  =  'Anthrax FD',
                                    'Anthrax_DD_beta3e-5' = 'Anthrax DD*',
                                    'HS_DD_beta05death05' ='HS DD',
                                    'HS_FD_beta03death005' = 'HS FD', #mortality 5.8%
                                    'bTB_DD_beta00014' = 'bTB DD', 
                                    'bTB_FD_beta00063' =  'bTB FD', 
-                                   'LSD_DD_beta0008' = 'LSD DD',
-                                   'LSD_FD_beta0032' = 'LSD FD',
-                                   'LSD_DD_beta1e-4' = 'LSD DD*',
-                                   'FMD_DD_beta0026' = 'FMD DD',
-                                   'FMD_FD_beta0115' = 'FMD FD',
-                                   'FMD_DD_beta4e-4' =  'FMD DD*',
-                                   'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
-                                   'Brucellosis_FD_beta0005' = 'Brucellosis FD',
-                                   'Brucellosis_DD_beta1-e5' = 'Brucellosis DD*'
-                                  )
+                                   'LSD_DD_beta0008' = 'LSD DD'
+                                                                    )
 View(dft_dis)
+
 dft_dis$model
 
 no <- dft %>% filter(model3 %in% c("No infection")) 
 View(no)
+
 no$model
 
-nam_bp <- c(
-  "LSD",
-  "FMD",
-  "Brucellosis",
-  "Anthrax",
-  "HS",
-  "bTB")
+nam_bp <- c("LSD","FMD","Brucellosis",
+            "Anthrax","HS","bTB")
 
-plt<-list()
-#### 1) ggstat facet  
+#### use ggstat facet  
 #Anthrax,HS,bTB, LSD,FMD,Bru
 plt<-list()
-for (i in 1:length(nam_bp)){
+
+for (i in 1:6) {
 plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
     grouped_ggbetweenstats(
-      x=model3,
+      x=model4,
       y=Ndiff,
       grouping.var = model2,
       k=0,
@@ -4305,8 +4249,6 @@ plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
                                    min.segment.length = 0),
       xlab = "",
       ylab = "Population change (%)")+
-    #package = "ghibli",
-    #palette = "TotoroMedium")+
     geom_hline(yintercept=0, linetype="dashed", color = "black")+
     ggplot2::scale_y_continuous(limits = c(-200, 500), 
                                 breaks = seq(from = -200, to = 500, by = 100)) +
@@ -4317,7 +4259,7 @@ plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
           axis.text = element_text(size = 15),
           axis.title = element_text(size = 15),
           strip.text = element_text(size = 15))
-}
+ }
 
 plt_no <- no %>% 
   ggbetweenstats(
@@ -4341,10 +4283,10 @@ plt_no <- no %>%
   ggplot2::scale_y_continuous(limits = c(-200, 500), 
                               breaks = seq(from = -200, to = 500, by = 100))+
   scale_colour_manual(values = c("#44A57CFF")) +
-  theme(plot.title = element_text(size = 20),
-        axis.text = element_text(size = 17),
-        axis.title = element_text(size = 17),
-        strip.text = element_text(size = 20))
+  theme(plot.title = element_text(size = 17),
+        axis.text = element_text(size = 15),
+        axis.title = element_text(size = 15),
+        strip.text = element_text(size = 15))
 
 plt1<-wrap_elements((plt[[1]]|plt[[2]]|plt[[3]]) & plot_annotation(subtitle = "B)") & 
                                                       theme(title = element_text(size = 18)))
@@ -4354,12 +4296,11 @@ plt2<-wrap_elements((plt_no|plt[[4]]|plt[[5]]|plt[[6]]) &
                                                              plot.title = element_text(face = 'bold')))     
 pbox<-(plt2/plt1)
 pbox
-ggsave("gaur_ndiff_test.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
+#ggsave("gaur_ndiff_test.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
 
 # Done for the main text ...
 
 # Figures in the supplementary materials --------------------------------------------
-
 ## Fig. Anthrax ####
 #'Anthrax_FD_beta01','Anthrax_DD_beta3e-5'
 a1 <- list(s[[2]], s[[3]])
@@ -4520,8 +4461,8 @@ p_btb2<-wrap_plots(b2, ncol=2) +
   theme(legend.position = "bottom")
 p_btb2
 
-ggsave("s_btb_single.png",p_btb1, width = 25, height = 30, units = 'cm', dpi = 400)
-ggsave("s_btb_multiple.png",p_btb2, width = 25, height = 30, units = 'cm', dpi = 400)
+#ggsave("s_btb_single.png",p_btb1, width = 25, height = 30, units = 'cm', dpi = 400)
+#ggsave("s_btb_multiple.png",p_btb2, width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. HS ####
 
@@ -4529,6 +4470,7 @@ ggsave("s_btb_multiple.png",p_btb2, width = 25, height = 30, units = 'cm', dpi =
 #'HS_DD_beta03death05', 'HS_FD_beta100death05'
 #'HS_FD_beta03death005','HS_DD_beta0001death005'
 #'HS_FD_beta03death05', 'HS_DD_beta0001death05'
+
 #'HS_DD_beta05death005','HS_FD_beta165death005'
 #'HS_DD_beta05death05', 'HS_FD_beta165death05'
 #'HS_FD_beta05death005','HS_DD_beta0002death005'
@@ -4541,29 +4483,31 @@ for (i in 1:length(hs1)) {
   print(head(hs1[[i]]))
   print(head(hs2[[i]]))
 }
-nam_hs <- c( "HS DD, beta = 0.3, fatality = 0.05%",
-             "HS FD*, beta = 0.3, fatality = 0.05%",
-             
-             "HS DD, beta = 0.3, fatality = 5.8%",
-             "HS FD*, beta = 0.3, fatality = 5.8%",
-             
-             "HS DD, beta = 0.5, fatality = 0.5%",
-             "HS FD*, beta = 0.5, fatality = 0.5% ",
-             
-             "HS DD, beta = 0.5, fatality = 5.8%",
-             "HS FD*, beta = 0.5, fatality = 5.8%",
-             
-             "HS FD, beta = 0.3, fatality = 0.5%",
-             "HS DD*, beta = 0.3, fatality = 0.5%",
-             
-             "HS FD, beta = 0.3, fatality = 5.8%",
-             "HS DD*, beta = 0.3, fatality = 5.8%",
-             
-             "HS FD, beta = 0.5, fatality = 0.5%",
-             "HS DD*, beta = 0.5, fatality = 0.5%",
-             
-             "HS FD, beta = 0.5, fatality = 5.8%",
-             "HS DD*, beta = 0.5, fatality = 5.8%")
+
+nam_hs <- c("HS DD, beta = 0.3, fatality = 0.5%",   
+            "HS FD*, beta = 100, fatality = 0.5%",
+            
+            "HS DD, beta = 0.3, fatality = 5.8%", 
+            "HS FD*, beta = 100, fatality = 5.8%",
+                
+            "HS FD, beta = 0.3, fatality = 0.5%", 
+            "HS DD*, beta = 0.001, fatality = 0.5%", 
+                
+            "HS FD, beta = 0.3, fatality = 5.8%", 
+            "HS DD*, beta = 0.001, fatality = 5.8%",
+                
+            "HS DD, beta = 0.5, fatality = 0.5%", 
+            "HS FD*, beta = 165, fatality = 0.5% ",
+                
+            "HS DD, beta = 0.5, fatality = 5.8%", 
+            "HS FD*, beta = 165, fatality = 5.8%",
+                
+            "HS FD, beta = 0.5, fatality = 0.5%", 
+            "HS DD*, beta = 0.002, fatality = 0.5%", 
+                
+            "HS FD, beta = 0.5, fatality = 5.8%", 
+            "HS DD*, beta = 0.002, fatality = 5.8%" )
+
 h1<-list()
 for (i in 1:length(hs1)) {
   h1[[i]] <- hs1[[i]] %>% filter(class %in% c("S","I","R","N")) %>%
@@ -4609,14 +4553,17 @@ p_hs1<-wrap_elements(wrap_plots(h1, ncol=4)+
                                        tag_levels = "A")+
                        plot_layout(guides = "collect") &
                        theme(legend.position = "bottom"))
+
 p_hs2<-wrap_elements(wrap_plots(h2, ncol=4)+
                        plot_annotation(title = "100 simulations",
                                        tag_levels = "A")+
                        plot_layout(guides = "collect") &
                        theme(legend.position = "bottom"))
+p_hs1
+p_hs2
 
-ggsave("s_hs_single.png",p_hs1,width = 40, height = 25, units = 'cm', dpi = 400)
-ggsave("s_hs_multiple.png",p_hs2,width = 40, height = 25, units = 'cm', dpi = 400)
+#ggsave("s_hs_single.png",p_hs1,width = 40, height = 25, units = 'cm', dpi = 400)
+#ggsave("s_hs_multiple.png",p_hs2,width = 40, height = 25, units = 'cm', dpi = 400)
 
 ## Fig. LSD ####
 #'LSD_DD_beta0008',  'LSD_FD_beta2',
@@ -4695,8 +4642,8 @@ p_l2<-wrap_elements(wrap_plots(l2)+
                       theme(legend.position = "bottom"))
 
 p_l3<-p_l1/p_l2+plot_layout(heights = c(0.9,1))
-# p_l3
-ggsave("s_lsd.png",p_l3,width = 25, height = 30, units = 'cm', dpi = 400)
+p_l3
+#ggsave("s_lsd.png",p_l3,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. FMD ####
 
@@ -4785,9 +4732,10 @@ p_f2<-wrap_elements(wrap_plots(f2,ncol=2)+
                                       tag_levels = "A")+
                       plot_layout(guides = "collect") &
                       theme(legend.position = "bottom"))
-
-ggsave("s_fmd_single.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
-ggsave("s_fmd_multiple.png",p_f2,width = 25, height = 30, units = 'cm', dpi = 400)
+p_f1
+p_f2
+#ggsave("s_fmd_single.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
+#ggsave("s_fmd_multiple.png",p_f2,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. Brucellosis ####
 
@@ -4805,7 +4753,7 @@ for (i in 1:length(bru1)) {
 nam_bru<-c("Brucellosis DD, beta = 5e-6",
            "Brucellosis FD*, beta = 0.0016",
            
-           "Brucellosis FD, beta = 0005",
+           "Brucellosis FD, beta = 0.005",
            "Brucellosis DD*, beta = 1-e5")
 
 br1<-list()
@@ -4871,7 +4819,6 @@ for (i in 1:length(bru2)) {
 p_br1<-wrap_elements(wrap_plots(br1,ncol=2)+
                        plot_annotation(title = "1 simulation",
                                        tag_levels = "A"))
-p_br1
 
 p_br2<-wrap_elements(wrap_plots(br2,ncol=2)+
                        plot_annotation(title = "100 simulstions",
@@ -4880,8 +4827,8 @@ p_br2<-wrap_elements(wrap_plots(br2,ncol=2)+
                        theme(legend.position = "bottom"))
 
 p_br3<-p_br1/p_br2+plot_layout(heights = c(0.9,1.1))
-#p_br3
-ggsave("s_bru.png",p_br3,width = 25, height = 30, units = 'cm', dpi = 400)
+p_br3
+#ggsave("s_bru.png",p_br3,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. Boxplot: % of the total population change for all models ####
 a<-dft %>%
@@ -4911,30 +4858,26 @@ a<-dft %>%
 a
 # ggsave("gaur_ndiff_label.png",a,width = 25, height = 27, units = 'cm', dpi = 600)
 
-## Fig. Sx PCA biplot ####
+## Fig. PCA biplot ####
 
 #biplot/multivariable
 #PCA
-library(tidyverse)
+#devtools::install_github('kevinblighe/PCAtools')
 library(factoextra)
 library(FactoMineR)
 library(readxl)
 library(ggrepel)
-#devtools::install_github('kevinblighe/PCAtools')
 library(PCAtools)
 library(data.table)
 library(wesanderson)
-set.seed(111)
 
-df2 <- read_xlsx(path = "pca_table.xlsx") %>% 
+#import PCA excel file
+setwd("/Users/whorpien/Library/CloudStorage/OneDrive-MasseyUniversity/InfectiousModel")
+df <- read_xlsx(path = paste0(getwd(),"/pca_table.xlsx"), sheet = "norm") %>% 
   as.data.frame()
 
 df2<-df %>% dplyr::select(c('beta','incubation',"infectious","fatality"))
 
-head(df2)
-colnames(df2)
-head(df2)
-rownames(df2)
 rownames(df2)<-df$model
 
 m<-data.matrix(df2)
@@ -4986,7 +4929,7 @@ fviz_pca_biplot(gpca,
 #PCATools
 head(df2)
 df_t2<-data.table::transpose(df2)
-head(df_t2)
+
 rownames(df_t2) <- colnames(df2)
 colnames(df_t2) <- rownames(df2)
 head(df_t2)
@@ -5040,112 +4983,5 @@ biplot(p2,
   scale_color_gradientn(colours = rev(pal3))+
   guides(color = guide_colorbar(limits = limits))+
   labs(color = "population(%)")
-
-## plotting histogram N==0  for brucellosis of FD transmission#######
-
-mx7 <- mx2 %>% filter(model %in% c("Brucellosis_FD_beta0005")) # select Brucellosis_FD_beta0005
-str(mx7)
-
-# OR load .rds file of Brucellosis model 
-# mx7 <- readRDS("./df_m7_Brucellosis_FD_beta0005_100runs.rds")
-# Then, run this melt script, if load .rds file back. 
-mx7 <- m7 %>% melt(id.vars = c('time_y','time_d','run','model',"Ndiff"), 
-                   value.name = 'value', variable.name = 'class')
-
-head(mx7)
-table(mx7$run)
-
-df.agg <- aggregate(time_y ~ run + value + class, mx7, min)
-df.ag <- (df.agg[df.agg$value==0,c('class','time_y','value','run')])
-
-str(df.ag)
-df.ag2 <- df.ag|>filter(class %in% c("I","N"))
-
-table(df.ag2$class) #count N,I == 0
-
-# plotting N extinction events
-pn <- df.ag|>filter(class %in% c("N"))|>
-  ggplot(aes(x=time_y)) + #, fill=run
-  geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
-  scale_y_continuous(limits = c(0,3), breaks=seq(0, 3, by = 2)) +
-  scale_x_continuous(limits = c(0,105),breaks=seq(0, 105, by = 20))+
-  ggtitle("Extinction events of the gaur population from brucellosis in 100 runs") +
-  xlab("years") +
-  theme( plot.title = element_text(size = 9),
-         axis.title.x = element_text(size = 7),
-         axis.title.y = element_text(size = 7),
-         legend.title=element_text(size=7),
-         legend.text = element_text(size = 7),
-         axis.text=element_text(size=7))+
-  scale_fill_viridis_d(option="mako",direction = -1)+
-  theme_bw() + theme(legend.position = "none")
-
-print(pn)  
-
-#png("extinction_bru_n.png",width = 12, height = 10, units = 'cm', res = 600)
-#print(pn)
-#dev.off()
-
-# plotting I&N not separate 
-p <- ggplot(df.ag2,aes(x=time_y,fill=class)) + 
-  geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
-  #facet_wrap(class~., ncol = 2)+ # for separate I and N
-  scale_y_continuous(limits = c(0,8), breaks=seq(0, 8, by = 2)) +
-  scale_x_continuous(limits = c(0,105),breaks=seq(0, 105, by = 20))+
-  ggtitle("Extinction events of the infectious and total population of gaur from brucellosis in 100 runs") +
-  xlab("years") +
-  theme( plot.title = element_text(size = 9),
-         axis.title.x = element_text(size = 7),
-         axis.title.y = element_text(size = 7),
-         legend.title=element_text(size=7),
-         legend.text = element_text(size = 7),
-         axis.text=element_text(size=7))+
-  #theme(legend.position = "none")+
- # scale_fill_brewer(palette = "BrBG")
-  scale_fill_viridis_d(option="mako",direction = -1,
-                       name = "Compartment", 
-                       labels = c("I","Total \npopulation"))+
-  theme(legend.key.size = unit(0.3, 'cm'))+
-  theme_bw() +
-  #scale_fill_discrete(name = "population", labels = c("I","total"))
-  theme(legend.position=c(.91, .9),legend.box.background = element_rect(colour = "black"))
-
-print(p)  
-
-#png("extinction_bru_ni.png",width = 12, height = 10, units = 'cm', res = 600)
-#print(p)
-#dev.off()
-
-# plotting I&N separately using facet
-# classified by the number of iterations
-table(df.ag2$class)
-df.ag2$class <- factor(df.ag2$class, 
-                       levels = c("I", "N"), 
-                       labels = c("I", "Total \npopulation"))
-
-p2 <- ggplot(df.ag2,aes(x=time_y)) +  #,fill=run
-  geom_histogram(binwidth =2,color="black",linewidth=0.2,alpha=0.7)+
-  facet_wrap(class~., ncol = 2)+
-  scale_y_continuous(limits = c(0,8), breaks=seq(0, 8, by = 2)) +
-  scale_x_continuous(limits = c(0,105),breaks=seq(0, 105, by = 20))+
-  ggtitle("Extinction events of the gaur population from brucellosis in 100 runs") +
-  xlab("years") +
-  theme( plot.title = element_text(size = 9),
-         axis.title.x = element_text(size = 7),
-         axis.title.y = element_text(size = 7),
-         legend.title=element_text(size=7),
-         legend.text = element_text(size = 7),
-         axis.text=element_text(size=7))+
-  theme_bw() +
-  scale_fill_viridis_d(option="mako",direction = -1,
-                       name = "Compartment", 
-                       labels = c("I","Total \npopulation"))+
-  theme(legend.position = "none")
-print(p2)  
-
-#png("extinction_bru_facet.png",width = 12, height = 9, units = 'cm', res = 600)
-#print(p2)
-#dev.off()
-
 
 #--- done --- :) #
