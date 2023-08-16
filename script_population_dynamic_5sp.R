@@ -7,7 +7,6 @@ library(plyr)
 library(tidyverse)
 library(reshape2) 
 library(stringr)
-library(emdbook)  
 library(ggplot2); theme_set(theme_bw())
 
 set.seed(111)
@@ -71,8 +70,9 @@ model1 =
 }
 # setting parameter values     
 #predicting time  (unit = days)
-end.time <- 1*365 
-
+# this can be adjusted, in the manuscript used end.time 100*365, n_rep = 100
+end.time <- 2*365 
+n_rep <- 2
 # gaur population #########
 N = 300 
 # calf:subadult:adult ratio
@@ -165,94 +165,140 @@ pm5<- c(mu_b = 0.5/365,
 # list of paramters
 init<-list(initials1,initials2,initials3,initials4,initials5)
 pm <- list (pm1,pm2,pm3,pm4,pm5)
-df<-list()
+
+dfs<-list()
+dfm<-list()
+
 nam<-c('Gaur', 'Banteng', 'Buffalo','Serow','Goral')
 
-# TEST single run -------------
+#  single, multiple run -------------
 for (i in 1:length(pm)) {
-  df[[i]]<-model1(pars = pm[[i]], init = init[[i]],
+  dfs[[i]]<-model1(pars = pm[[i]], init = init[[i]],
                   end.time = end.time)
   #PlotMods(df[[i]]) #Epi PlotMods
+  dfm[[i]] <- replicate(n_rep,(model1( pm[[i]], init = init[[i]],
+                                              end.time = end.time)))
 }
 #plot sum of populations
-p<-list()
-for (i in 1:length(pm)) {
-p[[i]]<-plot(df[[i]]$results$N, 
-     main = paste0(nam[[i]]," ","total population"), 
-     xlab="time",ylab="numbers") }
 
-print(p)
+for (i in 1:length(pm)) {
+plot(dfs[[i]]$results$N, 
+     main = paste0(nam[[i]]," ","total population"), 
+     xlab="time",ylab="numbers") 
+}
 
 #convert to data.frame, change days -> years
-df2<-list()
-for(i in 1:length(df)){
-df2[[i]]<-df[[i]]$results %>%
+dfs2<-list()
+for(i in 1:length(dfs)){
+dfs2[[i]]<-df[[i]]$results %>%
   mutate(time_y = time/365) %>% #convert day to year for plotting
   melt(id.vars = c('time','time_y'), 
        value.name = 'value', variable.name = 'class')
- df2[[i]]$species <- paste0(nam[[i]]) # adding the model name 
-  str(df2[[i]])}
+ 
+dfs2[[i]]$species <- paste0(nam[[i]]) # adding the model name 
+}
 
 # summarise min-max by class
-for(i in 1:length(df2)){
-  print(df2[[i]] |> group_by(class,species) |>
+for(i in 1:length(dfs2)){
+  print(dfs2[[i]] |> group_by(class,species) |>
           dplyr::summarise(Max=max(value),
                            Min=min(value))) 
-  }
+}
 
+# FUNCTION adding time and run number for multiple model's simulations ----
+pop_sim_prep <- function(x, n_rep, end.time, melt){ # x = simulation of model, e.g. sim_run_m1
+  df<-list()
+  for (i in 1:n_rep){
+    run <- paste("run", seq(n_rep), sep="")
+    names(df)[i]
+    df[[i]] <- x[,i]$results[,-c(1)]
+    df[[i]]$time_d <- seq(from=1,to=end.time+1,by=1)
+  }
+  
+  df <- map2(df,run, ~cbind(.x, run = .y))   # adding number of replications to the column
+  df2 <- data.table::rbindlist(df)          # binding row
+  
+  if (melt == T) {  #option for melting the data in case we need...
+    
+    df3 <- melt(df2, id.vars = c('time_d','run'))
+    return(df3 = data.frame(df3))
+  } 
+  
+  else  {
+    return( df2 = data.frame(df2)) 
+  }
+  
+}
+
+# rearrange df and calculate total population change (%) --------
+sm <- list()
+for (i in 1:length(pm)) {
+  sm[[i]] <- pop_sim_prep(x = dfm[[i]], n_rep=n_rep, end.time= end.time, melt = F)
+  sm[[i]] <- sm[[i]]%>%
+    group_by(run) %>%
+    mutate(Ndiff = ((last(N)-first(N))/first(N))*100)%>% #calculate change in the total population at year100, and year0
+    mutate(time_y = time_d/365) %>% #convert day to year for plotting
+    as.data.frame()
+  sm[[i]]$model <- paste0(nam[[i]])
+  
+}
 # plot population dynamics ######
+
+# 1 run
 pp<-list()
-for(i in 1:length(df2)){
-pp[[i]]<-ggplot(df2[[i]]) + 
+
+for(i in 1:length(dfs2)){
+pp[[i]]<-ggplot(dfs2[[i]]) + 
   geom_line(aes(x = time_y ,y = value,  color = class), linewidth=1)  +
-  labs(x="years", y= "population",
-       title= nam[[i]]) +
+  labs(x="Years", y= "Compartment", title= nam[[i]]) +
   #scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-  scale_color_manual( name = "population",
+  scale_color_manual( name = "Population",
                     labels = c( 'adult','subadult','calf','total' ),
                       values = c('a'='seagreen4',
                                  'sa'='firebrick',
                                  'c'='dodgerblue3',
                                  'N'='#153030'))+ 
   
-  theme_bw() +
-  theme( plot.title = element_text(size = 13),
-         axis.title.x = element_text(size = 12),
-         axis.title.y = element_text(size = 12),
-         legend.title=element_text(size=11),
-         legend.text = element_text(size = 11),
-         axis.text=element_text(size=11))+
-  guides(color = guide_legend(override.aes = list(alpha = 1, linewidth=1)))
+  my_theme+
+  theme(legend.position = "none")   
  #ggsave(paste0(nam[[i]],"_pop_1sim_test.png"),pp[[i]], width = 25, height = 15, units = 'cm', dpi = 600)
 }
 print(pp)
 
-#scale: ylim(0, 500)
-ps<-list()
-for(i in 1:length(df2)){
-  ps[[i]]<-ggplot(df2[[i]]) + 
-    geom_line(aes(x = time_y ,y = value,  color = class), linewidth=1)  +
-    labs(x="years", y= "population",
-         title= nam[[i]]) +
-    ylim(0, 500)+
+pp2<-list()
+
+for (i in 1:length(sm)) {
+  pp2[[i]]<-ggplot(sm[[i]]) + 
+    geom_line(aes(x = time_y ,y = a,  group = run, color = 'adult'), linewidth = 0.1, alpha = 0.12) + 
+    geom_line(aes(x = time_y, y = sa, group = run, color = 'subadult'),linewidth = 0.1, alpha = 0.12) +
+    geom_line(aes(x = time_y, y = c,  group = run, color = 'calf' ), linewidth = 0.1, alpha = 0.12)+
+    geom_line(aes(x = time_y, y = N,  group = run, color = 'total'), linewidth = 0.1, alpha = 0.12) +
+    labs(x="years", y= "population", title= paste0(LETTERS[1:5][i],") ", nam[[i]])) +
     scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
-    scale_color_manual( name = "population",
-                        labels = c( 'adult','subadult','calf','total' ),
-                        values = c('a'='seagreen4',
-                                   'sa'='firebrick',
-                                   'c'='dodgerblue3',
-                                   'N'='#153030'))+ 
+    scale_color_manual( name = "Compartment",
+                        labels = c( 'adult','subadult','calf','total'),
+                        values = c('seagreen4',
+                                   'firebrick',
+                                   'dodgerblue3',
+                                   '#153030'),
+                        breaks = c('adult','subadult','calf','total'))+ 
+    my_theme +
     
-    theme_bw() +
-    theme( plot.title = element_text(size = 13),
-           axis.title.x = element_text(size = 12),
-           axis.title.y = element_text(size = 12),
-           legend.title=element_text(size=11),
-           legend.text = element_text(size = 11),
-           axis.text=element_text(size=11))+
-    guides(color = guide_legend(override.aes = list(alpha = 1, linewidth=1)))
-  #ggsave(paste0(nam[[i]],"_pop_1sim_sacle_test.png"),ps[[i]], width = 25, height = 15, units = 'cm', dpi = 600)
+    guides(color = guide_legend(override.aes = list(alpha = 1, linewidth =0.7 )))+
+    
+    stat_summary(sm[[i]], mapping =aes( x = time_y, y = a, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
+    stat_summary(sm[[i]], mapping =aes( x = time_y, y = sa, group = 1), fun=mean, geom="line", colour= 'firebrick',linewidth = 0.5)+
+    stat_summary(sm[[i]], mapping =aes( x = time_y, y = c, group = 1), fun=mean, geom="line", colour= 'dodgerblue3',linewidth = 0.5)+
+    stat_summary(sm[[i]], mapping =aes( x = time_y, y = N, group = 1), fun=mean, geom="line", colour= '#153030',linewidth = 0.5)
 }
-print(ps)
+
+print(pp2)
+
+ps1 <- wrap_plots(pp, ncol=1) & plot_annotation(title = '1 simulation') & theme(plot.title = element_text(hjust = 0.01))
+ps2 <- wrap_plots(pp2, ncol=1) & plot_annotation(title = '100 simulations') & theme(plot.title = element_text(hjust = 0.01))
+ps3<-(wrap_elements(pp1)|wrap_elements(pp2))
+ps4<-wrap_elements(pp3 + plot_layout(widths = c(0.77,0.96)))
+ps4
+ggsave("s_pop_5sp.png",ps4, width = 25, height = 30, units = 'cm', dpi = 600)
 
 #-- DONE :) -- #

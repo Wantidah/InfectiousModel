@@ -34,12 +34,13 @@ options(digits = 3, scipen = 999)
 # path <- '...'
 
 #install.packages(c('EpiDynamics','dplyr','tidyverse','reshape2',
-#                   'stringr','hrbrthemes','viridis','ggstatsplot'), 
+#                   'stringr','hrbrthemes','ggstatsplot','patchwork','grid',
+#                    'factoextra','FactoMineR','readxl','ggrepel','PCAtools','data.table','wesanderson'), 
 #                 lib = path)
+#devtools::install_github('kevinblighe/PCAtools')
+#if(!require(ggstatsplot)) install.packages('ggstatsplot', dep = TRUE, quiet = TRUE)
 
 ############## LOAD PACKAGES ##########
-
-#if(!require(ggstatsplot)) install.packages('ggstatsplot', dep = TRUE, quiet = TRUE)
 
 library(EpiDynamics)
 library(dplyr)   
@@ -48,10 +49,16 @@ library(reshape2)
 library(stringr)
 library(ggplot2); theme_set(theme_bw())
 library(hrbrthemes)
-library(viridis)
 library(ggstatsplot)
 library(patchwork)
 library(grid)
+library(factoextra)
+library(FactoMineR)
+library(readxl)
+library(ggrepel)
+library(PCAtools)
+library(data.table)
+library(wesanderson)
 
 my_theme <- theme_bw() +
   theme( plot.title = element_text(size = 13),
@@ -3239,7 +3246,7 @@ nam<-c('no_infection',
        'FMD_FD_beta21',   'FMD_DD_beta007',
          
        'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta00016',
-       'Brucellosis_FD_beta0005', 'Brucellosis_DD_beta1-e5')
+       'Brucellosis_FD_beta5e-3', 'Brucellosis_DD_beta1e-5')
 
 # Single: convert res_model to data.frame
 for(i in 1:length(s)){
@@ -3314,21 +3321,9 @@ for (i in 1:length(m67)){
 
 # for (i in 1:length(m)) {saveRDS(m[[i]], file = paste0("df_m",i,"_",nam[[i]],"_100runs.rds")) }
 
-# Load single runs .rds files and create a list (this can skip) #######
-# setwd("/Users/whorpien/Library/CloudStorage/OneDrive-MasseyUniversity/InfectiousModel")
-
 #Anthrax = FD, bTB = FD , HS FD=DD are similar so select DD and present FD in the supp,
 #LSD = FD as indirect contact, cow density might not relate with transmission
 
-sl<- c("df_m1_no_infection_1run.rds", 
-       "df_m2_Anthrax_FD_beta01_1run.rds", 
-       "df_m3_bTB_DD_beta00143_1run.rds",
-       "df_m4_HS_DD_beta03death0053_1run.rds",
-       "df_m4_HS_DD_beta05death058_1run.rds", 
-       "df_m5_LSD_DD_beta008_1run.rds",
-       "df_m6_FMD_FD_beta0115_1run.rds",
-       "df_m7_Brucellosis_FD_beta5e-6_1run.rds")
-s = lapply(sl, readRDS)
 str(s)
 #-----------------------------------------------------
 
@@ -3524,19 +3519,7 @@ for (i in 1:length(s1)) {
 print(p)
 
 # plot multiple runs ###### 
-# Load multiple runs .rds files and create a list 
-# this can skip #######
-ml<-list("df_m1_no_infection_100runs.rds",
-         "df_m2_Anthrax_FD_beta01_100runs.rds",
-         "df_m3_bTB_DD_beta00143_100runs.rds", 
-         "df_m4_HS_DD_beta03death0053_100runs.rds",
-         "df_m4_HS_DD_beta05death058_100runs.rds",
-         "df_m5_LSD_DD_beta008_100runs.rds",
-         "df_m6_FMD_FD_beta0115_100runs.rds",
-         "df_m7_Brucellosis_FD_beta5e-6_100runs.rds")
 
-m = lapply(ml, readRDS)
-#-----------------------------------------------
 str(m)
 
 # select 100 simulations  ---------
@@ -3575,13 +3558,7 @@ for (i in 1:length(m1)) {
                                      'dodgerblue3',
                                      '#153030'),
                           breaks = c('adult','subadult','calf','total'))+ 
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title=element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth =0.7 )))+
       
@@ -3605,13 +3582,7 @@ for (i in 1:length(m1)) {
                                      'firebrick',
                                      '#153030'),
                           breaks = c('S','I','total'))+
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1,linewidth=0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3634,13 +3605,7 @@ for (i in 1:length(m1)) {
                                      'firebrick',
                                      '#153030'),
                           breaks = c('S','E','I','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5) +
       stat_summary(m1[[i]], mapping =aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3666,13 +3631,7 @@ for (i in 1:length(m1)) {
                                      'dodgerblue3',
                                      '#153030'),
                           breaks = c('S','I','R','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
       stat_summary(m1[[i]], mapping = aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3696,13 +3655,7 @@ for (i in 1:length(m1)) {
                                      'dodgerblue3',
                                      '#153030'),
                           breaks = c('S','I','R','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
       stat_summary(m1[[i]], mapping = aes( x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3728,13 +3681,7 @@ for (i in 1:length(m1)) {
                                      'dodgerblue3',
                                      '#153030'),
                           breaks = c('S','E','I','R','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3763,13 +3710,7 @@ for (i in 1:length(m1)) {
                                      'mediumorchid4',
                                      '#153030'),
                           breaks = c('S','E','I','R','M','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size = 11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size = 11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean,geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3799,13 +3740,7 @@ for (i in 1:length(m1)) {
                                      'mediumorchid4',
                                      '#153030'),
                           breaks = c('S','E','I','R','M','total'))+ #blackgreen
-      theme_bw() +
-      theme( plot.title = element_text(size = 13),
-             axis.title.x = element_text(size = 12),
-             axis.title.y = element_text(size = 12),
-             legend.title =element_text(size=11),
-             legend.text = element_text(size = 11),
-             axis.text=element_text(size=11))+
+      my_theme+
       guides(color = guide_legend(override.aes = list(alpha = 1, linewidth = 0.7)))+
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = N, group = 1), fun=mean, geom="line", colour="#153030",linewidth = 0.5)+ #blackgreen
       stat_summary(m1[[i]], mapping = aes(x = time_y, y = S, group = 1), fun=mean, geom="line", colour='seagreen4',linewidth = 0.5)+
@@ -3822,10 +3757,10 @@ print(pl)
 pp1 <- wrap_plots(p, ncol=1) & plot_annotation(title = '1 simulation') & theme(plot.title = element_text(hjust = 0.01))
 pp2 <- wrap_plots(pl, ncol=1) & plot_annotation(title = '100 simulations') & theme(plot.title = element_text(hjust = 0.01))
 pp3<-(wrap_elements(pp1)|wrap_elements(pp2))
-pp4<-wrap_elements(pp3 + plot_layout(widths = c(0.75,0.98)))
+pp4<-wrap_elements(pp3 + plot_layout(widths = c(0.76,0.98)))
 pp4
 
-#ggsave("patchwork_allmodels8.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
+ggsave("patchwork_allmodels8.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
 
 # Fig. 2 : compare LSD & FMD & Brucellosis ######
 # separate small panel: LSD, FMD & Brucellosis DD, FD & DD* (rescale) 
@@ -3834,20 +3769,6 @@ pp4
 m2<-list(m[[28]],m[[30]],m[[31]], #LSD: DD beta = 0.008, FD beta = 0.032, DD rescale 0.032/N
          m[[32]],m[[36]],m[[37]], #FMD: DD beta = 0.026, FD beta = 0.115, DD rescale 0.115/N
          m[[40]],m[[42]],m[[43]]) #Brucellosis: DD beta = 5e-6, FD beta = 5e-3, DD rescale 5e-3/N
-
-# > OR Need to import the files (see GitHub for more details) 
-m2<-lapply(c("df_m5_LSD_DD_beta0008_100runs.rds", #beta = 0.008
-             "df_m5_LSD_FD_beta0032_100runs.rds", #beta = 0.032
-             "df_m5_LSD_DD_beta1e-4_100runs.rds", #LSD FD rescale 0.032/N = 0.0001
-             
-             "df_m6_FMD_DD_beta026_100runs.rds",  #beta = 0.026
-             "df_m6_FMD_FD_beta0115_100runs.rds", #beta = 0.115
-             "df_m6_FMD_DD_beta4e-4_100runs.rds", #FMD FD rescale 0.115/N = 0.00038
-             
-             "df_m7_Brucellosis_DD_beta5e-6_100runs.rds", # beta = 5e-6
-             "df_m7_Brucellosis_FD_beta0005_100runs.rds", # beta = 5e-3
-             "df_m7_Brucellosis_DD_beta1-e5_100runs.rds"), #Brucellosis FD rescale 5.5e-3/N = 1-e5
-           readRDS)  
 
 head(m2)         
 #Fig 2,3,4
@@ -3861,7 +3782,7 @@ nam_fig2 <- list("LSD DD, beta = 0.008",
                  
                  'Brucellosis DD, beta = 5.5e-6',
                  'Brucellosis FD, beta = 5.5e-3',
-                 "Brucellosis DD (rescale), beta = 1-e5") 
+                 "Brucellosis DD (rescale), beta = 1e-5") 
 
 
 lsd_dd<-ggplot(m2[[1]]) + geom_line(aes(x = time_y, y = N, group = run, color = 'total'),linewidth = 0.1, alpha = 0.12)+
@@ -4160,7 +4081,8 @@ str(mx2)
 dft <- mx2 %>% 
   dplyr::select(Ndiff,run,model,model2) %>% 
   drop_na() %>%
-  distinct()
+  distinct() %>%
+  data.frame()
 
 View(dft)
 
@@ -4172,68 +4094,104 @@ dft2<-dft|>
 
 print(dft2,n=43) #n = 43, number of models
 
+write.csv(dft, "df_ndiff_allmodels.csv")
+write.csv(dft2, "df_ndiff_mean.csv")
 
-#write.csv(dft2, "df_ndiff_allmodel.csv")
-
-## load df (in case we import the files) ----------------------------------------------------------------------
-#dft <- read.csv("./df_ndiff_allmodel.csv")
-#str(dft)
+## load df % population change (files in GitHub repo) ----------------------------------------------------------------------
+dft <- read.csv("./df_ndiff_allmodels.csv")
+str(dft)
 
 table(dft$run) # check this
-
+table(dft$model)
 # Fig. 3 Boxplot #####
 # select the models
-want <- c('Anthrax_DD_beta3e-5','Anthrax_FD_beta001', 
+want <- c('no_infection','Anthrax_DD_beta3e-5','Anthrax_FD_beta001', 
           'HS_FD_beta03death005', 'HS_DD_beta05death05',
           'bTB_DD_beta00014' , 'bTB_FD_beta00063',
           'LSD_DD_beta0008' , 'LSD_FD_beta0032', 'LSD_DD_beta1e-4',
           'FMD_DD_beta0026', 'FMD_FD_beta0115','FMD_DD_beta4e-4',
-          'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta0005', 'Brucellosis_DD_beta1-e5'
-          )
+          'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta5e-3','Brucellosis_DD_beta1e-5')
 
-dft_dis<-dft|>filter(model %in% want)
-table(dft$model3)
-dft$model<-as.factor(dft$model)
-dft$model2<-as.factor(dft$model2)
-dft$model3<-as.factor(dft$model3)
-str(dft)
-dft_dis$model4<- recode_factor(dft_dis$model,
-                               'LSD_FD_beta0032' = 'LSD FD',
-                               'LSD_DD_beta1e-4' = 'LSD DD*',
-                               'FMD_DD_beta0026' = 'FMD DD',
-                               'FMD_FD_beta0115' = 'FMD FD',
-                               'FMD_DD_beta4e-4' =  'FMD DD*',
-                               'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
-                               'Brucellosis_FD_beta0005' = 'Brucellosis FD',
-                               'Brucellosis_DD_beta1-e5' = 'Brucellosis DD*',
-                                   'Anthrax_FD_beta001'  =  'Anthrax FD',
-                                   'Anthrax_DD_beta3e-5' = 'Anthrax DD*',
-                                   'HS_DD_beta05death05' ='HS DD',
-                                   'HS_FD_beta03death005' = 'HS FD', #mortality 5.8%
-                                   'bTB_DD_beta00014' = 'bTB DD', 
-                                   'bTB_FD_beta00063' =  'bTB FD', 
-                                   'LSD_DD_beta0008' = 'LSD DD'
-                                                                    )
-View(dft_dis)
+dft3<-dft |> filter(model %in% want)
+dft3
+dft3$model3<- recode_factor(dft3$model,
+                            'no_infection'   = 'No infection',
+                            'LSD_DD_beta0008' = 'LSD DD',
+                            'LSD_FD_beta0032' = 'LSD FD',
+                            'LSD_DD_beta1e-4' = 'LSD DD*', 
+                            
+                            'FMD_DD_beta0026' = 'FMD DD',
+                            'FMD_FD_beta0115' = 'FMD FD',
+                            'FMD_DD_beta4e-4' =  'FMD DD*',
+                            
+                            'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
+                            'Brucellosis_FD_beta5e-3' = 'Brucellosis FD',
+                            'Brucellosis_DD_beta1e-5' = 'Brucellosis DD*',
+                            
+                            'Anthrax_DD_beta3e-5' = 'Anthrax DD*',
+                            'Anthrax_FD_beta001'  =  'Anthrax FD',
+                            
+                            'HS_DD_beta05death05' ='HS DD',
+                            'HS_FD_beta03death005' = 'HS FD', #mortality 5.8%
+                            
+                            'bTB_DD_beta00014' = 'bTB DD', 
+                            'bTB_FD_beta00063' =  'bTB FD')
+dft3$model2<-as.factor(dft3$model2)
+dft3$model3<-as.factor(dft3$model3)
 
-dft_dis$model
+table(dft3$model2)
+table(dft3$model3)
 
-no <- dft %>% filter(model3 %in% c("No infection")) 
-View(no)
+# Manually reorder the disease factor
+dft3$model2 <- factor(dft3$model2, levels = 
+                        c( "No infection",
+                           "Anthrax",
+                           "HS",
+                           "bTB",
+                           "LSD",
+                           "FMD",
+                           "Brucellosis"))
 
-no$model
-
-nam_bp <- c("LSD","FMD","Brucellosis",
-            "Anthrax","HS","bTB")
-
-#### use ggstat facet  
 #Anthrax,HS,bTB, LSD,FMD,Bru
-plt<-list()
+# one box per variety
+pbase<-dft3%>%
+  ggplot( aes(x=model3, y=Ndiff)) + 
+  geom_boxplot() +
+  facet_wrap(~model2, scale="free_x")+ 
+  coord_cartesian(ylim = c(-120, 500))+
+  ggtitle("Gaur population change by infectious diseases")+
+  xlab("")+
+  ylab("Population change (%)")+
+  scale_y_continuous(limits = c(-200, 500), 
+                     breaks = seq(from = -200, to = 500, by = 100)) +
+  theme(plot.title = element_text(size = 18),
+        axis.text = element_text(size = 16),
+        axis.title = element_text(size = 16),
+        strip.text = element_text(size = 16))
+pbase
+#ggsave("gaur_ndiff_test_base.png",pbase,width = 40, height = 30, units = 'cm', dpi = 400)
 
-for (i in 1:6) {
-plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
+#### 1) ggstat facet  
+
+#This ggostat code may not be compatible with different R versions. ><
+#Anthrax,HS,bTB, LSD,FMD,Bru
+nam_bp<-c("LSD",
+          "FMD",
+          "Brucellosis",
+          "Anthrax",
+          "HS",
+          "bTB")
+dft_dis<-dft3 |> filter(!model2 %in% "no infection")
+table(dft_dis$model2)
+
+no <- dft3 |> filter(model2 %in% c("No infection")) 
+table(no$model2)
+str(no)
+plt<-list()
+for (i in 1:length(nam_bp)){
+  plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
     grouped_ggbetweenstats(
-      x=model4,
+      x=model3,
       y=Ndiff,
       grouping.var = model2,
       k=0,
@@ -4259,11 +4217,11 @@ plt[[i]] <- dft_dis %>% filter(model2 %in% c(nam_bp[[i]])) %>%
           axis.text = element_text(size = 15),
           axis.title = element_text(size = 15),
           strip.text = element_text(size = 15))
- }
+}
 
 plt_no <- no %>% 
   ggbetweenstats(
-    x=model3,
+    x=model2,
     y=Ndiff,
     k=0,
     plot.type = "boxviolin",
@@ -4288,6 +4246,8 @@ plt_no <- no %>%
         axis.title = element_text(size = 15),
         strip.text = element_text(size = 15))
 
+plt_no
+
 plt1<-wrap_elements((plt[[1]]|plt[[2]]|plt[[3]]) & plot_annotation(subtitle = "B)") & 
                                                       theme(title = element_text(size = 18)))
 plt2<-wrap_elements((plt_no|plt[[4]]|plt[[5]]|plt[[6]]) & 
@@ -4296,6 +4256,7 @@ plt2<-wrap_elements((plt_no|plt[[4]]|plt[[5]]|plt[[6]]) &
                                                              plot.title = element_text(face = 'bold')))     
 pbox<-(plt2/plt1)
 pbox
+
 #ggsave("gaur_ndiff_test.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
 
 # Done for the main text ...
@@ -4739,8 +4700,8 @@ p_f2
 
 ## Fig. Brucellosis ####
 
-# 'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta0016',
-# 'Brucellosis_FD_beta0005', 'Brucellosis_DD_beta1-e5'
+# 'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta00016',
+# 'Brucellosis_FD_beta5e-3', 'Brucellosis_DD_beta1e-5'
 
 bru1 <- s[40:43] 
 bru2 <- m[40:43]
@@ -4754,7 +4715,7 @@ nam_bru<-c("Brucellosis DD, beta = 5e-6",
            "Brucellosis FD*, beta = 0.0016",
            
            "Brucellosis FD, beta = 0.005",
-           "Brucellosis DD*, beta = 1-e5")
+           "Brucellosis DD*, beta = 1e-5")
 
 br1<-list()
 
@@ -4862,28 +4823,20 @@ a
 
 #biplot/multivariable
 #PCA
-#devtools::install_github('kevinblighe/PCAtools')
-library(factoextra)
-library(FactoMineR)
-library(readxl)
-library(ggrepel)
-library(PCAtools)
-library(data.table)
-library(wesanderson)
+
 
 #import PCA excel file
-setwd("/Users/whorpien/Library/CloudStorage/OneDrive-MasseyUniversity/InfectiousModel")
-df <- read_xlsx(path = paste0(getwd(),"/pca_table.xlsx"), sheet = "norm") %>% 
+df_pca <- read_xlsx("./pca_table.xlsx", sheet = "norm") %>% 
   as.data.frame()
 
-df2<-df %>% dplyr::select(c('beta','incubation',"infectious","fatality"))
+df_pca2<-df_pca %>% dplyr::select(c('beta','incubation',"infectious","fatality"))
 
-rownames(df2)<-df$model
+rownames(df_pca2)<-df_pca$model
 
-m<-data.matrix(df2)
-head(m)
+mt<-data.matrix(df2)
+head(mt)
 
-gpca <- PCA(m, graph = FALSE,scale.unit = T)
+gpca <- PCA(mt, graph = FALSE,scale.unit = T)
 #eigenvalues
 get_eigenvalue(gpca)
 head(gpca$var$contrib)
@@ -4927,28 +4880,28 @@ fviz_pca_biplot(gpca,
                 title = "Biplot: Disease parameters") 
 
 #PCATools
-head(df2)
-df_t2<-data.table::transpose(df2)
+head(df_pca2)
+df_t2<-data.table::transpose(df_pca2)
 
-rownames(df_t2) <- colnames(df2)
-colnames(df_t2) <- rownames(df2)
+rownames(df_t2) <- colnames(df_pca2)
+colnames(df_t2) <- rownames(df_pca2)
 head(df_t2)
 colnames(df_t2)
 
-metadata<-df
+metadata<-df_pca
 rownames(metadata)
-rownames(metadata) <- df$model
+rownames(metadata) <- df_pca$model
 head(metadata)
 
-p2<-pca(df_t2,metadata=metadata,
+pc<-pca(df_t2,metadata=metadata,
         scale=T,
         center=T)
-p2
+pc
 
-getComponents(p2)
+getComponents(pc)
 
-pairsplot(p2,
-          components = getComponents(p2, c(1:4)),
+pairsplot(pc,
+          components = getComponents(pc, c(1:4)),
           triangle = F, trianglelabSize = 12,
           hline = 0, vline = 0,
           pointSize = 0.8,
@@ -4961,9 +4914,9 @@ pairsplot(p2,
 
 limits<-c(-200,-100,0,100,200)
 
-biplot(p2,
+bi_pc<-biplot(pc,
        showLoadings = TRUE,
-       lab = p2$metadata$model,
+       lab = pc$metadata$model,
        colby = 'Nchange_p',
        hline = 0, vline = 0,
        shape = 'disease',
@@ -4978,10 +4931,13 @@ biplot(p2,
        subtitle="Diseases parameters contribute to the % of the population change",
        titleLabSize = 16,
        subtitleLabSize = 15,
-       max.overlaps = Inf #ggrepel
+       max.overlaps = 15 #ggrepel
 )+
   scale_color_gradientn(colours = rev(pal3))+
   guides(color = guide_colorbar(limits = limits))+
   labs(color = "population(%)")
+bi_pc
+#ggsave("s_biplot_label.png",bi_pc,width = 23, height = 20, units = 'cm', dpi = 600)
+
 
 #--- done --- :) #
