@@ -190,7 +190,7 @@ plot(dfs[[i]]$results$N,
 #convert to data.frame, change days -> years
 dfs2<-list()
 for(i in 1:length(dfs)){
-dfs2[[i]]<-df[[i]]$results %>%
+dfs2[[i]]<-dfs[[i]]$results %>%
   mutate(time_y = time/365) %>% #convert day to year for plotting
   melt(id.vars = c('time','time_y'), 
        value.name = 'value', variable.name = 'class')
@@ -273,7 +273,7 @@ for (i in 1:length(sm)) {
     geom_line(aes(x = time_y, y = sa, group = run, color = 'subadult'),linewidth = 0.1, alpha = 0.12) +
     geom_line(aes(x = time_y, y = c,  group = run, color = 'calf' ), linewidth = 0.1, alpha = 0.12)+
     geom_line(aes(x = time_y, y = N,  group = run, color = 'total'), linewidth = 0.1, alpha = 0.12) +
-    labs(x="years", y= "population", title= paste0(LETTERS[1:5][i],") ", nam[[i]])) +
+    labs(x="years", y= "population", title= , nam[[i]]) +
     scale_x_continuous(breaks=seq(0, (365*100), by = 10))+
     scale_color_manual( name = "Compartment",
                         labels = c( 'adult','subadult','calf','total'),
@@ -299,6 +299,6 @@ ps2 <- wrap_plots(pp2, ncol=1) & plot_annotation(title = '100 simulations') & th
 ps3<-(wrap_elements(pp1)|wrap_elements(pp2))
 ps4<-wrap_elements(pp3 + plot_layout(widths = c(0.77,0.96)))
 ps4
-ggsave("s_pop_5sp.png",ps4, width = 25, height = 30, units = 'cm', dpi = 600)
+#ggsave("s_pop_5sp.png",ps4, width = 25, height = 30, units = 'cm', dpi = 600)
 
 #-- DONE :) -- #
