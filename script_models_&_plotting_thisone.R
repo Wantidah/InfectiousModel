@@ -4833,7 +4833,7 @@ df_pca2<-df_pca %>% dplyr::select(c('beta','incubation',"infectious","fatality")
 
 rownames(df_pca2)<-df_pca$model
 
-mt<-data.matrix(df2)
+mt<-data.matrix(df_pca2)
 head(mt)
 
 gpca <- PCA(mt, graph = FALSE,scale.unit = T)
@@ -4841,10 +4841,10 @@ gpca <- PCA(mt, graph = FALSE,scale.unit = T)
 get_eigenvalue(gpca)
 head(gpca$var$contrib)
 head(gpca$var)
-cat <- length(unique(df$disease))
+cat <- length(unique(df_pca$disease))
 pal <- wesanderson::wes_palette("Cavalcanti1", 
-                                length(unique(df$disease)), 
-                                type = "continuous")[1:length(unique(df$disease))]
+                                length(unique(df_pca$disease)), 
+                                type = "continuous")[1:length(unique(df_pca$disease))]
 
 pal2<- (RColorBrewer::brewer.pal(cat,"Spectral"))
 
@@ -4867,7 +4867,7 @@ fviz_contrib(gpca, choice = "var", axes = 1, top = 10)
 fviz_contrib(gpca, choice = "var", axes = 2, top = 10)
 # Disease
 fviz_pca_biplot(gpca, label ="var", col.ind="cos2",
-                habillage=factor(df$disease)) + 
+                habillage=factor(df_pca$disease)) + 
   theme_minimal()
 
 fviz_pca_biplot(gpca, 
@@ -4875,7 +4875,7 @@ fviz_pca_biplot(gpca,
                 pointsize = 3,
                 alpha = 0.7,
                 col.var = "black",
-                habillage= factor(df$disease),
+                habillage= factor(df_pca$disease),
                 legend.title = "Population",
                 title = "Biplot: Disease parameters") 
 
