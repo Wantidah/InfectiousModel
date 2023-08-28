@@ -1,6 +1,6 @@
 # InfectiousModel
  Population dynamics and infectious disease modelling of wild bovids  \
- Explore the population impact of infectious diseases with different traits  \
+ Explore the population impact of infectious diseases with different traits 
 
  There are two R scripts: 
  1) script_models_&_plotting_thisone.R includes:
