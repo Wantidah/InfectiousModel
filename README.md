@@ -16,3 +16,9 @@
 2) script_population_dynamic_5sp.R includes:
 * Non-infectious disease model for five bovid species (gaur, banteng, water buffalo, mainland serow and Chinese goral)
 * Each species has different demographic parameters.
+
+The result files from our models can be download here, includes: 
+1) df_ndiff_allmodels.csv:
+ + For generating summary statistics and box plots.
+2) pca_table.xlsx:
+ + For generating PCA biplot
