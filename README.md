@@ -6,12 +6,12 @@
  1) script_models_&_plotting_thisone.R includes:
  * All models used in the main text 
  * Non-infectious disease model
- * Six Bovine infectious diseases with five models' structure 
+ * Six Bovine infectious disease models with five different model structures:
     + Anthrax, SI
     + Bovine tuberculosis, SEI
     + Hemorrhagic septicemia, SIRS
     + Lumpy skin disease, SEIRS
-    + Foot and Mouth disease, SEIRMS/E
+    + Foot and mouth disease, SEIRMS/E
     + Brucellosis, SEIRMS/E
 2) script_population_dynamic_5sp.R includes:
 * Non-infectious disease model for five bovid species (gaur, banteng, water buffalo, mainland serow and Chinese goral)
