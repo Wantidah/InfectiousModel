@@ -1109,7 +1109,7 @@ model6dd =
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c * Sc) + (omega_m * M)  
+        rate[20] <- (delta_c + omega_m) * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
@@ -1270,7 +1270,7 @@ model6fd =
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c * Sc) + (omega_m * M)  
+        rate[20] <- (delta_c + omega_m) * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
@@ -1432,7 +1432,7 @@ model7dd=
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c * Sc) + (omega_m * M)  
+        rate[20] <- (delta_c + omega_m) * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
@@ -1593,7 +1593,7 @@ model7fd=
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c * Sc) + (omega_m * M)  
+        rate[20] <- (delta_c + omega_m) * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
@@ -4837,6 +4837,7 @@ mt<-data.matrix(df_pca2)
 head(mt)
 
 gpca <- PCA(mt, graph = FALSE,scale.unit = T)
+
 #eigenvalues
 get_eigenvalue(gpca)
 head(gpca$var$contrib)
@@ -4846,7 +4847,7 @@ pal <- wesanderson::wes_palette("Cavalcanti1",
                                 length(unique(df_pca$disease)), 
                                 type = "continuous")[1:length(unique(df_pca$disease))]
 
-pal2<- (RColorBrewer::brewer.pal(cat,"Spectral"))
+#pal2<- (RColorBrewer::brewer.pal(cat,"Spectral"))
 
 pal3 <- wes_palette("Zissou1", 6, type = "continuous")
 
