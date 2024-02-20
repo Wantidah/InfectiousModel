@@ -16,40 +16,14 @@ rownames(df_pca2)<-df_pca$model
 mt<-data.matrix(df_pca2)
 head(mt)
 
-gpca <- FactoMineR::PCA(mt, graph = FALSE,scale.unit = T)
-
-#eigenvalues
-get_eigenvalue(gpca)
-head(gpca$var$contrib)
-head(gpca$var)
+#colors
 cat <- length(unique(df_pca$disease))
 pal <- wesanderson::wes_palette("Cavalcanti1", 
                                 length(unique(df_pca$disease)), 
                                 type = "continuous")[1:length(unique(df_pca$disease))]
-
 #pal2<- (RColorBrewer::brewer.pal(cat,"Spectral"))
-
 pal3 <- wes_palette("Zissou1", 6, type = "continuous")
-
 RColorBrewer::display.brewer.pal(cat,'Spectral')
-
-#correlation plot
-library(corrplot)
-corrplot(gpca$var$cos2, is.corr=F,col=pal) #component contribution
-
-# Total contribution on PC1 and PC2
-# fviz_contrib(gpca, choice = "ind", axes = 1:4)
-
-fviz_pca_var(gpca, col.var = "black")
-# Contributions of variables to PC1
-fviz_contrib(gpca, choice = "var", axes = 1, top = 10)
-
-# Contributions of variables to PC2
-fviz_contrib(gpca, choice = "var", axes = 2, top = 10)
-# Disease
-fviz_pca_biplot(gpca, label ="var", col.ind="cos2",
-                habillage=factor(df_pca$disease)) + 
-  theme_minimal()
 
 #PCATools
 head(df_pca2)
@@ -65,7 +39,7 @@ rownames(metadata)
 rownames(metadata) <- df_pca$model
 head(metadata)
 
-pc<-pca(df_t2,metadata=metadata,
+pc<-PCAtools::pca(df_t2,metadata=metadata,
         scale=T,
         center=T)
 pc
@@ -109,3 +83,29 @@ bi_pc<-biplot(pc,
   guides(color = guide_colorbar(limits = limits))+
   labs(color = "population(%)")
 bi_pc
+
+#FactoMineR
+gpca <- FactoMineR::PCA(mt, graph = FALSE,scale.unit = T)
+
+#eigenvalues
+get_eigenvalue(gpca)
+head(gpca$var$contrib)
+head(gpca$var)
+
+#correlation plot
+library(corrplot)
+corrplot(gpca$var$cos2, is.corr=F,col=pal) #component contribution
+
+# Total contribution on PC1 and PC2
+# fviz_contrib(gpca, choice = "ind", axes = 1:4)
+
+fviz_pca_var(gpca, col.var = "black")
+# Contributions of variables to PC1
+fviz_contrib(gpca, choice = "var", axes = 1, top = 10)
+
+# Contributions of variables to PC2
+fviz_contrib(gpca, choice = "var", axes = 2, top = 10)
+# Disease
+fviz_pca_biplot(gpca, label ="var", col.ind="cos2",
+                habillage=factor(df_pca$disease)) + 
+  theme_minimal()
