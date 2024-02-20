@@ -84,6 +84,7 @@ bi_pc<-biplot(pc,
   labs(color = "population(%)")
 bi_pc
 
+#Another PCA package
 #FactoMineR
 gpca <- FactoMineR::PCA(mt, graph = FALSE,scale.unit = T)
 
