@@ -1706,8 +1706,8 @@ model7fd=
 #############  2) Set up parameters before running ##################  
 # setting end time and number of replications (n_rep)  
 # in the main text we used end_time = 100 * 365, n_rep = 100
-end.time <- 2 * 365
-n_rep <- 2
+end.time <- 100 * 365
+n_rep <- 100
 
 # population parameters #############
 # gaur population 
@@ -4695,7 +4695,7 @@ p_f2<-wrap_elements(wrap_plots(f2,ncol=2)+
                       theme(legend.position = "bottom"))
 p_f1
 p_f2
-#ggsave("s_fmd_single.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
+ggsave("s_fmd_single_rerun.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
 #ggsave("s_fmd_multiple.png",p_f2,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. Brucellosis ####
@@ -4780,6 +4780,7 @@ for (i in 1:length(bru2)) {
 p_br1<-wrap_elements(wrap_plots(br1,ncol=2)+
                        plot_annotation(title = "1 simulation",
                                        tag_levels = "A"))
+#ggsave("s_bru_rerun.png",p_br1,width = 25, height = 30, units = 'cm', dpi = 400)
 
 p_br2<-wrap_elements(wrap_plots(br2,ncol=2)+
                        plot_annotation(title = "100 simulstions",
