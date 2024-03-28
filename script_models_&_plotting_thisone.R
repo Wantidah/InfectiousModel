@@ -1109,7 +1109,7 @@ model6dd =
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c + omega_m) * Sm  
+        rate[20] <- delta_m * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
@@ -1270,7 +1270,7 @@ model6fd =
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c + omega_m) * Sm  
+        rate[20] <- delta_m * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
@@ -1432,7 +1432,7 @@ model7dd=
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c + omega_m) * Sm  
+        rate[20] <- delta_m * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)
@@ -1593,7 +1593,7 @@ model7fd=
         rate[19] <- mu_c * M
         change[19, ] <- c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0)
         #Sm go back to Ssa
-        rate[20] <- (delta_c + omega_m) * Sm  
+        rate[20] <- delta_m * Sm  
         change[20, ] <- c(0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, -1)
         #Sm go back to Ec
         rate[21] <-  beta_c * Sm * (Ic+Isa+Ia)/N
@@ -2421,7 +2421,7 @@ parameters_m5dd <- c(
   omega_a  = 1/180,
   epsilon  = 2e-5,
   mu_b     = 0.34/365,  
-  mu_bI    = (0.34/365)*(0.9), 
+  mu_bI    = (0.34/365)*(0.9), #0.9 = loss reproductive capacity by 10%
   mu_c     = 0.27/365,  
   mu_sa    = 0.15/365, 
   mu_a     = 0.165/365,
@@ -2536,19 +2536,20 @@ parameters_m6dd <- c(
   rho_c    = 0.1, 
   rho_sa   = 0.05, 
   rho_a    = 0.03, 
-  alpha    = 0.5,
+  alpha    = 0.5, #produce infected calf
   omega_c  = (1/120), 
   omega_sa =  (1/120), 
   omega_a  = (1/565), 
   omega_m  = (1/144),
   epsilon  = 2e-5,
   mu_b     = 0.34/365, 
-  mu_bI    = (0.34/365)*(0.9),
+  mu_bI    = (0.34/365)*(0.9), #0.9 = loss reproductive capacity by 10%
   mu_c     = 0.27/365, 
   mu_sa    = 0.15/365, 
   mu_a     = 0.165/365,
   delta_c  = 1/365, 
   delta_sa = 1/(3*365),
+  delta_m =  1/185,
   N = sum(initials_m6),
   tau=1)
 t(t(parameters_m6dd))
@@ -2580,6 +2581,7 @@ parameters_m6fd<- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6fd))
@@ -2611,6 +2613,7 @@ parameters_m6dd2 <- c(
   mu_a     = 0.165/365,
   delta_c  = 1/365, 
   delta_sa = 1/(3*365),
+  delta_m =  1/185,
   N = sum(initials_m6),
   tau=1)
 t(t(parameters_m6dd2))
@@ -2642,6 +2645,7 @@ parameters_m6fd2 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6fd2))
@@ -2673,6 +2677,7 @@ parameters_m6fd3 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6fd3))
@@ -2704,6 +2709,7 @@ parameters_m6dd3 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6dd3))
@@ -2735,6 +2741,7 @@ parameters_m6fd4 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6fd4))
@@ -2753,7 +2760,7 @@ parameters_m6dd4 <- c(
     rho_c    = 0.1, 
     rho_sa   = 0.05, 
     rho_a    = 0.03, 
-    alpha    = 0.5,
+    alpha    = 0.9,
     omega_c  = (1/120), 
     omega_sa = (1/120), 
     omega_a  = (1/565), 
@@ -2766,6 +2773,7 @@ parameters_m6dd4 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365, 
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m6),
     tau=1)
 t(t(parameters_m6dd4))
@@ -2789,19 +2797,20 @@ parameters_m7dd <- c(
     rho_c    = 0.1, 
     rho_sa   = 0.05, 
     rho_a    = 0.03, 
-    alpha    = 0.9,   
+    alpha    = 0.9, # 0.9 = prob. of produce infected calf    
     omega_c  = 1/180, 
     omega_sa =  1/180, 
     omega_a  = 1/180, 
     omega_m  = 1/180,
     epsilon  = 2e-5,
-    mu_b     = 0.34/365, 
-    mu_bI    = (0.34/365)*(0.5), 
+    mu_b     = 0.34/365,  
+    mu_bI    = (0.34/365)*(0.5), # 0.5 = loss reproductive capacity by 50%
     mu_c     = 0.27/365, 
     mu_sa    = 0.15/365,
     mu_a     = 0.165/365,
     delta_c  = 1/365,
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m7),
     tau=1)
 t(t(parameters_m7dd))
@@ -2833,6 +2842,7 @@ parameters_m7fd <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365,
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m7),
     tau=1)
 t(t(parameters_m7fd))
@@ -2864,6 +2874,7 @@ parameters_m7fd2 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365,
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m7),
     tau=1)
 t(t(parameters_m7fd2))
@@ -2895,6 +2906,7 @@ parameters_m7dd2 <- c(
     mu_a     = 0.165/365,
     delta_c  = 1/365,
     delta_sa = 1/(3*365),
+    delta_m =  1/185,
     N = sum(initials_m7),
     tau=1)
 t(t(parameters_m7dd2))
@@ -3325,10 +3337,7 @@ for (i in 1:length(m67)){
 #LSD = FD as indirect contact, cow density might not relate with transmission
 
 str(s)
-#-----------------------------------------------------
 
-# Start again here:
-# 
 # PLOTTING FOR Main text ####
 # single run ######
 
@@ -4047,6 +4056,7 @@ for (i in 1:length(s)) {
                            Min=min(value)))
   }
 
+
 # multiple runs
 # add disease name
 nam_dis<-c("No infection", 
@@ -4109,7 +4119,7 @@ want <- c('no_infection','Anthrax_DD_beta3e-5','Anthrax_FD_beta001',
           'HS_FD_beta03death005', 'HS_DD_beta05death05',
           'bTB_DD_beta00014' , 'bTB_FD_beta00063',
           'LSD_DD_beta0008' , 'LSD_FD_beta0032', 'LSD_DD_beta1e-4',
-          'FMD_DD_beta0026', 'FMD_FD_beta0115','FMD_DD_beta4e-4',
+          'FMD_DD_beta0026', 'FMD_FD_beta0115','FMD_DD_beta3e-4',
           'Brucellosis_DD_beta5e-6', 'Brucellosis_FD_beta5e-3','Brucellosis_DD_beta1e-5')
 
 dft3<-dft |> filter(model %in% want)
@@ -4122,7 +4132,7 @@ dft3$model3<- recode_factor(dft3$model,
                             
                             'FMD_DD_beta0026' = 'FMD DD',
                             'FMD_FD_beta0115' = 'FMD FD',
-                            'FMD_DD_beta4e-4' =  'FMD DD*',
+                            'FMD_DD_beta3e-4' =  'FMD DD*',
                             
                             'Brucellosis_DD_beta5e-6' = 'Brucellosis DD',
                             'Brucellosis_FD_beta5e-3' = 'Brucellosis FD',
@@ -4257,7 +4267,7 @@ plt2<-wrap_elements((plt_no|plt[[4]]|plt[[5]]|plt[[6]]) &
 pbox<-(plt2/plt1)
 pbox
 
-#ggsave("gaur_ndiff_test.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
+ggsave("gaur_ndiff_test_re.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
 
 # Done for the main text ...
 
@@ -4793,6 +4803,23 @@ p_br3
 #ggsave("s_bru.png",p_br3,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. Boxplot: % of the total population change for all models ####
+
+#> summarise: The average of the total population changes for all models  #######  
+head(dft)
+str(dft)
+table(dft$model)                             
+
+mean<-dft |>
+  group_by(model)|>
+  summarise(Mean = mean(Ndiff))
+
+dft2<-  mean %>% arrange((-Mean))
+dft2$Model_code<- paste0("M",1:nrow(d))
+print(n=50, dft2)
+
+write.csv(dft2, file = "ndiff_mean_all.csv")
+
+
 a<-dft %>%
   ggplot(aes(x= reorder(model,-Ndiff), y = Ndiff)) +
   geom_boxplot(position = position_dodge(width = .75),size=0.5)+
@@ -4818,13 +4845,12 @@ a<-dft %>%
                               breaks = seq(from = -200, to = 500, by = 100))
 
 a
-# ggsave("gaur_ndiff_label.png",a,width = 25, height = 27, units = 'cm', dpi = 600)
+ggsave("gaur_ndiff_label_re.png",a,width = 27, height = 27, units = 'cm', dpi = 600)
 
 ## Fig. PCA biplot ####
 
 #biplot/multivariable
 #PCA
-
 
 #import PCA excel file
 df_pca <- read_xlsx("./pca_table.xlsx", sheet = "norm") %>% 
