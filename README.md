@@ -18,10 +18,10 @@
 * Each species has different demographic parameters.
 3) PCA: for creating PCA biplot
   
-The result files from our models can be download here, includes: 
+The result files from our models can be download here, include: 
 1) df_ndiff_allmodels.csv:
  + For generating summary statistics and box plots.
 2) pca_table.xlsx:
- + For generating PCA biplot
+ + For generating the PCA biplot.
 3) ndiff_mean_all.csv:
  + Table result: the mean population change for each model.
