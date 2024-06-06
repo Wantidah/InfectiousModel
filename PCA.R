@@ -46,17 +46,17 @@ pc
 
 getComponents(pc)
 
-#pairsplot(pc,
-#          components = getComponents(pc, c(1:4)),
-#          triangle = F, trianglelabSize = 12,
-#          hline = 0, vline = 0,
-#          pointSize = 0.8,
-#          gridlines.major = FALSE, 
-#          gridlines.minor = FALSE,
-#          colby = 'Nchange_p',
-#          title = 'Pairs plot', 
-#          plotaxes = T,
-#          margingaps = unit(c(-0.01, -0.01, -0.01, -0.01), 'cm'))
+pairsplot(pc,
+          components = getComponents(pc, c(1:4)),
+          triangle = F, trianglelabSize = 12,
+          hline = 0, vline = 0,
+          pointSize = 0.8,
+          gridlines.major = FALSE, 
+          gridlines.minor = FALSE,
+          colby = 'Nchange_p',
+          title = 'Pairs plot', 
+          plotaxes = T,
+          margingaps = unit(c(-0.01, -0.01, -0.01, -0.01), 'cm'))
 
 limits<-c(-200,-100,0,100,200)
 
@@ -70,18 +70,19 @@ bi_pc<-biplot(pc,
               boxedLoadingsNames = F,
               colLoadingsArrows = 'grey30',
               legendPosition = 'right',
-              legendLabSize = 11, legendIconSize = 5,
+              legendLabSize = 9, legendIconSize = 8,
               xlim = c(-10,10),
               ylim = c(-5,5),
               title = "PCA biplot",
               subtitle="Diseases parameters contribute to the % of the population change",
-              titleLabSize = 16,
-              subtitleLabSize = 15,
-              max.overlaps = 7 #ggrepel
+              titleLabSize = 10,
+              subtitleLabSize = 10,
+              max.overlaps = 20 #ggrepel
 )+
   scale_color_gradientn(colours = rev(pal3))+
   guides(color = guide_colorbar(limits = limits))+
-  labs(color = "population(%)")
+  labs(color = "Population change (%)")
+
 bi_pc
 
 #Another PCA package

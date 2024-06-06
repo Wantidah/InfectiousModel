@@ -1705,9 +1705,15 @@ model7fd=
 
 #############  2) Set up parameters before running ##################  
 # setting end time and number of replications (n_rep)  
+
 # in the main text we used end_time = 100 * 365, n_rep = 100
+# This one is slow but will produce the result like in the main text
 end.time <- 100 * 365
 n_rep <- 100
+
+# Use this one if you want to test the code:
+end.time <- 2 * 365
+n_rep <- 2
 
 # population parameters #############
 # gaur population 
@@ -3760,6 +3766,7 @@ for (i in 1:length(m1)) {
   }
 }   
 print(pl)
+getwd()
 
 # Fig. 1 : Combine single and 100 simulations plots  #######
 # use 'Patchwork'
@@ -3769,7 +3776,7 @@ pp3<-(wrap_elements(pp1)|wrap_elements(pp2))
 pp4<-wrap_elements(pp3 + plot_layout(widths = c(0.76,0.98)))
 pp4
 
-ggsave("patchwork_allmodels8.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
+ggsave("patchwork_allmodels_test.png",pp4, width = 27, height = 44, units = 'cm', dpi = 600)
 
 # Fig. 2 : compare LSD & FMD & Brucellosis ######
 # separate small panel: LSD, FMD & Brucellosis DD, FD & DD* (rescale) 
@@ -4104,15 +4111,15 @@ dft2<-dft|>
 
 print(dft2,n=43) #n = 43, number of models
 
-write.csv(dft, "df_ndiff_allmodels.csv")
-write.csv(dft2, "df_ndiff_mean.csv")
+#write.csv(dft, "df_ndiff_allmodels.csv")
+#write.csv(dft2, "df_ndiff_mean.csv")
 
 ## load df % population change (files in GitHub repo) ----------------------------------------------------------------------
 dft <- read.csv("./df_ndiff_allmodels.csv")
 str(dft)
 
 table(dft$run) # check this
-table(dft$model)
+table(dft$model2)
 # Fig. 3 Boxplot #####
 # select the models
 want <- c('no_infection','Anthrax_DD_beta3e-5','Anthrax_FD_beta001', 
@@ -4267,7 +4274,7 @@ plt2<-wrap_elements((plt_no|plt[[4]]|plt[[5]]|plt[[6]]) &
 pbox<-(plt2/plt1)
 pbox
 
-ggsave("gaur_ndiff_test_re.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
+ggsave("gaur_ndiff_test2.png",pbox,width = 50, height = 28, units = 'cm', dpi = 600)
 
 # Done for the main text ...
 
@@ -4705,7 +4712,7 @@ p_f2<-wrap_elements(wrap_plots(f2,ncol=2)+
                       theme(legend.position = "bottom"))
 p_f1
 p_f2
-ggsave("s_fmd_single_rerun.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
+#ggsave("s_fmd_single_rerun.png",p_f1,width = 25, height = 30, units = 'cm', dpi = 400)
 #ggsave("s_fmd_multiple.png",p_f2,width = 25, height = 30, units = 'cm', dpi = 400)
 
 ## Fig. Brucellosis ####
@@ -4817,7 +4824,7 @@ dft2<-  mean %>% arrange((-Mean))
 dft2$Model_code<- paste0("M",1:nrow(d))
 print(n=50, dft2)
 
-write.csv(dft2, file = "ndiff_mean_all.csv")
+#write.csv(dft2, file = "ndiff_mean_all.csv")
 
 
 a<-dft %>%
@@ -4845,7 +4852,7 @@ a<-dft %>%
                               breaks = seq(from = -200, to = 500, by = 100))
 
 a
-ggsave("gaur_ndiff_label_re.png",a,width = 27, height = 27, units = 'cm', dpi = 600)
+#ggsave("gaur_ndiff_label_re.png",a,width = 27, height = 27, units = 'cm', dpi = 600)
 
 ## Fig. PCA biplot ####
 
@@ -4940,32 +4947,33 @@ pairsplot(pc,
           plotaxes = T,
           margingaps = unit(c(-0.01, -0.01, -0.01, -0.01), 'cm'))
 
-limits<-c(-200,-100,0,100,200)
+limits<-c(-250,-150,0,150,250)
 
 bi_pc<-biplot(pc,
-       showLoadings = TRUE,
-       lab = pc$metadata$model,
-       colby = 'Nchange_p',
-       hline = 0, vline = 0,
-       shape = 'disease',
-       sizeLoadingsNames = 5,
-       boxedLoadingsNames = F,
-       colLoadingsArrows = 'grey30',
-       legendPosition = 'right',
-       legendLabSize = 11, legendIconSize = 5,
-       xlim = c(-10,10),
-       ylim = c(-5,5),
-       title = "PCA biplot",
-       subtitle="Diseases parameters contribute to the % of the population change",
-       titleLabSize = 16,
-       subtitleLabSize = 15,
-       max.overlaps = 15 #ggrepel
+              showLoadings = TRUE,
+              lab = pc$metadata$model,
+              colby = 'Nchange_p',
+              hline = 0, vline = 0,
+              shape = 'disease',
+              sizeLoadingsNames = 5,
+              boxedLoadingsNames = F,
+              colLoadingsArrows = 'grey30',
+              legendPosition = 'right',
+              legendLabSize = 9, legendIconSize = 8,
+              xlim = c(-10,10),
+              ylim = c(-5,5),
+              title = "PCA biplot",
+              subtitle="Diseases parameters contribute to the % of the population change",
+              titleLabSize = 10,
+              subtitleLabSize = 10,
+              max.overlaps = 20 #ggrepel
 )+
   scale_color_gradientn(colours = rev(pal3))+
   guides(color = guide_colorbar(limits = limits))+
-  labs(color = "population(%)")
+  labs(color = "Population change (%)")
 bi_pc
-#ggsave("s_biplot_label.png",bi_pc,width = 23, height = 20, units = 'cm', dpi = 600)
+
+#ggsave("s_biplot_label2.png", bi_pc,width = 25, height = 17, units = 'cm', dpi = 600)
 
 
 #--- done --- :) #
