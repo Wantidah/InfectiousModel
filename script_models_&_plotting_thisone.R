@@ -32,33 +32,32 @@ options(digits = 3, scipen = 999)
 
 # set library path
 # path <- '...'
-
-#install.packages(c('EpiDynamics','dplyr','tidyverse','reshape2',
-#                   'stringr','hrbrthemes','ggstatsplot','patchwork','grid',
-#                    'factoextra','FactoMineR','readxl','ggrepel','PCAtools','data.table','wesanderson'), 
-#                 lib = path)
-#devtools::install_github('kevinblighe/PCAtools')
-#if(!require(ggstatsplot)) install.packages('ggstatsplot', dep = TRUE, quiet = TRUE)
-
 ############## LOAD PACKAGES ##########
-
-library(EpiDynamics)
-library(dplyr)   
-library(tidyverse)
-library(reshape2) 
-library(stringr)
-library(ggplot2); theme_set(theme_bw())
-library(hrbrthemes)
-library(ggstatsplot)
-library(patchwork)
-library(grid)
-library(factoextra)
-library(FactoMineR)
-library(readxl)
-library(ggrepel)
-library(PCAtools)
-library(data.table)
-library(wesanderson)
+pkg_list_cran <- c(
+'EpiDynamics',
+'dplyr',  
+'tidyverse',
+'reshape2',
+'stringr',
+'ggplot2',
+'hrbrthemes',
+'ggstatsplot',
+'patchwork',
+'grid',
+'factoextra',
+'FactoMineR',
+'readxl',
+'ggrepel',
+'PCAtools',
+'data.table',
+'wesanderson')
+ 
+lapply(X = pkg_list_cran,
+       FUN = function(x) if(!require(x, character.only = TRUE)) install.packages(x, dep = TRUE, quiet = TRUE))
+ 
+lapply(pkg_list_cran, require, character.only = TRUE)
+ 
+theme_set(theme_bw())
 
 my_theme <- theme_bw() +
   theme( plot.title = element_text(size = 13),
