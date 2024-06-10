@@ -4820,7 +4820,7 @@ mean<-dft |>
   summarise(Mean = mean(Ndiff))
 
 dft2<-  mean %>% arrange((-Mean))
-dft2$Model_code<- paste0("M",1:nrow(d))
+dft2$Model_code<- paste0("M",1:nrow(dft2))
 print(n=50, dft2)
 
 #write.csv(dft2, file = "ndiff_mean_all.csv")
